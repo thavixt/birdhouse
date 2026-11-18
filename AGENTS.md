@@ -76,7 +76,15 @@ src/
     RoundTracker.tsx       // round, turns left, goals
     ScoreScreen.tsx        // final scores breakdown
     StartScreen.tsx        // new game: vs bot / hot-seat
+    GameScreen.tsx         // in-game layout; owns the in-progress turn draft
+    FoodToken.tsx, GameLog.tsx, RulesModal.tsx
+  draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction
+  theme.ts                 // food/habitat icons and static Tailwind class maps
 ```
+
+> Windows note: run vitest from a path with an upper-case drive letter (`C:\...`).
+> With a `c:\...` cwd vitest loads two module copies and every suite fails with
+> "Vitest failed to find the current suite".
 
 ## Game rules (v1 — "very basic")
 
@@ -117,17 +125,22 @@ Hand limit: none in v1.
 
 ### Powers (v1 — only "when activated", all simple & optional)
 
+Powers resolve automatically (all are beneficial, so there is no choice to make).
+`layEggAny` puts the egg on the bird with the most free space.
+
 - `gainFood(type)` — gain 1 of a food type
 - `layEgg(self)` — lay 1 egg on this bird
 - `layEggAny` — lay 1 egg on any of your birds
 - `drawCard` — draw 1 card from deck
 - `allGainFood(type)` — every player gains 1 of a food type
 
-### Round goals (examples)
+### Round goals
 
-"Most birds in forest", "most eggs in grassland", "most birds total",
-"most birds with eggs". Scoring per round: 1st = 4/5/6/7 pts (by round), 2nd = 1/2/3/4, others 0.
-Ties share (round down).
+Defined in `goals.ts`: most birds in forest / grassland / wetland, most birds total,
+most eggs in grassland, most eggs total, most birds with eggs, most bird points on board.
+Scoring per round: 1st = 4/5/6/7 pts (by round), 2nd = 1/2/3/4, others 0.
+Tied players share the points of the places they span (round down). A player needs a
+value of at least 1 to place (so nobody scores an empty goal, e.g. in solo play).
 
 ### End of game scoring
 
@@ -151,13 +164,14 @@ persistence, online multiplayer.
 ## Milestones
 
 1. **Scaffold** ✅ — Vite + React Compiler + TS + Tailwind; build & lint pass.
-2. **Core engine** — `types`, `rng`, `birds`, `setup`, `engine` (4 actions, egg costs,
+2. **Core engine** ✅ — `types`, `rng`, `birds`, `setup`, `engine` (4 actions, egg costs,
    turn/round flow), `scoring`. Unit tests with vitest.
-3. **Basic UI** — StartScreen, Board, HabitatRow, BirdCard, Hand, FoodSupply, CardTray,
+3. **Basic UI** ✅ — StartScreen, Board, HabitatRow, BirdCard, Hand, FoodSupply, CardTray,
    ActionPanel, RoundTracker, ScoreScreen. Playable hot-seat.
-4. **Powers + round goals** — `powers.ts`, `goals.ts`, wired into engine & UI.
-5. **Bot** — `bot.ts`, auto-play bot turns.
-6. **Polish** — habitat colour theming, responsive layout, action log, rules help modal.
+4. **Powers + round goals** ✅ — `powers.ts`, `goals.ts`, wired into engine & UI.
+5. **Bot** ✅ — `bot.ts`, auto-play bot turns.
+6. **Polish** (mostly ✅) — habitat colour theming, responsive layout, action log, rules help modal.
+   Colours, log and rules modal are in; the layout is responsive but only lightly tuned for phones.
 
 ## Definition of done (every change)
 
@@ -169,7 +183,7 @@ persistence, online multiplayer.
 
 ## Milestone 2 spec — Core engine
 
-> Status: **not started**. This milestone covers the rules core only: no UI, powers, round
+> Status: **done** ✅. This milestone covers the rules core only: no UI, powers, round
 > goals or bot. The full playable game is milestones 2–5 together; this one is the
 > foundation they all build on.
 
@@ -365,8 +379,8 @@ Add `vitest` as a devDependency and a `"test": "vitest run"` script.
 
 ### Acceptance criteria
 
-- [ ] All files above exist; `src/game/` has zero React or DOM imports.
-- [ ] `npm run test`, `npm run build` and `npm run lint` all pass.
-- [ ] The simulation test completes 100 games.
-- [ ] Milestone list above updated (M2 ✅), and any rule changes reflected in
+- [x] All files above exist; `src/game/` has zero React or DOM imports.
+- [x] `npm run test`, `npm run build` and `npm run lint` all pass.
+- [x] The simulation test completes 100 games.
+- [x] Milestone list above updated (M2 ✅), and any rule changes reflected in
       "Game rules (v1)".
