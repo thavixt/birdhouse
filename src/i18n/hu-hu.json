@@ -85,6 +85,9 @@
     "bird-points": "Legtöbb madárpont a táblán"
   },
   "start": {
+    "continueTitle": "Befejezetlen játék",
+    "continueDetails": "{{round}}. kör / 4 · {{players}}",
+    "continue": "Folytatás",
     "howToPlay": "Hogyan szeretnél játszani?",
     "vsBot": "A gép ellen",
     "hotSeat": "Barátokkal, egy gépen",

@@ -85,6 +85,9 @@
     "bird-points": "Most bird points on board"
   },
   "start": {
+    "continueTitle": "Unfinished game",
+    "continueDetails": "Round {{round}} / 4 · {{players}}",
+    "continue": "Continue",
     "howToPlay": "How would you like to play?",
     "vsBot": "Against the computer",
     "hotSeat": "In person with friends",

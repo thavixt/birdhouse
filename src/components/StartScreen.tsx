@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import type { PlayerConfig } from '../game/types'
+import type { GameState, PlayerConfig } from '../game/types'
 import LanguageSwitch from './LanguageSwitch'
 
-type Props = { onStart: (players: PlayerConfig[]) => void }
+type Props = {
+  onStart: (players: PlayerConfig[]) => void
+  /** A saved, unfinished game to offer for continuing. */
+  resumable: GameState | null
+  onResume: () => void
+}
 
 const vsBot = (t: TFunction): PlayerConfig[] => [
   { name: t('start.defaultYou'), kind: 'human' },
@@ -25,7 +30,7 @@ const modeButtonStyle = (selected: boolean) => {
   return [common, "font-normal! !bg-transparent"].join(" ");
 }
 
-export default function StartScreen({ onStart }: Props) {
+export default function StartScreen({ onStart, resumable, onResume }: Props) {
   const { t } = useTranslation()
   const [players, setPlayers] = useState<PlayerConfig[]>(() => vsBot(t))
   const update = (i: number, patch: Partial<PlayerConfig>) => setPlayers(players.map((p, j) => (j === i ? { ...p, ...patch } : p)))
@@ -42,6 +47,23 @@ export default function StartScreen({ onStart }: Props) {
           </div>
           <p className="mt-1 text-sm text-stone-600">{t('app.tagline')}</p>
         </div>
+
+        {resumable && (
+          <section className="flex items-center justify-between gap-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-violet-900">{t('start.continueTitle')}</h2>
+              <p className="truncate text-xs text-stone-600">
+                {t('start.continueDetails', {
+                  round: resumable.round,
+                  players: resumable.players.map((p) => p.name).join(', '),
+                })}
+              </p>
+            </div>
+            <button type="button" className={`${btn} shrink-0 bg-violet-700 text-white hover:bg-violet-800`} onClick={onResume}>
+              {t('start.continue')}
+            </button>
+          </section>
+        )}
 
         <div className="flex flex-col gap-2">
           <p className='text-sm text-stone-600'>{t('start.howToPlay')}</p>

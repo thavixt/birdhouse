@@ -49,6 +49,18 @@ Tests (from milestone 2): `npm run test` runs vitest on `src/game/**` and `src/i
 - **Components** are function components, one per file, PascalCase filenames.
 - Keep it **basic**. Prefer fewer features done well over many half-done ones.
 
+### Persistence
+
+- The game in progress is saved to `localStorage` (`birdhouse.savedGame`) after every
+  action and offered as "Continue" on the start screen. "Quit" keeps the save; starting a
+  new game replaces it; a finished game clears it.
+- `src/game/save.ts` (pure, tested) owns the format: `{ version: SAVE_VERSION, state }`.
+  `deserializeGame` rejects missing, malformed or outdated saves and unknown card/goal ids.
+  **Bump `SAVE_VERSION` whenever `GameState`'s shape changes**, so old saves are dropped
+  instead of crashing the game.
+- `src/persistence.ts` is the only code touching storage; every call is wrapped in
+  try/catch so the game still works when storage is unavailable.
+
 ### Translations (i18n)
 
 - **No hardcoded user-facing text.** Every string the player can see (including `title`
@@ -99,6 +111,8 @@ src/
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction
   theme.ts                 // food/habitat icons and static Tailwind class maps
+  persistence.ts           // localStorage load/save/clear of the game in progress
+  game/save.ts             // versioned save format + validation (pure)
   i18n/
     index.ts               // i18next init, LANGUAGES, language persistence
     message.ts             // formatMessage(t, GameMessage) for engine log/errors
@@ -196,6 +210,43 @@ persistence, online multiplayer.
 5. **Bot** ✅ — `bot.ts`, auto-play bot turns.
 6. **Polish** (mostly ✅) — habitat colour theming, responsive layout, action log, rules help modal.
    Colours, log and rules modal are in; the layout is responsive but only lightly tuned for phones.
+
+## Backlog — v2 ideas (not started)
+
+> Ideas only, not a spec. Before building one, write it up like the "Milestone 2 spec"
+> (scope, rules, design decisions, tests) and move the rule changes into "Game rules".
+> Each item keeps the existing conventions: pure engine, seeded RNG, complete-command
+> actions, all display text in `src/i18n/*.json`.
+
+### Leftovers from v1
+
+- **Phone layout** — finish M6: the 5-slot rows and cards get cramped on phones; tune
+  card size, row layout and the side panel for ~375px width.
+- **Hungarian bird names** — confirm the less certain translations in `hu-hu.json`:
+  Keleti kékmadár (Eastern Bluebird), Nyugati réticsiröge (Western Meadowlark),
+  Amerikai vércse (American Kestrel), Üstökös harkály (Pileated Woodpecker).
+
+### Suggested order
+
+1. ~~**Persistence**~~ ✅ + **phone layout** — cheap; fix the most noticeable friction.
+2. **"When played" powers** + **bonus cards** — most strategic depth per effort; the
+   engine already suits them.
+3. Later: **dice feeder**, **"between turns" / predator powers**, **online multiplayer** —
+   each reshapes the engine or needs infrastructure.
+
+### Ideas
+
+| Feature                                | Effort       | Notes                                                                                                                                                                   |
+| -------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Persistence** (resume a game) ✅     | Small        | Done — see "Persistence" under Conventions.                                                                                                                             |
+| **Animations**                         | Small–medium | Card moves, eggs appearing, round-end banner. UI-only.                                                                                                                  |
+| **"When played" powers**               | Medium       | Fire once when the bird is placed. Fits the engine's action model; needs new `Power` kinds, cards, translations and tests.                                               |
+| **Bonus cards**                        | Medium       | Secret per-player end-game scoring conditions (e.g. "birds that eat fish"). New card type, scoring and UI.                                                              |
+| **Tucking cards / caching food**       | Medium       | Score-only piles under birds, plus powers that use them.                                                                                                                |
+| **Dice feeder**                        | Medium–large | Replaces the unlimited food supply with a shared, rerollable pool. Changes `gainFood`, its validation and the bot's food choice.                                         |
+| **Nest types, bird size**              | Medium       | Card attributes; only matter once goals or bonus cards use them.                                                                                                        |
+| **"Between turns" / predator powers**  | Large        | Trigger on other players' turns, some with randomness; complicates the one-action-per-turn flow.                                                                        |
+| **Online multiplayer**                 | Large        | Server, rooms and syncing. The deterministic engine helps (sync actions, not states), but it's its own project.                                                         |
 
 ## Definition of done (every change)
 
