@@ -21,8 +21,10 @@ function setup(patch: Parameters<typeof withPlayer>[2]): GameState {
   return withPlayer(newGame(3), 0, patch)
 }
 
-function expectInvalid(state: GameState, action: GameAction, match: RegExp) {
-  expect(validateAction(state, action)).toMatch(match)
+function expectInvalid(state: GameState, action: GameAction, key: string, params?: Record<string, unknown>) {
+  const msg = validateAction(state, action)
+  expect(msg?.key).toBe(`error.${key}`)
+  if (params) expect(msg?.params).toMatchObject(params)
   expect(reduce(state, action)).toBe(state)
 }
 
@@ -91,22 +93,22 @@ describe('playBird', () => {
     expect(next.turnsLeft).toEqual([7, 8])
   })
 
-  it('rejects card not in hand', () => expectInvalid(base(), play({ cardId: 'bald-eagle' }), /not in your hand/))
-  it('rejects wrong habitat', () => expectInvalid(base(), play({ habitat: 'wetland' }), /cannot live/))
+  it('rejects card not in hand', () => expectInvalid(base(), play({ cardId: 'bald-eagle' }), 'cardNotInHand'))
+  it('rejects wrong habitat', () => expectInvalid(base(), play({ habitat: 'wetland' }), 'wrongHabitat', { card: 'barn-owl', habitat: 'wetland' }))
   it('rejects full row', () => {
     const s = setup({ hand: ['barn-owl'], food: food(0, 0, 0, 0, 2), board: board({ forest: Array.from({ length: 5 }, () => chick(1)) }) })
-    expectInvalid(s, play(), /full/)
+    expectInvalid(s, play(), 'rowFull', { habitat: 'forest' })
   })
-  it('rejects wrong payment', () => expectInvalid(base(), play({ payment: ['rodent', 'seed'] }), /does not match/))
+  it('rejects wrong payment', () => expectInvalid(base(), play({ payment: ['rodent', 'seed'] }), 'paymentMismatch'))
   it('rejects unowned payment', () => {
-    expectInvalid(setup({ hand: ['barn-owl'], food: food(0, 0, 0, 0, 1) }), play(), /do not have/)
+    expectInvalid(setup({ hand: ['barn-owl'], food: food(0, 0, 0, 0, 1) }), play(), 'foodNotOwned')
   })
 
   it('charges eggs by column', () => {
     const s = setup({ hand: ['barn-owl'], food: food(0, 0, 0, 0, 2), board: board({ forest: [chick(1), chick(2)] }) })
-    expectInvalid(s, play(), /costs 1 egg/)
-    expectInvalid(s, play({ eggPayment: [{ slot: { habitat: 'forest', index: 0 }, count: 2 }] }), /more eggs than/)
-    expectInvalid(s, play({ eggPayment: [{ slot: { habitat: 'wetland', index: 0 }, count: 1 }] }), /no bird/)
+    expectInvalid(s, play(), 'eggCost', { count: 1 })
+    expectInvalid(s, play({ eggPayment: [{ slot: { habitat: 'forest', index: 0 }, count: 2 }] }), 'tooManyEggsRemoved')
+    expectInvalid(s, play({ eggPayment: [{ slot: { habitat: 'wetland', index: 0 }, count: 1 }] }), 'noBirdInSlot')
     const next = reduce(s, play({ eggPayment: [{ slot: { habitat: 'forest', index: 1 }, count: 1 }] }))
     expect(next.players[0].board.forest.map((b) => b.eggs)).toEqual([1, 1, 0])
 
@@ -115,7 +117,7 @@ describe('playBird', () => {
       food: food(0, 0, 0, 0, 2),
       board: board({ forest: [chick(1), chick(1), chick(), chick()] }),
     })
-    expectInvalid(s5, play({ eggPayment: [{ slot: { habitat: 'forest', index: 0 }, count: 1 }] }), /costs 2 eggs/)
+    expectInvalid(s5, play({ eggPayment: [{ slot: { habitat: 'forest', index: 0 }, count: 1 }] }), 'eggCost', { count: 2 })
     expect(
       validateAction(s5, play({ eggPayment: [0, 1].map((index) => ({ slot: { habitat: 'forest' as const, index }, count: 1 })) })),
     ).toBeNull()
@@ -125,7 +127,7 @@ describe('playBird', () => {
 describe('gainFood', () => {
   it('takes N foods', () => {
     const s = setup({ board: board({ forest: [chick(), chick()] }) })
-    expectInvalid(s, { type: 'gainFood', foods: ['fish'] }, /exactly 2/)
+    expectInvalid(s, { type: 'gainFood', foods: ['fish'] }, 'gainFoodCount', { count: 2 })
     const next = reduce(s, { type: 'gainFood', foods: ['fish', 'fish'] })
     expect(next.players[0].food.fish).toBe(3)
   })
@@ -135,8 +137,8 @@ describe('layEggs', () => {
   it('lays N eggs within limits', () => {
     const s = setup({ board: board({ wetland: [egret(2)], forest: [chick()] }) })
     const at = (habitat: 'forest' | 'wetland', count: number) => ({ slot: { habitat, index: 0 }, count })
-    expectInvalid(s, { type: 'layEggs', placements: [at('wetland', 2)] }, /cannot hold/)
-    expectInvalid(s, { type: 'layEggs', placements: [at('forest', 1)] }, /exactly 2/)
+    expectInvalid(s, { type: 'layEggs', placements: [at('wetland', 2)] }, 'eggLimit')
+    expectInvalid(s, { type: 'layEggs', placements: [at('forest', 1)] }, 'layCount', { count: 2 })
     const next = reduce(s, { type: 'layEggs', placements: [at('forest', 1), at('wetland', 1)] })
     expect(next.players[0].board.wetland[0].eggs).toBe(3)
     expect(next.players[0].board.forest[0].eggs).toBe(1)
@@ -144,7 +146,7 @@ describe('layEggs', () => {
 
   it('caps the required count by capacity', () => {
     const s = setup({ board: board({ wetland: [egret(2)] }) })
-    expectInvalid(s, { type: 'layEggs', placements: [] }, /exactly 1/)
+    expectInvalid(s, { type: 'layEggs', placements: [] }, 'layCount', { count: 1 })
     expect(validateAction(s, { type: 'layEggs', placements: [{ slot: { habitat: 'wetland', index: 0 }, count: 1 }] })).toBeNull()
     expect(validateAction(setup({}), { type: 'layEggs', placements: [] })).toBeNull()
   })
@@ -163,15 +165,15 @@ describe('drawCards', () => {
 
   it('rejects bad picks', () => {
     const s = setup({ board: board({ wetland: [egret(), egret()] }) })
-    expectInvalid(s, { type: 'drawCards', picks: [{ from: 'deck' }] }, /exactly 2/)
-    expectInvalid(s, { type: 'drawCards', picks: [{ from: 'tray', index: 1 }, { from: 'tray', index: 1 }] }, /only be taken once/)
+    expectInvalid(s, { type: 'drawCards', picks: [{ from: 'deck' }] }, 'drawCount', { count: 2 })
+    expectInvalid(s, { type: 'drawCards', picks: [{ from: 'tray', index: 1 }, { from: 'tray', index: 1 }] }, 'trayTwice')
     const holey = { ...s, tray: [null, s.tray[1], s.tray[2]] }
-    expectInvalid(holey, { type: 'drawCards', picks: [{ from: 'tray', index: 0 }, { from: 'deck' }] }, /empty/)
+    expectInvalid(holey, { type: 'drawCards', picks: [{ from: 'tray', index: 0 }, { from: 'deck' }] }, 'trayEmpty')
   })
 
   it('handles an empty deck', () => {
     const s = { ...setup({}), deck: [] }
-    expectInvalid(s, { type: 'drawCards', picks: [{ from: 'deck' }] }, /Not enough cards/)
+    expectInvalid(s, { type: 'drawCards', picks: [{ from: 'deck' }] }, 'deckShort')
     const next = reduce(s, { type: 'drawCards', picks: [{ from: 'tray', index: 2 }] })
     expect(next.tray[2]).toBeNull()
     const bare = { ...s, tray: [null, null, null] }

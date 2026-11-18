@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { actionCount } from '../game/engine'
 import { scorePlayer } from '../game/scoring'
 import { HABITATS, type Habitat, type Player, type SlotRef } from '../game/types'
@@ -16,21 +17,24 @@ type Props = {
 
 /** A player's three habitat rows plus a summary header. */
 export default function Board({ player, active, turnsLeft, onAction, onBirdClick, eggDelta, nextSlot }: Props) {
+  const { t } = useTranslation()
   const score = scorePlayer(player)
   return (
-    <section className={`flex flex-col gap-2 rounded-xl border bg-white/80 p-3 shadow-sm ${active ? 'border-violet-400 ring-2 ring-violet-300' : 'border-stone-200'}`}>
+    <section
+      className={`flex flex-col gap-2 rounded-xl border bg-white/80 p-3 shadow-sm ${active ? 'border-violet-400 ring-2 ring-violet-300' : 'border-stone-200'}`}
+    >
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-baseline gap-2">
           <h2 className="text-lg font-bold">{player.name}</h2>
           <span className="text-xs text-stone-500">
-            {player.kind === 'bot' ? '🤖 bot' : '🧑 human'} · {turnsLeft} turn{turnsLeft === 1 ? '' : 's'} left · {player.hand.length} card
-            {player.hand.length === 1 ? '' : 's'} in hand
+            {t(player.kind === 'bot' ? 'board.bot' : 'board.human')} · {t('board.turnsLeft', { count: turnsLeft })} ·{' '}
+            {t('board.cardsInHand', { count: player.hand.length })}
           </span>
         </div>
         <div className="flex items-center gap-3">
           <FoodSupply food={player.food} />
-          <span className="rounded-md bg-stone-800 px-2 py-0.5 text-sm font-bold text-white" title="Current score">
-            {score.total} pts
+          <span className="rounded-md bg-stone-800 px-2 py-0.5 text-sm font-bold text-white" title={t('board.scoreTitle')}>
+            {t('board.score', { count: score.total })}
           </span>
         </div>
       </header>

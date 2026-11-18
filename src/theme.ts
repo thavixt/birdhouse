@@ -1,5 +1,7 @@
 import type { Food, Habitat } from './game/types'
 
+// Display text (habitat names, action labels, ...) lives in src/i18n/*.json.
+
 export const FOOD_ICON: Record<Food, string> = {
   seed: '🌾',
   insect: '🐛',
@@ -12,18 +14,6 @@ export const HABITAT_ICON: Record<Habitat, string> = {
   forest: '🌲',
   grassland: '🌼',
   wetland: '💧',
-}
-
-export const HABITAT_LABEL: Record<Habitat, string> = {
-  forest: 'Forest',
-  grassland: 'Grassland',
-  wetland: 'Wetland',
-}
-
-export const HABITAT_ACTION: Record<Habitat, string> = {
-  forest: 'Gain food',
-  grassland: 'Lay eggs',
-  wetland: 'Draw cards',
 }
 
 /** Static class strings so Tailwind can see them. */

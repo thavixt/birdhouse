@@ -1,9 +1,9 @@
 import { BIRDS_BY_ID } from './birds'
 import { HABITATS, type Habitat, type Player } from './types'
 
+/** Display names live in `src/i18n/*.json` under `goals.<id>`. */
 export type Goal = {
   id: string
-  name: string
   measure: (player: Player) => number
 }
 
@@ -12,18 +12,14 @@ const eggsIn = (p: Player, h: Habitat) => p.board[h].reduce((sum, b) => sum + b.
 const allBirds = (p: Player) => HABITATS.flatMap((h) => p.board[h])
 
 export const GOALS: Goal[] = [
-  { id: 'forest-birds', name: 'Most birds in forest', measure: (p) => birdsIn(p, 'forest') },
-  { id: 'grassland-birds', name: 'Most birds in grassland', measure: (p) => birdsIn(p, 'grassland') },
-  { id: 'wetland-birds', name: 'Most birds in wetland', measure: (p) => birdsIn(p, 'wetland') },
-  { id: 'total-birds', name: 'Most birds total', measure: (p) => allBirds(p).length },
-  { id: 'grassland-eggs', name: 'Most eggs in grassland', measure: (p) => eggsIn(p, 'grassland') },
-  { id: 'total-eggs', name: 'Most eggs total', measure: (p) => allBirds(p).reduce((s, b) => s + b.eggs, 0) },
-  { id: 'birds-with-eggs', name: 'Most birds with eggs', measure: (p) => allBirds(p).filter((b) => b.eggs > 0).length },
-  {
-    id: 'bird-points',
-    name: 'Most bird points on board',
-    measure: (p) => allBirds(p).reduce((s, b) => s + BIRDS_BY_ID[b.cardId].points, 0),
-  },
+  { id: 'forest-birds', measure: (p) => birdsIn(p, 'forest') },
+  { id: 'grassland-birds', measure: (p) => birdsIn(p, 'grassland') },
+  { id: 'wetland-birds', measure: (p) => birdsIn(p, 'wetland') },
+  { id: 'total-birds', measure: (p) => allBirds(p).length },
+  { id: 'grassland-eggs', measure: (p) => eggsIn(p, 'grassland') },
+  { id: 'total-eggs', measure: (p) => allBirds(p).reduce((s, b) => s + b.eggs, 0) },
+  { id: 'birds-with-eggs', measure: (p) => allBirds(p).filter((b) => b.eggs > 0).length },
+  { id: 'bird-points', measure: (p) => allBirds(p).reduce((s, b) => s + BIRDS_BY_ID[b.cardId].points, 0) },
 ]
 
 export const GOALS_BY_ID: Record<string, Goal> = Object.fromEntries(GOALS.map((g) => [g.id, g]))

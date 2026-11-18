@@ -56,7 +56,7 @@ describe('turn and round flow', () => {
     }
     expect(actions).toBe(2 * (8 + 7 + 6 + 5))
     expect(s.round).toBe(4)
-    expect(validateAction(s, pass)).toMatch(/over/)
+    expect(validateAction(s, pass)?.key).toBe('error.gameOver')
     expect(reduce(s, pass)).toBe(s)
   })
 })

@@ -18,6 +18,7 @@ Real bird species names are fine; their stats and powers must be our own.
 - **React Compiler** via `@rolldown/plugin-babel` + `reactCompilerPreset()` — handles memoization automatically
 - **Tailwind CSS v4** via `@tailwindcss/vite` (`src/index.css` contains only `@import "tailwindcss";`)
 - **oxlint** for linting
+- **i18next + react-i18next** for translations: English (`en-us`) and Hungarian (`hu-hu`)
 
 ### Commands
 
@@ -28,7 +29,7 @@ Real bird species names are fine; their stats and powers must be our own.
 | `npm run lint`    | oxlint                        |
 | `npm run preview` | Serve the production build    |
 
-Tests (from milestone 2): `npm run test` runs vitest on `src/game/**`. See "Milestone 2 spec" below.
+Tests (from milestone 2): `npm run test` runs vitest on `src/game/**` and `src/i18n/**`. See "Milestone 2 spec" below.
 
 ## Conventions
 
@@ -47,6 +48,24 @@ Tests (from milestone 2): `npm run test` runs vitest on `src/game/**`. See "Mile
   Extract repeated class sets into small components, not `@apply`.
 - **Components** are function components, one per file, PascalCase filenames.
 - Keep it **basic**. Prefer fewer features done well over many half-done ones.
+
+### Translations (i18n)
+
+- **No hardcoded user-facing text.** Every string the player can see (including `title`
+  and `aria-label`) comes from `src/i18n/en-us.json` via `useTranslation()`'s `t()`, or
+  `<Trans>` for text with markup (`<b>…</b>`). Add new keys to **both** `en-us.json` and
+  `hu-hu.json` (copy the English text if there's no translation yet). A test fails when
+  the two files' keys differ or code uses a missing key.
+- **Plurals:** use `_one` / `_other` key suffixes and pass `count`.
+- **`src/game/` never imports i18n.** The engine emits `GameMessage = { key, params }`
+  for log entries and validation errors; keys are paths in the JSON (`log.*`, `error.*`).
+  `formatMessage(t, msg)` in `src/i18n/message.ts` translates params by name: `card` /
+  `target` → bird name, `habitat` → `habitat` + `habitatIn`, `food` → food name,
+  `foods` → "2 seed, 1 fish", `goal` → goal name, other arrays → comma-joined.
+- Bird names, goal names and power text are shown from the JSON (`birds.<id>`,
+  `goals.<id>`, `powers.<kind>`); `BirdCard.name` in `birds.ts` is reference data only.
+- The chosen language is stored in `localStorage` (`birdhouse.language`); first visit
+  defaults to Hungarian if the browser language is Hungarian, otherwise English.
 
 ## Project structure
 
@@ -80,6 +99,11 @@ src/
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction
   theme.ts                 // food/habitat icons and static Tailwind class maps
+  i18n/
+    index.ts               // i18next init, LANGUAGES, language persistence
+    message.ts             // formatMessage(t, GameMessage) for engine log/errors
+    en-us.json             // English dictionary (source of truth for keys)
+    hu-hu.json             // Hungarian dictionary (same keys)
 ```
 
 > Windows note: run vitest from a path with an upper-case drive letter (`C:\...`).
@@ -205,8 +229,8 @@ and rejects invalid ones.
 - **Actions are complete commands.** Each `GameAction` carries every choice the player
   made (which foods, where eggs go, which cards), so the engine never needs a multi-step
   "pending decision" state. The UI (M3) collects the choices first, then dispatches one action.
-- **Invalid actions don't throw.** `validateAction(state, action): string | null` returns
-  `null` if legal or a human-readable reason if not. `reduce` calls it and returns the state
+- **Invalid actions don't throw.** `validateAction(state, action): GameMessage | null` returns
+  `null` if legal or a translatable reason (`error.*` key + params) if not. `reduce` calls it and returns the state
   unchanged for invalid actions.
 - **IDs:** card definitions have a stable `id` (e.g. `'barn-owl'`). Hands, deck, tray and
   board reference cards by id; `BIRDS_BY_ID` in `birds.ts` resolves them. Duplicate copies
@@ -268,7 +292,7 @@ export type GameState = {
   goals: string[] // one goal id per round (used in M4)
   rngState: number
   phase: 'playing' | 'gameOver'
-  log: string[] // human-readable event log
+  log: GameMessage[] // translatable event log ({ key, params })
 }
 
 export type CardPick = { from: 'tray'; index: number } | { from: 'deck' }

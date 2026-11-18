@@ -39,6 +39,6 @@ export function createGame(seed: number, configs: PlayerConfig[]): GameState {
     goals: goalOrder.slice(0, 4),
     rngState: s2,
     phase: 'playing',
-    log: [`New game: ${players.map((p) => p.name).join(' vs ')}.`],
+    log: [{ key: 'log.newGame', params: { players: players.map((p) => p.name) } }],
   }
 }

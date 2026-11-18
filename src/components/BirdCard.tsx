@@ -1,5 +1,7 @@
-import { BIRDS_BY_ID, powerText } from '../game/birds'
+import { useTranslation } from 'react-i18next'
+import { BIRDS_BY_ID } from '../game/birds'
 import { FOOD_ICON, HABITAT_ICON, HABITAT_STYLE } from '../theme'
+import PowerText from './PowerText'
 
 type Props = {
   cardId: string
@@ -9,6 +11,7 @@ type Props = {
 }
 
 export default function BirdCard({ cardId, onClick, selected = false, dimmed = false }: Props) {
+  const { t } = useTranslation()
   const card = BIRDS_BY_ID[cardId]
   const cost = [...card.cost.foods.map((f) => FOOD_ICON[f]), ...Array<string>(card.cost.anyCount).fill('❔')]
   const ring = selected ? 'ring-4 ring-violet-500' : onClick ? 'hover:ring-2 hover:ring-stone-400' : ''
@@ -26,21 +29,19 @@ export default function BirdCard({ cardId, onClick, selected = false, dimmed = f
       </div>
       <div className="flex flex-1 flex-col gap-1 p-2">
         <div className="flex items-start justify-between gap-1">
-          <span className="text-sm leading-tight font-semibold">{card.name}</span>
-          <span className="rounded bg-stone-800 px-1.5 text-sm font-bold text-white" title="Victory points">
+          <span className="text-sm leading-tight font-semibold">{t(`birds.${card.id}`)}</span>
+          <span className="rounded bg-stone-800 px-1.5 text-sm font-bold text-white" title={t('card.points')}>
             {card.points}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span title={card.cost.anyCount ? '❔ = any food' : 'Food cost'}>{cost.join('') || '—'}</span>
-          <span title="Habitats">{card.habitats.map((h) => HABITAT_ICON[h]).join('')}</span>
+          <span title={card.cost.anyCount ? t('card.anyFood') : t('card.foodCost')}>{cost.join('') || '—'}</span>
+          <span title={t('card.habitats')}>{card.habitats.map((h) => HABITAT_ICON[h]).join('')}</span>
         </div>
-        <div className="text-xs text-stone-600" title="Egg limit">
+        <div className="text-xs text-stone-600" title={t('card.eggLimit')}>
           🥚 × {card.eggLimit}
         </div>
-        <div className="min-h-8 text-xs leading-snug text-stone-700 italic">
-          {card.power ? `When activated: ${powerText(card.power)}` : ''}
-        </div>
+        <div className="min-h-8 text-xs leading-snug text-stone-700 italic">{card.power && <PowerText power={card.power} />}</div>
       </div>
     </button>
   )

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import BirdCard from './BirdCard'
 
 type Props = {
@@ -8,13 +9,14 @@ type Props = {
 }
 
 export default function Hand({ cards, selected, isPlayable, onSelect }: Props) {
+  const { t } = useTranslation()
   return (
     <section className="flex flex-col gap-2">
       <h3 className="text-sm font-semibold text-stone-600">
-        Hand ({cards.length}) {onSelect && <span className="font-normal">— click a playable bird to play it</span>}
+        {t('hand.title', { count: cards.length })} {onSelect && <span className="font-normal">{t('hand.hint')}</span>}
       </h3>
       {cards.length === 0 ? (
-        <p className="text-sm text-stone-500 italic">No cards. Draw some from the wetland.</p>
+        <p className="text-sm text-stone-500 italic">{t('hand.empty')}</p>
       ) : (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {cards.map((id, i) => {

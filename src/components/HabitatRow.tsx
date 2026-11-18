@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import { BIRDS_BY_ID } from '../game/birds'
 import { eggCostForSlot, ROW_SIZE } from '../game/engine'
 import type { Habitat, PlacedBird } from '../game/types'
-import { HABITAT_ACTION, HABITAT_ICON, HABITAT_LABEL, HABITAT_STYLE } from '../theme'
+import { HABITAT_ICON, HABITAT_STYLE } from '../theme'
 
 type Props = {
   habitat: Habitat
@@ -15,7 +16,9 @@ type Props = {
 }
 
 export default function HabitatRow({ habitat, birds, count, onAction, onBirdClick, eggDelta, highlightNext = false }: Props) {
+  const { t } = useTranslation()
   const style = HABITAT_STYLE[habitat]
+  const action = t(`habitats.${habitat}.action`)
   return (
     <div className={`flex items-stretch gap-2 rounded-lg border p-2 ${style.row}`}>
       <button
@@ -23,11 +26,12 @@ export default function HabitatRow({ habitat, birds, count, onAction, onBirdClic
         onClick={onAction}
         disabled={!onAction}
         className={`flex w-24 shrink-0 flex-col items-center justify-center rounded-md px-1 py-2 text-center text-xs font-semibold disabled:opacity-60 ${style.button} ${onAction ? 'cursor-pointer' : 'cursor-default'}`}
-        title={`${HABITAT_LABEL[habitat]}: ${HABITAT_ACTION[habitat]}`}
+        title={`${t(`habitats.${habitat}.name`)}: ${action}`}
+        data-habitat={habitat}
       >
         <span className="text-lg">{HABITAT_ICON[habitat]}</span>
-        <span>{HABITAT_ACTION[habitat]}</span>
-        <span className="text-base">×{count}</span>
+        <span>{action}</span>
+        <span className="text-base">{t('board.actionCount', { count })}</span>
       </button>
       <div className="grid flex-1 grid-cols-5 gap-1.5">
         {Array.from({ length: ROW_SIZE }, (_, i) => {
@@ -40,11 +44,12 @@ export default function HabitatRow({ habitat, birds, count, onAction, onBirdClic
                 key={i}
                 className={`flex min-h-20 items-center justify-center rounded-md border-2 border-dashed text-xs text-stone-500 ${next ? 'border-violet-500 bg-violet-50' : 'border-stone-300'}`}
               >
-                {cost > 0 ? `${'🥚'.repeat(cost)} to play` : ''}
+                {cost > 0 ? `${'🥚'.repeat(cost)} ${t('board.toPlay')}` : ''}
               </div>
             )
           }
           const card = BIRDS_BY_ID[bird.cardId]
+          const name = t(`birds.${card.id}`)
           const delta = eggDelta?.(i) ?? 0
           const eggs = bird.eggs + delta
           return (
@@ -54,10 +59,10 @@ export default function HabitatRow({ habitat, birds, count, onAction, onBirdClic
               disabled={!onBirdClick}
               onClick={() => onBirdClick?.(i)}
               className={`flex min-h-20 flex-col justify-between rounded-md border border-stone-300 bg-white p-1.5 text-left shadow-sm ${onBirdClick ? 'cursor-pointer hover:ring-2 hover:ring-violet-400' : 'cursor-default'}`}
-              title={card.name}
+              title={name}
             >
               <div className="flex items-start justify-between gap-1">
-                <span className="line-clamp-2 text-xs leading-tight font-semibold">{card.name}</span>
+                <span className="line-clamp-2 text-xs leading-tight font-semibold">{name}</span>
                 <span className="rounded bg-stone-800 px-1 text-xs font-bold text-white">{card.points}</span>
               </div>
               <div className="text-xs">
@@ -69,7 +74,7 @@ export default function HabitatRow({ habitat, birds, count, onAction, onBirdClic
                   </span>
                 )}
               </div>
-              {card.power && <span className="text-[10px] leading-none text-violet-700">⚡ power</span>}
+              {card.power && <span className="text-[10px] leading-none text-violet-700">{t('board.power')}</span>}
             </button>
           )
         })}

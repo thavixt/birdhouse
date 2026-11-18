@@ -1,0 +1,249 @@
+{
+  "app": {
+    "title": "Madárház",
+    "tagline": "Csalogass madarakat, építsd a fészked, és gyűjtsd a legtöbb pontot!"
+  },
+  "language": {
+    "label": "Nyelv",
+    "en-us": "English",
+    "hu-hu": "Magyar"
+  },
+  "foods": {
+    "seed": "mag",
+    "insect": "rovar",
+    "fish": "hal",
+    "fruit": "gyümölcs",
+    "rodent": "rágcsáló"
+  },
+  "habitats": {
+    "forest": {
+      "name": "Erdő",
+      "in": "az erdőben",
+      "action": "Élelemszerzés"
+    },
+    "grassland": {
+      "name": "Mező",
+      "in": "a mezőn",
+      "action": "Tojásrakás"
+    },
+    "wetland": {
+      "name": "Vízpart",
+      "in": "a vízparton",
+      "action": "Kártyahúzás"
+    }
+  },
+  "birds": {
+    "american-robin": "Vándorrigó",
+    "barn-owl": "Gyöngybagoly",
+    "blue-jay": "Kékszajkó",
+    "northern-cardinal": "Piros kardinális",
+    "black-capped-chickadee": "Feketesapkás cinege",
+    "downy-woodpecker": "Pelyhes harkály",
+    "pileated-woodpecker": "Üstökös harkály",
+    "great-horned-owl": "Virginiai uhu",
+    "cedar-waxwing": "Cédrus-csonttollú",
+    "ruby-throated-hummingbird": "Rubintorkú kolibri",
+    "wild-turkey": "Vadpulyka",
+    "red-tailed-hawk": "Vörösfarkú ölyv",
+    "wood-duck": "Karolinai réce",
+    "bald-eagle": "Fehérfejű rétisas",
+    "american-kestrel": "Amerikai vércse",
+    "eastern-bluebird": "Keleti kékmadár",
+    "western-meadowlark": "Nyugati réticsiröge",
+    "mourning-dove": "Gyászgerle",
+    "house-sparrow": "Házi veréb",
+    "barn-swallow": "Füsti fecske",
+    "killdeer": "Ékfarkú lile",
+    "greater-prairie-chicken": "Nagy prérityúk",
+    "burrowing-owl": "Üregi bagoly",
+    "red-winged-blackbird": "Vörösvállú csiröge",
+    "great-blue-heron": "Nagy kékgém",
+    "mallard": "Tőkés réce",
+    "belted-kingfisher": "Örvös halkapó",
+    "osprey": "Halászsas",
+    "common-loon": "Jeges búvár",
+    "american-white-pelican": "Tüskéscsőrű gödény",
+    "sandhill-crane": "Kanadai daru",
+    "snowy-egret": "Hókócsag"
+  },
+  "powers": {
+    "whenActivated": "Aktiváláskor: {{text}}",
+    "gainFood": "Kapsz 1 élelmet: {{food}}.",
+    "layEggSelf": "Rakj 1 tojást erre a madárra.",
+    "layEggAny": "Rakj 1 tojást bármelyik madaradra.",
+    "drawCard": "Húzz 1 kártyát a pakliból.",
+    "allGainFood": "Minden játékos kap 1 élelmet: {{food}}."
+  },
+  "goals": {
+    "forest-birds": "Legtöbb madár az erdőben",
+    "grassland-birds": "Legtöbb madár a mezőn",
+    "wetland-birds": "Legtöbb madár a vízparton",
+    "total-birds": "Legtöbb madár összesen",
+    "grassland-eggs": "Legtöbb tojás a mezőn",
+    "total-eggs": "Legtöbb tojás összesen",
+    "birds-with-eggs": "Legtöbb tojásos madár",
+    "bird-points": "Legtöbb madárpont a táblán"
+  },
+  "start": {
+    "howToPlay": "Hogyan szeretnél játszani?",
+    "vsBot": "A gép ellen",
+    "hotSeat": "Barátokkal, egy gépen",
+    "playerNameLabel": "{{n}}. játékos neve",
+    "human": "🧑 Ember",
+    "bot": "🤖 Gép",
+    "toggleKind": "Váltás ember / gép között",
+    "removePlayer": "Játékos eltávolítása",
+    "addPlayer": "+ Játékos hozzáadása",
+    "startGame": "Játék indítása",
+    "defaultYou": "Játékos",
+    "defaultPlayer": "{{n}}. játékos",
+    "botName1": "Rigó (gép)",
+    "botName2": "Ökörszem (gép)",
+    "botName3": "Pinty (gép)",
+    "botName4": "Gém (gép)",
+    "botFallback": "Gép"
+  },
+  "tracker": {
+    "round": "{{round}}. kör / 4",
+    "goal": "{{round}}. kör: {{name}} ({{first}}/{{second}})",
+    "goalTitle": "1. hely: {{first}} pont, 2. hely: {{second}} pont",
+    "rules": "Szabályok",
+    "quit": "Kilépés"
+  },
+  "board": {
+    "human": "🧑 ember",
+    "bot": "🤖 gép",
+    "turnsLeft_one": "{{count}} lépés van hátra",
+    "turnsLeft_other": "{{count}} lépés van hátra",
+    "cardsInHand_one": "{{count}} kártya a kézben",
+    "cardsInHand_other": "{{count}} kártya a kézben",
+    "score": "{{count}} pont",
+    "scoreTitle": "Jelenlegi pontszám",
+    "food": "Élelem",
+    "actionCount": "×{{count}}",
+    "toPlay": "a lerakáshoz",
+    "power": "⚡ képesség"
+  },
+  "card": {
+    "points": "Győzelmi pont",
+    "foodCost": "Élelemköltség",
+    "anyFood": "❔ = bármilyen élelem",
+    "habitats": "Élőhelyek",
+    "eggLimit": "Tojáskorlát"
+  },
+  "food": {
+    "add": "Hozzáadás: {{food}}",
+    "clickToChange": "Kattints a cseréhez",
+    "clickToRemove": "Kattints az eltávolításhoz"
+  },
+  "hand": {
+    "title": "Kéz ({{count}})",
+    "hint": "— kattints egy kijátszható madárra",
+    "empty": "Nincs kártyád. Húzz néhányat a vízparton."
+  },
+  "tray": {
+    "title": "Felcsapott madarak",
+    "empty": "üres",
+    "deck": "Pakli: {{count}}",
+    "picked": "+{{count}} kiválasztva"
+  },
+  "panel": {
+    "botThinkingTitle": "{{name}} gondolkodik…",
+    "botThinking": "🤖 A gép mindjárt lép.",
+    "yourTurnTitle": "{{name}}, te jössz!",
+    "yourTurn": "Válassz <b>egy</b> akciót: kattints egy kijátszható madárra a kezedben, vagy nyomd meg egy élőhely gombját a tábládon, hogy élelmet szerezz, tojást rakj vagy kártyát húzz. Ezután a sor madarai jobbról balra aktiválják a képességüket.",
+    "confirm": "Megerősítés",
+    "cancel": "Mégse",
+    "clear": "Törlés",
+    "auto": "Automatikus",
+    "chooseHabitat": "Válassz élőhelyet.",
+    "playBirdTitle": "Kijátszás: {{card}}",
+    "habitat": "Élőhely",
+    "food": "Élelem",
+    "pickAny": "válassz bármit:",
+    "eggsProgress": "Tojás {{done}}/{{total}}",
+    "removeEggsHint": "Kattints a tábládon lévő madarakra a tojások levételéhez.",
+    "gainFoodTitle": "Szerezz {{count}} élelmet",
+    "chosenProgress": "Választva {{done}}/{{total}}",
+    "take": "Válassz:",
+    "layEggsTitle_one": "Rakj le {{count}} tojást",
+    "layEggsTitle_other": "Rakj le {{count}} tojást",
+    "placedProgress": "Lerakva {{done}}/{{total}}",
+    "noRoomForEggs": "Nincs hely tojásnak; így is megerősítheted.",
+    "addEggsHint": "Kattints a madaraidra a tojások lerakásához.",
+    "drawCardsTitle_one": "Húzz {{count}} kártyát",
+    "drawCardsTitle_other": "Húzz {{count}} kártyát",
+    "pickedProgress": "Választva {{done}}/{{total}}",
+    "drawHint": "Kattints a felcsapott kártyákra vagy a paklira."
+  },
+  "log": {
+    "title": "Napló",
+    "newGame": "Új játék: {{players}}.",
+    "playedBird": "{{player}} kijátszotta: {{card}} ({{habitat}}).",
+    "gainedFood": "{{player}} élelmet szerzett: {{foods}}.",
+    "laidEggs_one": "{{player}} {{count}} tojást rakott.",
+    "laidEggs_other": "{{player}} {{count}} tojást rakott.",
+    "drewCards_one": "{{player}} {{count}} kártyát húzott.",
+    "drewCards_other": "{{player}} {{count}} kártyát húzott.",
+    "power": {
+      "gainFood": "{{player}} – {{card}}: 1 élelem ({{food}}).",
+      "layEggSelf": "{{player}} – {{card}}: tojást rakott magára.",
+      "layEggAny": "{{player}} – {{card}}: tojást rakott ide: {{target}}.",
+      "drawCard": "{{player}} – {{card}}: húzott egy kártyát.",
+      "allGainFood": "{{player}} – {{card}}: minden játékos kapott 1 élelmet ({{food}})."
+    },
+    "roundEnd": "{{round}}. kör vége. Cél: „{{goal}}”: {{awards}}.",
+    "roundEndNoPoints": "{{round}}. kör vége. Cél: „{{goal}}”: senki sem kapott pontot.",
+    "gameOver": "Vége a játéknak!",
+    "roundBegins": "Kezdődik a {{round}}. kör."
+  },
+  "error": {
+    "gameOver": "A játék véget ért.",
+    "cardNotInHand": "Ez a kártya nincs a kezedben.",
+    "unknownCard": "Ismeretlen kártya.",
+    "wrongHabitat": "Ez a madár ({{card}}) nem élhet {{habitatIn}}.",
+    "rowFull": "Ez az élőhely megtelt: {{habitat}}.",
+    "unknownFood": "Ismeretlen élelemtípus.",
+    "foodNotOwned": "Nincs ilyen élelmed.",
+    "paymentMismatch": "A fizetség nem egyezik a költséggel.",
+    "noBirdInSlot": "Ezen a helyen nincs madár.",
+    "badEggCount": "A tojások száma csak pozitív egész szám lehet.",
+    "tooManyEggsRemoved": "Nem vehetsz le több tojást, mint amennyi a madáron van.",
+    "eggCost_one": "Ez a hely {{count}} tojásba kerül.",
+    "eggCost_other": "Ez a hely {{count}} tojásba kerül.",
+    "gainFoodCount": "Pontosan {{count}} élelmet válassz.",
+    "eggLimit": "Erre a madárra nem fér ennyi tojás.",
+    "layCount_one": "Pontosan {{count}} tojást rakj le.",
+    "layCount_other": "Pontosan {{count}} tojást rakj le.",
+    "drawCount_one": "Pontosan {{count}} kártyát húzz.",
+    "drawCount_other": "Pontosan {{count}} kártyát húzz.",
+    "trayTwice": "Minden felcsapott kártyát csak egyszer vehetsz el.",
+    "trayEmpty": "Ez a hely üres a felcsapott kártyák között.",
+    "deckShort": "Nincs elég kártya a pakliban."
+  },
+  "rules": {
+    "title": "Játékszabályok",
+    "intro": "Csalogass madarakat a három élőhelyedre 4 körön át (körönként 8, 7, 6, majd 5 lépés). A lépésedben pontosan egy akciót hajts végre:",
+    "playBird": "<b>Madár kijátszása</b>: fizesd ki az élelemköltségét (❔ = bármilyen élelem), és tedd egy számára megfelelő élőhely bal szélső üres helyére. A 3-4. hely 1 tojásba, az 5. hely 2 tojásba kerül.",
+    "gainFood": "<b>🌲 Élelemszerzés</b>: 1, plusz minden 2 erdei madár után további 1.",
+    "layEggs": "<b>🌼 Tojásrakás</b>: 2, plusz minden 2 mezei madár után további 1, legfeljebb a madarak tojáskorlátjáig.",
+    "drawCards": "<b>💧 Kártyahúzás</b>: 1, plusz minden 2 vízparti madár után további 1, a felcsapott kártyák közül vagy a pakliból.",
+    "powers": "Egy élőhely-akció után az adott sor madarai jobbról balra aktiválják a képességüket (⚡).",
+    "goals": "Minden kör végén pontozzuk a kör célját: az 1. és a 2. helyezett pontot kap. A helyezéshez legalább 1 kell; holtverseny esetén a játékosok osztoznak a pontokon (lefelé kerekítve).",
+    "scoring": "<b>Végső pontszám:</b> madárpontok + tojásonként 1 + maradék élelmenként 1 (legfeljebb 5) + célpontok. Döntetlennél az nyer, akinek több élelme maradt.",
+    "close": "Értem"
+  },
+  "score": {
+    "winner": "{{name}} nyert!",
+    "tie": "Döntetlen!",
+    "rank": "#",
+    "player": "Játékos",
+    "birds": "Madarak",
+    "eggs": "Tojások",
+    "food": "Élelem",
+    "goals": "Célok",
+    "total": "Összesen",
+    "playAgain": "Új játék",
+    "mainMenu": "Főmenü"
+  }
+}

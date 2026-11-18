@@ -59,17 +59,3 @@ export const BIRDS_BY_ID: Record<string, BirdCard> = Object.fromEntries(BIRDS.ma
 /** Every bird twice. */
 export const STARTING_DECK: string[] = BIRDS.flatMap((b) => [b.id, b.id])
 
-export function powerText(power: Power): string {
-  switch (power.kind) {
-    case 'gainFood':
-      return `Gain 1 ${power.food}.`
-    case 'layEggSelf':
-      return 'Lay 1 egg on this bird.'
-    case 'layEggAny':
-      return 'Lay 1 egg on any of your birds.'
-    case 'drawCard':
-      return 'Draw 1 card from the deck.'
-    case 'allGainFood':
-      return `Every player gains 1 ${power.food}.`
-  }
-}

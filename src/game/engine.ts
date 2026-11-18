@@ -1,5 +1,5 @@
 import { BIRDS_BY_ID } from './birds'
-import { GOALS_BY_ID, roundGoalAwards } from './goals'
+import { roundGoalAwards } from './goals'
 import { activateHabitat } from './powers'
 import { TRAY_SIZE } from './setup'
 import {
@@ -11,6 +11,7 @@ import {
   type Food,
   type FoodCost,
   type GameAction,
+  type GameMessage,
   type GameState,
   type Habitat,
   type PlacedBird,
@@ -127,13 +128,18 @@ export function slotKey(slot: SlotRef): string {
 
 // ------------------------------------------------------------- validation
 
-/** Sums placements per slot; returns an error string for bad input. */
-function groupPlacements(board: Board, placements: readonly EggPlacement[]): Map<string, { bird: PlacedBird; count: number }> | string {
+const err = (key: string, params?: GameMessage['params']): GameMessage => ({ key: `error.${key}`, params })
+
+/** Sums placements per slot; returns an error message for bad input. */
+function groupPlacements(
+  board: Board,
+  placements: readonly EggPlacement[],
+): Map<string, { bird: PlacedBird; count: number }> | GameMessage {
   const out = new Map<string, { bird: PlacedBird; count: number }>()
   for (const { slot, count } of placements) {
     const bird = HABITATS.includes(slot.habitat) ? board[slot.habitat][slot.index] : undefined
-    if (!bird) return 'There is no bird in that slot.'
-    if (!Number.isInteger(count) || count <= 0) return 'Egg counts must be positive whole numbers.'
+    if (!bird) return err('noBirdInSlot')
+    if (!Number.isInteger(count) || count <= 0) return err('badEggCount')
     const key = slotKey(slot)
     const prev = out.get(key)
     out.set(key, { bird, count: (prev?.count ?? 0) + count })
@@ -141,67 +147,68 @@ function groupPlacements(board: Board, placements: readonly EggPlacement[]): Map
   return out
 }
 
-function validateEggRemoval(player: Player, placements: readonly EggPlacement[], needed: number): string | null {
+function validateEggRemoval(player: Player, placements: readonly EggPlacement[], needed: number): GameMessage | null {
   const groups = groupPlacements(player.board, placements)
-  if (typeof groups === 'string') return groups
+  if (!(groups instanceof Map)) return groups
   let total = 0
   for (const { bird, count } of groups.values()) {
-    if (count > bird.eggs) return 'Cannot remove more eggs than a bird has.'
+    if (count > bird.eggs) return err('tooManyEggsRemoved')
     total += count
   }
-  if (total !== needed) return `This slot costs ${needed} egg${needed === 1 ? '' : 's'}.`
+  if (total !== needed) return err('eggCost', { count: needed })
   return null
 }
 
-export function validateAction(state: GameState, action: GameAction): string | null {
-  if (state.phase === 'gameOver') return 'The game is over.'
+/** `null` if the action is legal, otherwise a translatable reason (`error.*`). */
+export function validateAction(state: GameState, action: GameAction): GameMessage | null {
+  if (state.phase === 'gameOver') return err('gameOver')
   const player = state.players[state.currentPlayer]
 
   switch (action.type) {
     case 'playBird': {
-      if (!player.hand.includes(action.cardId)) return 'That card is not in your hand.'
+      if (!player.hand.includes(action.cardId)) return err('cardNotInHand')
       const card = BIRDS_BY_ID[action.cardId]
-      if (!card) return 'Unknown card.'
-      if (!card.habitats.includes(action.habitat)) return `${card.name} cannot live in the ${action.habitat}.`
+      if (!card) return err('unknownCard')
+      if (!card.habitats.includes(action.habitat)) return err('wrongHabitat', { card: card.id, habitat: action.habitat })
       const row = player.board[action.habitat]
-      if (row.length >= ROW_SIZE) return `Your ${action.habitat} is full.`
-      if (!action.payment.every((f) => FOODS.includes(f))) return 'Unknown food type.'
+      if (row.length >= ROW_SIZE) return err('rowFull', { habitat: action.habitat })
+      if (!action.payment.every((f) => FOODS.includes(f))) return err('unknownFood')
       if (!canAfford(player, card.cost, action.payment)) {
         return action.payment.length === card.cost.foods.length + card.cost.anyCount &&
           FOODS.every((f) => countFoods(action.payment)[f] >= countFoods(card.cost.foods)[f])
-          ? 'You do not have that food.'
-          : 'Payment does not match the cost.'
+          ? err('foodNotOwned')
+          : err('paymentMismatch')
       }
       return validateEggRemoval(player, action.eggPayment, eggCostForSlot(row.length))
     }
 
     case 'gainFood': {
       const n = actionCount(player.board, 'forest')
-      if (action.foods.length !== n) return `Choose exactly ${n} food.`
-      if (!action.foods.every((f) => FOODS.includes(f))) return 'Unknown food type.'
+      if (action.foods.length !== n) return err('gainFoodCount', { count: n })
+      if (!action.foods.every((f) => FOODS.includes(f))) return err('unknownFood')
       return null
     }
 
     case 'layEggs': {
       const groups = groupPlacements(player.board, action.placements)
-      if (typeof groups === 'string') return groups
+      if (!(groups instanceof Map)) return groups
       let total = 0
       for (const { bird, count } of groups.values()) {
-        if (bird.eggs + count > BIRDS_BY_ID[bird.cardId].eggLimit) return 'That bird cannot hold that many eggs.'
+        if (bird.eggs + count > BIRDS_BY_ID[bird.cardId].eggLimit) return err('eggLimit')
         total += count
       }
       const n = layCount(player)
-      if (total !== n) return `Lay exactly ${n} egg${n === 1 ? '' : 's'}.`
+      if (total !== n) return err('layCount', { count: n })
       return null
     }
 
     case 'drawCards': {
       const n = drawCount(state, state.currentPlayer)
-      if (action.picks.length !== n) return `Draw exactly ${n} card${n === 1 ? '' : 's'}.`
+      if (action.picks.length !== n) return err('drawCount', { count: n })
       const trayIdx = action.picks.flatMap((p) => (p.from === 'tray' ? [p.index] : []))
-      if (new Set(trayIdx).size !== trayIdx.length) return 'Each tray card can only be taken once.'
-      if (trayIdx.some((i) => state.tray[i] == null)) return 'That tray slot is empty.'
-      if (action.picks.length - trayIdx.length > state.deck.length) return 'Not enough cards in the deck.'
+      if (new Set(trayIdx).size !== trayIdx.length) return err('trayTwice')
+      if (trayIdx.some((i) => state.tray[i] == null)) return err('trayEmpty')
+      if (action.picks.length - trayIdx.length > state.deck.length) return err('deckShort')
       return null
     }
   }
@@ -219,29 +226,28 @@ export function reduce(state: GameState, action: GameAction): GameState {
 
   switch (action.type) {
     case 'playBird': {
-      const card = BIRDS_BY_ID[action.cardId]
       player.hand.splice(player.hand.indexOf(action.cardId), 1)
       for (const f of action.payment) player.food[f]--
       applyEggs(player, action.eggPayment, -1)
       player.board[action.habitat].push({ cardId: action.cardId, eggs: 0 })
-      draft.log.push(`${player.name} played ${card.name} in the ${action.habitat}.`)
+      draft.log.push({ key: 'log.playedBird', params: { player: player.name, card: action.cardId, habitat: action.habitat } })
       break
     }
     case 'gainFood':
       for (const f of action.foods) player.food[f]++
-      draft.log.push(`${player.name} gained ${describeFoods(action.foods)}.`)
+      draft.log.push({ key: 'log.gainedFood', params: { player: player.name, foods: action.foods } })
       activateHabitat(draft, idx, 'forest')
       break
     case 'layEggs': {
       applyEggs(player, action.placements, 1)
-      const n = action.placements.reduce((s, p) => s + p.count, 0)
-      draft.log.push(`${player.name} laid ${n} egg${n === 1 ? '' : 's'}.`)
+      const count = action.placements.reduce((s, p) => s + p.count, 0)
+      draft.log.push({ key: 'log.laidEggs', params: { player: player.name, count } })
       activateHabitat(draft, idx, 'grassland')
       break
     }
     case 'drawCards':
       drawCards(draft, player, action.picks)
-      draft.log.push(`${player.name} drew ${action.picks.length} card${action.picks.length === 1 ? '' : 's'}.`)
+      draft.log.push({ key: 'log.drewCards', params: { player: player.name, count: action.picks.length } })
       activateHabitat(draft, idx, 'wetland')
       break
   }
@@ -263,14 +269,6 @@ function drawCards(draft: GameState, player: Player, picks: readonly CardPick[])
       player.hand.push(draft.deck.shift()!)
     }
   }
-}
-
-function describeFoods(foods: readonly Food[]): string {
-  if (foods.length === 0) return 'nothing'
-  const counts = countFoods(foods)
-  return FOODS.filter((f) => counts[f] > 0)
-    .map((f) => `${counts[f]} ${f}`)
-    .join(', ')
 }
 
 function refillTray(draft: GameState): void {
@@ -299,12 +297,14 @@ function endRound(draft: GameState): void {
   draft.players.forEach((p, i) => (p.goalPoints += awards[i]))
   const winners = draft.players.flatMap((p, i) => (awards[i] > 0 ? [`${p.name} +${awards[i]}`] : []))
   draft.log.push(
-    `End of round ${draft.round}. Goal "${GOALS_BY_ID[goalId].name}": ${winners.length ? winners.join(', ') : 'no points'}.`,
+    winners.length
+      ? { key: 'log.roundEnd', params: { round: draft.round, goal: goalId, awards: winners } }
+      : { key: 'log.roundEndNoPoints', params: { round: draft.round, goal: goalId } },
   )
 
   if (draft.round === 4) {
     draft.phase = 'gameOver'
-    draft.log.push('Game over!')
+    draft.log.push({ key: 'log.gameOver' })
     return
   }
   draft.round = (draft.round + 1) as Round
@@ -313,5 +313,5 @@ function endRound(draft: GameState): void {
   draft.turnsLeft = draft.players.map(() => turnsPerRound(draft.round))
   draft.firstPlayer = (draft.firstPlayer + 1) % draft.players.length
   draft.currentPlayer = draft.firstPlayer
-  draft.log.push(`Round ${draft.round} begins.`)
+  draft.log.push({ key: 'log.roundBegins', params: { round: draft.round } })
 }

@@ -45,6 +45,14 @@ export type Player = {
 
 export type Round = 1 | 2 | 3 | 4
 
+/**
+ * A translatable message: `key` is a path in `src/i18n/en-us.json`.
+ * The UI translates params by name: `card`/`target` are bird ids, `habitat` a Habitat,
+ * `food` a Food, `foods` a Food[], `goal` a goal id; anything else is shown as-is.
+ */
+export type MessageParams = Record<string, string | number | string[]>
+export type GameMessage = { key: string; params?: MessageParams }
+
 export type GameState = {
   players: Player[]
   currentPlayer: number // index into players
@@ -56,7 +64,7 @@ export type GameState = {
   goals: string[] // one goal id per round
   rngState: number
   phase: 'playing' | 'gameOver'
-  log: string[] // human-readable event log
+  log: GameMessage[] // translatable event log
 }
 
 export type CardPick = { from: 'tray'; index: number } | { from: 'deck' }

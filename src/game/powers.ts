@@ -17,23 +17,23 @@ export function activateHabitat(draft: GameState, playerIdx: number, habitat: Ha
     const card = BIRDS_BY_ID[bird.cardId]
     const power = card.power
     if (!power) continue
-    const who = `${player.name}'s ${card.name}`
+    const params = { player: player.name, card: card.id }
     switch (power.kind) {
       case 'gainFood':
         player.food[power.food]++
-        draft.log.push(`${who}: gained 1 ${power.food}.`)
+        draft.log.push({ key: 'log.power.gainFood', params: { ...params, food: power.food } })
         break
       case 'layEggSelf':
         if (bird.eggs < card.eggLimit) {
           bird.eggs++
-          draft.log.push(`${who}: laid an egg on itself.`)
+          draft.log.push({ key: 'log.power.layEggSelf', params })
         }
         break
       case 'layEggAny': {
         const target = roomiestBird(HABITATS.flatMap((h) => player.board[h]))
         if (target) {
           target.eggs++
-          draft.log.push(`${who}: laid an egg on ${BIRDS_BY_ID[target.cardId].name}.`)
+          draft.log.push({ key: 'log.power.layEggAny', params: { ...params, target: target.cardId } })
         }
         break
       }
@@ -41,13 +41,13 @@ export function activateHabitat(draft: GameState, playerIdx: number, habitat: Ha
         const drawn = draft.deck.shift()
         if (drawn) {
           player.hand.push(drawn)
-          draft.log.push(`${who}: drew a card.`)
+          draft.log.push({ key: 'log.power.drawCard', params })
         }
         break
       }
       case 'allGainFood':
         for (const p of draft.players) p.food[power.food]++
-        draft.log.push(`${who}: every player gained 1 ${power.food}.`)
+        draft.log.push({ key: 'log.power.allGainFood', params: { ...params, food: power.food } })
         break
     }
   }

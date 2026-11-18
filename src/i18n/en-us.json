@@ -1,0 +1,249 @@
+{
+  "app": {
+    "title": "Birdhouse",
+    "tagline": "Attract birds, build your nest and score the most points."
+  },
+  "language": {
+    "label": "Language",
+    "en-us": "English",
+    "hu-hu": "Magyar"
+  },
+  "foods": {
+    "seed": "seed",
+    "insect": "insect",
+    "fish": "fish",
+    "fruit": "fruit",
+    "rodent": "rodent"
+  },
+  "habitats": {
+    "forest": {
+      "name": "Forest",
+      "in": "in the forest",
+      "action": "Gain food"
+    },
+    "grassland": {
+      "name": "Grassland",
+      "in": "in the grassland",
+      "action": "Lay eggs"
+    },
+    "wetland": {
+      "name": "Wetland",
+      "in": "in the wetland",
+      "action": "Draw cards"
+    }
+  },
+  "birds": {
+    "american-robin": "American Robin",
+    "barn-owl": "Barn Owl",
+    "blue-jay": "Blue Jay",
+    "northern-cardinal": "Northern Cardinal",
+    "black-capped-chickadee": "Black-capped Chickadee",
+    "downy-woodpecker": "Downy Woodpecker",
+    "pileated-woodpecker": "Pileated Woodpecker",
+    "great-horned-owl": "Great Horned Owl",
+    "cedar-waxwing": "Cedar Waxwing",
+    "ruby-throated-hummingbird": "Ruby-throated Hummingbird",
+    "wild-turkey": "Wild Turkey",
+    "red-tailed-hawk": "Red-tailed Hawk",
+    "wood-duck": "Wood Duck",
+    "bald-eagle": "Bald Eagle",
+    "american-kestrel": "American Kestrel",
+    "eastern-bluebird": "Eastern Bluebird",
+    "western-meadowlark": "Western Meadowlark",
+    "mourning-dove": "Mourning Dove",
+    "house-sparrow": "House Sparrow",
+    "barn-swallow": "Barn Swallow",
+    "killdeer": "Killdeer",
+    "greater-prairie-chicken": "Greater Prairie-Chicken",
+    "burrowing-owl": "Burrowing Owl",
+    "red-winged-blackbird": "Red-winged Blackbird",
+    "great-blue-heron": "Great Blue Heron",
+    "mallard": "Mallard",
+    "belted-kingfisher": "Belted Kingfisher",
+    "osprey": "Osprey",
+    "common-loon": "Common Loon",
+    "american-white-pelican": "American White Pelican",
+    "sandhill-crane": "Sandhill Crane",
+    "snowy-egret": "Snowy Egret"
+  },
+  "powers": {
+    "whenActivated": "When activated: {{text}}",
+    "gainFood": "Gain 1 {{food}}.",
+    "layEggSelf": "Lay 1 egg on this bird.",
+    "layEggAny": "Lay 1 egg on any of your birds.",
+    "drawCard": "Draw 1 card from the deck.",
+    "allGainFood": "Every player gains 1 {{food}}."
+  },
+  "goals": {
+    "forest-birds": "Most birds in forest",
+    "grassland-birds": "Most birds in grassland",
+    "wetland-birds": "Most birds in wetland",
+    "total-birds": "Most birds total",
+    "grassland-eggs": "Most eggs in grassland",
+    "total-eggs": "Most eggs total",
+    "birds-with-eggs": "Most birds with eggs",
+    "bird-points": "Most bird points on board"
+  },
+  "start": {
+    "howToPlay": "How would you like to play?",
+    "vsBot": "Against the computer",
+    "hotSeat": "In person with friends",
+    "playerNameLabel": "Player {{n}} name",
+    "human": "🧑 Human",
+    "bot": "🤖 Bot",
+    "toggleKind": "Toggle human / bot",
+    "removePlayer": "Remove player",
+    "addPlayer": "+ Add player",
+    "startGame": "Start game",
+    "defaultYou": "You",
+    "defaultPlayer": "Player {{n}}",
+    "botName1": "Robin Bot",
+    "botName2": "Wren Bot",
+    "botName3": "Finch Bot",
+    "botName4": "Heron Bot",
+    "botFallback": "Bot"
+  },
+  "tracker": {
+    "round": "Round {{round}} / 4",
+    "goal": "R{{round}}: {{name}} ({{first}}/{{second}})",
+    "goalTitle": "1st place: {{first}} pts, 2nd place: {{second}} pts",
+    "rules": "Rules",
+    "quit": "Quit"
+  },
+  "board": {
+    "human": "🧑 human",
+    "bot": "🤖 bot",
+    "turnsLeft_one": "{{count}} turn left",
+    "turnsLeft_other": "{{count}} turns left",
+    "cardsInHand_one": "{{count}} card in hand",
+    "cardsInHand_other": "{{count}} cards in hand",
+    "score": "{{count}} pts",
+    "scoreTitle": "Current score",
+    "food": "Food",
+    "actionCount": "×{{count}}",
+    "toPlay": "to play",
+    "power": "⚡ power"
+  },
+  "card": {
+    "points": "Victory points",
+    "foodCost": "Food cost",
+    "anyFood": "❔ = any food",
+    "habitats": "Habitats",
+    "eggLimit": "Egg limit"
+  },
+  "food": {
+    "add": "Add {{food}}",
+    "clickToChange": "Click to change",
+    "clickToRemove": "Click to remove"
+  },
+  "hand": {
+    "title": "Hand ({{count}})",
+    "hint": "— click a playable bird to play it",
+    "empty": "No cards. Draw some from the wetland."
+  },
+  "tray": {
+    "title": "Bird tray",
+    "empty": "empty",
+    "deck": "Deck: {{count}}",
+    "picked": "+{{count}} picked"
+  },
+  "panel": {
+    "botThinkingTitle": "{{name}} is thinking…",
+    "botThinking": "🤖 The bot will move in a moment.",
+    "yourTurnTitle": "{{name}}, it's your turn",
+    "yourTurn": "Take <b>one</b> action: click a playable bird in your hand, or press a habitat button on your board to gain food, lay eggs or draw cards. Birds in that row then activate their powers right to left.",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "clear": "Clear",
+    "auto": "Auto",
+    "chooseHabitat": "Choose a habitat.",
+    "playBirdTitle": "Play {{card}}",
+    "habitat": "Habitat",
+    "food": "Food",
+    "pickAny": "pick any:",
+    "eggsProgress": "Eggs {{done}}/{{total}}",
+    "removeEggsHint": "Click birds on your board to remove eggs.",
+    "gainFoodTitle": "Gain {{count}} food",
+    "chosenProgress": "Chosen {{done}}/{{total}}",
+    "take": "Take:",
+    "layEggsTitle_one": "Lay {{count}} egg",
+    "layEggsTitle_other": "Lay {{count}} eggs",
+    "placedProgress": "Placed {{done}}/{{total}}",
+    "noRoomForEggs": "No room for eggs; you can still confirm.",
+    "addEggsHint": "Click your birds to add eggs.",
+    "drawCardsTitle_one": "Draw {{count}} card",
+    "drawCardsTitle_other": "Draw {{count}} cards",
+    "pickedProgress": "Picked {{done}}/{{total}}",
+    "drawHint": "Click tray cards or the deck."
+  },
+  "log": {
+    "title": "Log",
+    "newGame": "New game: {{players}}.",
+    "playedBird": "{{player}} played {{card}} {{habitatIn}}.",
+    "gainedFood": "{{player}} gained {{foods}}.",
+    "laidEggs_one": "{{player}} laid {{count}} egg.",
+    "laidEggs_other": "{{player}} laid {{count}} eggs.",
+    "drewCards_one": "{{player}} drew {{count}} card.",
+    "drewCards_other": "{{player}} drew {{count}} cards.",
+    "power": {
+      "gainFood": "{{player}}'s {{card}}: gained 1 {{food}}.",
+      "layEggSelf": "{{player}}'s {{card}}: laid an egg on itself.",
+      "layEggAny": "{{player}}'s {{card}}: laid an egg on {{target}}.",
+      "drawCard": "{{player}}'s {{card}}: drew a card.",
+      "allGainFood": "{{player}}'s {{card}}: every player gained 1 {{food}}."
+    },
+    "roundEnd": "End of round {{round}}. Goal \"{{goal}}\": {{awards}}.",
+    "roundEndNoPoints": "End of round {{round}}. Goal \"{{goal}}\": no points.",
+    "gameOver": "Game over!",
+    "roundBegins": "Round {{round}} begins."
+  },
+  "error": {
+    "gameOver": "The game is over.",
+    "cardNotInHand": "That card is not in your hand.",
+    "unknownCard": "Unknown card.",
+    "wrongHabitat": "{{card}} cannot live {{habitatIn}}.",
+    "rowFull": "Your {{habitat}} is full.",
+    "unknownFood": "Unknown food type.",
+    "foodNotOwned": "You do not have that food.",
+    "paymentMismatch": "Payment does not match the cost.",
+    "noBirdInSlot": "There is no bird in that slot.",
+    "badEggCount": "Egg counts must be positive whole numbers.",
+    "tooManyEggsRemoved": "Cannot remove more eggs than a bird has.",
+    "eggCost_one": "This slot costs {{count}} egg.",
+    "eggCost_other": "This slot costs {{count}} eggs.",
+    "gainFoodCount": "Choose exactly {{count}} food.",
+    "eggLimit": "That bird cannot hold that many eggs.",
+    "layCount_one": "Lay exactly {{count}} egg.",
+    "layCount_other": "Lay exactly {{count}} eggs.",
+    "drawCount_one": "Draw exactly {{count}} card.",
+    "drawCount_other": "Draw exactly {{count}} cards.",
+    "trayTwice": "Each tray card can only be taken once.",
+    "trayEmpty": "That tray slot is empty.",
+    "deckShort": "Not enough cards in the deck."
+  },
+  "rules": {
+    "title": "How to play",
+    "intro": "Attract birds to your three habitats over 4 rounds (8, 7, 6 and 5 turns each). On your turn take exactly one action:",
+    "playBird": "<b>Play a bird</b>: pay its food (❔ = any food) and place it in the leftmost empty slot of a habitat it allows. Slots 3-4 cost 1 egg, slot 5 costs 2 eggs.",
+    "gainFood": "<b>🌲 Gain food</b>: 1, plus 1 for every 2 forest birds.",
+    "layEggs": "<b>🌼 Lay eggs</b>: 2, plus 1 for every 2 grassland birds, up to each bird's egg limit.",
+    "drawCards": "<b>💧 Draw cards</b>: 1, plus 1 for every 2 wetland birds, from the tray or the deck.",
+    "powers": "After a habitat action, the birds in that row activate their powers (⚡) from right to left.",
+    "goals": "At the end of each round its goal is scored: 1st and 2nd place earn points. You need at least 1 to place; tied players share the points, rounded down.",
+    "scoring": "<b>Final score:</b> bird points + 1 per egg + 1 per leftover food (max 5) + goal points. Ties go to whoever has more leftover food.",
+    "close": "Got it"
+  },
+  "score": {
+    "winner": "{{name}} wins!",
+    "tie": "It's a tie!",
+    "rank": "#",
+    "player": "Player",
+    "birds": "Birds",
+    "eggs": "Eggs",
+    "food": "Food",
+    "goals": "Goals",
+    "total": "Total",
+    "playAgain": "Play again",
+    "mainMenu": "Main menu"
+  }
+}

@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { BIRDS_BY_ID } from '../game/birds'
 import { actionCount, drawCount, eggCostForSlot, layCount, playableHabitats, validateAction } from '../game/engine'
 import { FOODS, type Food, type GameAction, type GameState } from '../game/types'
 import { chooseHabitat, IDLE, startLayEggs, toAction, totalCount, type Draft } from '../draft'
-import { HABITAT_ICON, HABITAT_LABEL, HABITAT_STYLE } from '../theme'
+import { formatMessage } from '../i18n/message'
+import { HABITAT_ICON, HABITAT_STYLE } from '../theme'
 import FoodToken from './FoodToken'
 
 type Props = {
@@ -18,23 +20,24 @@ const secondary = `${btn} bg-stone-200 hover:bg-stone-300`
 
 /** Contextual prompt for the current human player's in-progress action. */
 export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props) {
+  const { t } = useTranslation()
   const player = state.players[state.currentPlayer]
 
   if (state.phase === 'gameOver') return null
   if (player.kind === 'bot') {
-    return <Panel title={`${player.name} is thinking…`}>🤖 The bot will move in a moment.</Panel>
+    return <Panel title={t('panel.botThinkingTitle', { name: player.name })}>{t('panel.botThinking')}</Panel>
   }
   if (draft.kind === 'idle') {
     return (
-      <Panel title={`${player.name}, it's your turn`}>
-        Take <b>one</b> action: click a playable bird in your hand, or press a habitat button on your board to gain food, lay eggs or draw
-        cards. Birds in that row then activate their powers right to left.
+      <Panel title={t('panel.yourTurnTitle', { name: player.name })}>
+        <Trans i18nKey="panel.yourTurn" components={{ b: <b /> }} />
       </Panel>
     )
   }
 
   const action = toAction(draft)
-  const error = action ? validateAction(state, action) : 'Choose a habitat.'
+  const error = action ? validateAction(state, action) : null
+  const errorText = !action ? t('panel.chooseHabitat') : error ? formatMessage(t, error) : null
   const footer = (
     <div className="mt-3 flex flex-wrap items-center gap-2">
       <button
@@ -43,13 +46,18 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
         disabled={!action || !!error}
         onClick={() => action && onConfirm(action)}
       >
-        Confirm
+        {t('panel.confirm')}
       </button>
       <button type="button" className={secondary} onClick={() => setDraft(IDLE)}>
-        Cancel
+        {t('panel.cancel')}
       </button>
-      {error && <span className="text-xs text-rose-700">{error}</span>}
+      {errorText && <span className="text-xs text-rose-700">{errorText}</span>}
     </div>
+  )
+  const clearButton = (onClick: () => void) => (
+    <button type="button" className={secondary} onClick={onClick}>
+      {t('panel.clear')}
+    </button>
   )
 
   switch (draft.kind) {
@@ -60,8 +68,8 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
       const left = { ...player.food }
       for (const f of [...card.cost.foods, ...draft.anyFoods]) left[f]--
       return (
-        <Panel title={`Play ${card.name}`}>
-          <Step label="Habitat">
+        <Panel title={t('panel.playBirdTitle', { card: t(`birds.${card.id}`) })}>
+          <Step label={t('panel.habitat')}>
             {habitats.map((h) => (
               <button
                 key={h}
@@ -69,11 +77,11 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
                 className={`${btn} ${draft.habitat === h ? HABITAT_STYLE[h].button : HABITAT_STYLE[h].chip}`}
                 onClick={() => setDraft(chooseHabitat(state, draft, h))}
               >
-                {HABITAT_ICON[h]} {HABITAT_LABEL[h]}
+                {HABITAT_ICON[h]} {t(`habitats.${h}.name`)}
               </button>
             ))}
           </Step>
-          <Step label="Food">
+          <Step label={t('panel.food')}>
             {card.cost.foods.map((f, i) => (
               <FoodToken key={i} food={f} />
             ))}
@@ -81,20 +89,22 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
               <FoodToken
                 key={`any-${i}`}
                 food={f}
-                title="Click to change"
+                title={t('food.clickToChange')}
                 onClick={() => setDraft({ ...draft, anyFoods: draft.anyFoods.filter((_, j) => j !== i) })}
               />
             ))}
             {draft.anyFoods.length < card.cost.anyCount && (
-              <FoodPicker label="pick any:" available={left} onPick={(f) => setDraft({ ...draft, anyFoods: [...draft.anyFoods, f] })} />
+              <FoodPicker
+                label={t('panel.pickAny')}
+                available={left}
+                onPick={(f) => setDraft({ ...draft, anyFoods: [...draft.anyFoods, f] })}
+              />
             )}
           </Step>
           {eggCost > 0 && (
-            <Step label={`Eggs ${totalCount(draft.eggs)}/${eggCost}`}>
-              <span className="text-xs text-stone-600">Click birds on your board to remove eggs.</span>
-              <button type="button" className={secondary} onClick={() => setDraft({ ...draft, eggs: [] })}>
-                Clear
-              </button>
+            <Step label={t('panel.eggsProgress', { done: totalCount(draft.eggs), total: eggCost })}>
+              <span className="text-xs text-stone-600">{t('panel.removeEggsHint')}</span>
+              {clearButton(() => setDraft({ ...draft, eggs: [] }))}
             </Step>
           )}
           {footer}
@@ -105,18 +115,20 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
     case 'gainFood': {
       const n = actionCount(player.board, 'forest')
       return (
-        <Panel title={`Gain ${n} food`}>
-          <Step label={`Chosen ${draft.foods.length}/${n}`}>
+        <Panel title={t('panel.gainFoodTitle', { count: n })}>
+          <Step label={t('panel.chosenProgress', { done: draft.foods.length, total: n })}>
             {draft.foods.map((f, i) => (
               <FoodToken
                 key={i}
                 food={f}
-                title="Click to remove"
+                title={t('food.clickToRemove')}
                 onClick={() => setDraft({ ...draft, foods: draft.foods.filter((_, j) => j !== i) })}
               />
             ))}
           </Step>
-          {draft.foods.length < n && <FoodPicker label="Take:" onPick={(f) => setDraft({ ...draft, foods: [...draft.foods, f] })} />}
+          {draft.foods.length < n && (
+            <FoodPicker label={t('panel.take')} onPick={(f) => setDraft({ ...draft, foods: [...draft.foods, f] })} />
+          )}
           {footer}
         </Panel>
       )
@@ -125,14 +137,12 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
     case 'layEggs': {
       const n = layCount(player)
       return (
-        <Panel title={`Lay ${n} egg${n === 1 ? '' : 's'}`}>
-          <Step label={`Placed ${totalCount(draft.placements)}/${n}`}>
-            <span className="text-xs text-stone-600">{n === 0 ? 'No room for eggs; you can still confirm.' : 'Click your birds to add eggs.'}</span>
-            <button type="button" className={secondary} onClick={() => setDraft({ ...draft, placements: [] })}>
-              Clear
-            </button>
+        <Panel title={t('panel.layEggsTitle', { count: n })}>
+          <Step label={t('panel.placedProgress', { done: totalCount(draft.placements), total: n })}>
+            <span className="text-xs text-stone-600">{n === 0 ? t('panel.noRoomForEggs') : t('panel.addEggsHint')}</span>
+            {clearButton(() => setDraft({ ...draft, placements: [] }))}
             <button type="button" className={secondary} onClick={() => setDraft(startLayEggs(state))}>
-              Auto
+              {t('panel.auto')}
             </button>
           </Step>
           {footer}
@@ -143,12 +153,10 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
     case 'drawCards': {
       const n = drawCount(state, state.currentPlayer)
       return (
-        <Panel title={`Draw ${n} card${n === 1 ? '' : 's'}`}>
-          <Step label={`Picked ${draft.picks.length}/${n}`}>
-            <span className="text-xs text-stone-600">Click tray cards or the deck.</span>
-            <button type="button" className={secondary} onClick={() => setDraft({ ...draft, picks: [] })}>
-              Clear
-            </button>
+        <Panel title={t('panel.drawCardsTitle', { count: n })}>
+          <Step label={t('panel.pickedProgress', { done: draft.picks.length, total: n })}>
+            <span className="text-xs text-stone-600">{t('panel.drawHint')}</span>
+            {clearButton(() => setDraft({ ...draft, picks: [] }))}
           </Step>
           {footer}
         </Panel>
@@ -176,11 +184,12 @@ function Step({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function FoodPicker({ label, onPick, available }: { label: string; onPick: (f: Food) => void; available?: Record<Food, number> }) {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-wrap items-center gap-1">
       <span className="text-xs text-stone-600">{label}</span>
       {FOODS.filter((f) => !available || available[f] > 0).map((f) => (
-        <FoodToken key={f} food={f} count={available?.[f]} onClick={() => onPick(f)} title={`Add ${f}`} />
+        <FoodToken key={f} food={f} count={available?.[f]} onClick={() => onPick(f)} title={t('food.add', { food: t(`foods.${f}`) })} />
       ))}
     </div>
   )
