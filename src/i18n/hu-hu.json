@@ -85,6 +85,7 @@
     "bird-points": "Legtöbb madárpont a táblán"
   },
   "start": {
+    "alone": "Egyedül",
     "continueTitle": "Befejezetlen játék",
     "continueDetails": "{{round}}. kör / 4 · {{players}}",
     "continue": "Folytatás",
@@ -100,10 +101,10 @@
     "startGame": "Játék indítása",
     "defaultYou": "Játékos",
     "defaultPlayer": "{{n}}. játékos",
-    "botName1": "Rigó (gép)",
-    "botName2": "Ökörszem (gép)",
-    "botName3": "Pinty (gép)",
-    "botName4": "Gém (gép)",
+    "botName1": "Gépi kacsa",
+    "botName2": "Gépi rigó",
+    "botName3": "Gépi pinty",
+    "botName4": "Gépi gém",
     "botFallback": "Gép"
   },
   "tracker": {

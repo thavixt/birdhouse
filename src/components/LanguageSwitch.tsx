@@ -15,7 +15,7 @@ export default function LanguageSwitch() {
             onClick={() => void i18n.changeLanguage(lng)}
             aria-pressed={active}
             lang={lng}
-            className={`cursor-pointer px-2 py-1 ${active ? 'bg-stone-800 text-white' : 'bg-white text-stone-700 hover:bg-stone-100'}`}
+            className={`text-[10px] cursor-pointer px-2 py-1 ${active ? 'bg-stone-800 text-white' : 'bg-white text-stone-700 hover:bg-stone-100'}`}
           >
             {t(`language.${lng}`)}
           </button>

@@ -19,6 +19,10 @@ Real bird species names are fine; their stats and powers must be our own.
 - **Tailwind CSS v4** via `@tailwindcss/vite` (`src/index.css` contains only `@import "tailwindcss";`)
 - **oxlint** for linting
 - **i18next + react-i18next** for translations: English (`en-us`) and Hungarian (`hu-hu`)
+- **vite-plugin-pwa** — installable, offline-capable PWA (see "PWA" under Conventions)
+- **vite-plugin-mkcert** — local HTTPS for `npm run dev` and `npm run preview`
+  (`https://localhost:8236`). Not used by `npm run build`. The first run on a machine
+  downloads mkcert and installs its local CA into the OS trust store (may show a prompt).
 
 ### Commands
 
@@ -60,6 +64,20 @@ Tests (from milestone 2): `npm run test` runs vitest on `src/game/**` and `src/i
   instead of crashing the game.
 - `src/persistence.ts` is the only code touching storage; every call is wrapped in
   try/catch so the game still works when storage is unavailable.
+
+### PWA
+
+- Configured in `vite.config.ts` (`VitePWA`): `registerType: 'autoUpdate'` (new versions
+  install in the background and apply on the next load), Workbox `generateSW` precaching
+  the whole build so the installed app works fully offline.
+- Icons (favicon, apple-touch, 64/192/512, maskable) are **generated at build time** from
+  `public/duck.png` by `pwaAssets` (`@vite-pwa/assets-generator`), which also injects the
+  icon and `theme-color` tags into `index.html`. Don't add icon links by hand; to change
+  the icon, replace `duck.png` (square, ≥ 512px).
+- Don't add `webmanifest` to `workbox.globPatterns`: the plugin precaches the manifest
+  itself, and a duplicate entry makes the whole precache fail silently.
+- The service worker only runs in production builds. To test installing / offline use
+  `npm run build && npm run preview` (served over HTTPS via mkcert), not `npm run dev`.
 
 ### Translations (i18n)
 

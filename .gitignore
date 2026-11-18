@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# vite-plugin-pwa dev service worker (only if devOptions.enabled)
+dev-dist

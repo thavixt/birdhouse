@@ -85,6 +85,7 @@
     "bird-points": "Most bird points on board"
   },
   "start": {
+    "alone": "Solo",
     "continueTitle": "Unfinished game",
     "continueDetails": "Round {{round}} / 4 · {{players}}",
     "continue": "Continue",
@@ -100,10 +101,10 @@
     "startGame": "Start game",
     "defaultYou": "You",
     "defaultPlayer": "Player {{n}}",
-    "botName1": "Robin Bot",
-    "botName2": "Wren Bot",
-    "botName3": "Finch Bot",
-    "botName4": "Heron Bot",
+    "botName1": "Mech duck",
+    "botName2": "Mech robin",
+    "botName3": "Mech finch",
+    "botName4": "Mech heron",
     "botFallback": "Bot"
   },
   "tracker": {
