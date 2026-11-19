@@ -8,8 +8,8 @@ gains more food, lays more eggs and draws more cards each turn.
 
 ## Features
 
-- **Play against the computer** or **in person with friends** on one device (1–4 players,
-  any mix of humans and bots).
+- **Play solo, against the computer, or in person with friends** on one device: 1–4
+  players, with as many bots as you like alongside you.
 - **32 bird cards** with original stats and powers, 8 end-of-round goals, full final
   scoring.
 - **English and Magyar**, switchable at any time.

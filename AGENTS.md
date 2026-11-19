@@ -143,7 +143,7 @@ src/
     ActionPanel.tsx        // contextual prompts (choose food, place eggs, pick card)
     RoundTracker.tsx       // round, turns left, goals
     ScoreScreen.tsx        // final scores breakdown
-    StartScreen.tsx        // new game: vs bot / hot-seat
+    StartScreen.tsx        // new game: solo / vs computer / with friends, continue saved game
     GameScreen.tsx         // in-game layout; owns the in-progress turn draft
     LanguageSwitch.tsx     // English | Magyar toggle
     PowerText.tsx          // translated "When activated: …" power text
@@ -236,8 +236,22 @@ see "Persistence" under Conventions.)
 
 ## Players
 
-- Engine supports **N players (1–4)**, each `kind: 'human' | 'bot'`.
-- Default new game: **1 human vs 1 bot**. Hot-seat (2+ humans) works with the same engine.
+- Engine supports **N players (1–4)**, each `kind: 'human' | 'bot'`, in any mix.
+- **Start screen** (`StartScreen.tsx`) offers three modes; **Solo** (1 human) is the default:
+
+  | Mode                   | Preset line-up       | Highlighted when the line-up has… |
+  | ---------------------- | -------------------- | --------------------------------- |
+  | Solo                   | 1 human              | 1 human, no bots                  |
+  | Against the computer   | 1 human + 1 bot      | 1 human + any bots                |
+  | In person with friends | 2 humans (hot-seat)  | 2+ humans, with or without bots   |
+
+  The highlight is derived from the current line-up, so it follows manual edits too.
+- **The first player is always human** (the person at the device): no human/bot toggle
+  and no remove button on that row. So the UI never starts an all-bot game, even though
+  the engine would allow one.
+- **Player names:** switching a player between human and bot swaps a preset name
+  ("Player N", the bot names) for an unused one of the new kind; a name the user typed
+  is kept. "Add player" adds a bot with the first unused bot name.
 - **Bot (v1):** greedy heuristic — play the highest-points affordable bird; else take the
   action that best unlocks one (food it lacks, eggs if a slot needs them, cards if hand is
   thin); late game, favour laying eggs. Bot turns run with a short delay for readability.
@@ -254,7 +268,9 @@ see "Persistence" under Conventions.)
 6. **Polish** ✅ — habitat colour theming, responsive layout, action log, rules help modal.
    Phone layout checked at 320, 360, 375 and 414px (see "Responsive layout" under Conventions).
 
-## Backlog — v2 ideas (not started)
+## Backlog — v2 ideas
+
+Persistence is done; everything else here is not started.
 
 > Ideas only, not a spec. Before building one, write it up like the "Milestone 2 spec"
 > (scope, rules, design decisions, tests) and move the rule changes into "Game rules".
