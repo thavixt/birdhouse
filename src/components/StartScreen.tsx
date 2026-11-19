@@ -23,7 +23,41 @@ const hotSeat = (t: TFunction): PlayerConfig[] => [
   { name: t('start.defaultPlayer', { n: 1 }), kind: 'human' },
   { name: t('start.defaultPlayer', { n: 2 }), kind: 'human' },
 ]
-const botName = (t: TFunction, index: number) => (index < 4 ? t(`start.botName${index + 1}`) : t('start.botFallback'))
+const SEATS = [1, 2, 3, 4] as const
+
+/** Every preset name in the current language: a name in this set hasn't been typed by the user. */
+const presetNames = (t: TFunction) =>
+  new Set([
+    t('start.defaultYou'),
+    t('start.botFallback'),
+    ...SEATS.map((n) => t('start.defaultPlayer', { n })),
+    ...SEATS.map((n) => t(`start.botName${n}`)),
+  ])
+
+/** The first preset name for `kind` that no other player is using (players at `index` excluded). */
+function freshName(t: TFunction, kind: PlayerConfig['kind'], players: PlayerConfig[], index: number): string {
+  const taken = new Set(players.filter((_, j) => j !== index).map((p) => p.name.trim()))
+  const candidates =
+    kind === 'bot'
+      ? [...SEATS.map((n) => t(`start.botName${n}`)), t('start.botFallback')]
+      : [index + 1, ...SEATS].map((n) => t('start.defaultPlayer', { n }))
+  return candidates.find((name) => !taken.has(name)) ?? candidates[0]
+}
+
+type PlayMode = 'alone' | 'vsBot' | 'hotSeat'
+
+/** The play mode the current line-up amounts to. The first player is always human. */
+function playModeOf(players: PlayerConfig[]): PlayMode {
+  const humans = players.filter((p) => p.kind === 'human').length
+  if (humans >= 2) return 'hotSeat'
+  return players.length > 1 ? 'vsBot' : 'alone'
+}
+
+const MODES: { mode: PlayMode; preset: (t: TFunction) => PlayerConfig[] }[] = [
+  { mode: 'alone', preset: alone },
+  { mode: 'vsBot', preset: vsBot },
+  { mode: 'hotSeat', preset: hotSeat },
+]
 
 const btn = 'cursor-pointer rounded-md px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40'
 
@@ -31,7 +65,15 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
   const { t } = useTranslation()
   const [players, setPlayers] = useState<PlayerConfig[]>(() => alone(t))
   const update = (i: number, patch: Partial<PlayerConfig>) => setPlayers(players.map((p, j) => (j === i ? { ...p, ...patch } : p)))
+  // Switching human/bot also swaps a preset name for one that fits; a typed name is kept.
+  const toggleKind = (i: number) => {
+    const p = players[i]
+    const kind = p.kind === 'bot' ? 'human' : 'bot'
+    const name = presetNames(t).has(p.name.trim()) ? freshName(t, kind, players, i) : p.name
+    update(i, { kind, name })
+  }
   const valid = players.length >= 1 && players.length <= 4 && players.every((p) => p.name.trim() !== '')
+  const currentMode = playModeOf(players)
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-linear-to-b from-emerald-50 to-stone-100 p-4 text-stone-900">
@@ -67,16 +109,22 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
 
         <div className="flex flex-col gap-2">
           <p className='text-sm text-stone-600'>{t('start.howToPlay')}</p>
+          {/* The highlight follows the line-up below, including manual edits to it. */}
           <div className="flex gap-2">
-            <button type="button" className={`${btn} flex-1 bg-emerald-100 hover:bg-emerald-200`} onClick={() => setPlayers(alone(t))}>
-              {t('start.alone')}
-            </button>
-            <button type="button" className={`${btn} flex-1 bg-emerald-100 hover:bg-emerald-200`} onClick={() => setPlayers(vsBot(t))}>
-              {t('start.vsBot')}
-            </button>
-            <button type="button" className={`${btn} flex-1 bg-emerald-100 hover:bg-emerald-200`} onClick={() => setPlayers(hotSeat(t))}>
-              {t('start.hotSeat')}
-            </button>
+            {MODES.map(({ mode, preset }) => {
+              const selected = currentMode === mode
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-pressed={selected}
+                  className={`${btn} flex-1 ${selected ? 'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800' : 'bg-emerald-100 text-emerald-950 hover:bg-emerald-200'}`}
+                  onClick={() => setPlayers(preset(t))}
+                >
+                  {t(`start.${mode}`)}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -92,16 +140,22 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
               />
               <button
                 type="button"
-                className={`${btn} w-24 ${p.kind === 'bot' ? 'bg-stone-700 text-white' : 'bg-violet-100 text-violet-900'}`}
-                onClick={() => update(i, { kind: p.kind === 'bot' ? 'human' : 'bot' })}
+                // The first player is always a human (the one at the device): no toggle, hidden like
+                // the remove button below so the rows stay aligned.
+                className={`${btn} w-24 ${p.kind === 'bot' ? 'bg-stone-700 text-white' : 'bg-violet-100 text-violet-900'} ${i === 0 ? 'invisible' : ''}`}
+                disabled={i === 0}
+                onClick={() => toggleKind(i)}
                 title={t('start.toggleKind')}
               >
                 {p.kind === 'bot' ? t('start.bot') : t('start.human')}
               </button>
               <button
                 type="button"
-                className={`${btn} bg-stone-100 hover:bg-stone-200`}
-                disabled={players.length <= 1}
+                // The first player can't be removed, which also keeps the list non-empty. `invisible`
+                // keeps its space so the rows stay aligned, and takes it out of tab order and the
+                // accessibility tree.
+                className={`${btn} bg-stone-100 hover:bg-stone-200 ${i === 0 ? 'invisible' : ''}`}
+                disabled={i === 0}
                 onClick={() => setPlayers(players.filter((_, j) => j !== i))}
                 aria-label={t('start.removePlayer')}
               >
@@ -114,7 +168,7 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
           type="button"
           className={`${btn} bg-stone-100 hover:bg-stone-200`}
           disabled={players.length >= 4}
-          onClick={() => setPlayers([...players, { name: botName(t, players.length), kind: 'bot' }])}
+          onClick={() => setPlayers([...players, { name: freshName(t, 'bot', players, players.length), kind: 'bot' }])}
         >
           {t('start.addPlayer')}
         </button>
