@@ -26,14 +26,15 @@ Real bird species names are fine; their stats and powers must be our own.
 
 ### Commands
 
-| Command           | Purpose                       |
-| ----------------- | ----------------------------- |
-| `npm run dev`     | Dev server                    |
-| `npm run build`   | Type-check (`tsc -b`) + build |
-| `npm run lint`    | oxlint                        |
-| `npm run preview` | Serve the production build    |
+| Command           | Purpose                                              |
+| ----------------- | ---------------------------------------------------- |
+| `npm run dev`     | Dev server (HTTPS, `https://localhost:8236`)         |
+| `npm run build`   | Type-check (`tsc -b`) + build                        |
+| `npm run lint`    | oxlint                                               |
+| `npm run preview` | Serve the production build (HTTPS)                   |
+| `npm run test`    | vitest: `src/game/**` and `src/i18n/**` tests        |
 
-Tests (from milestone 2): `npm run test` runs vitest on `src/game/**` and `src/i18n/**`. See "Milestone 2 spec" below.
+Requires Node.js 22.12+ (vitest's minimum).
 
 ## Conventions
 
@@ -101,19 +102,21 @@ Tests (from milestone 2): `npm run test` runs vitest on `src/game/**` and `src/i
 
 ```
 src/
-  main.tsx                 // entry, mounts <App/>
+  main.tsx                 // entry: loads i18n, mounts <App/>
   index.css                // @import "tailwindcss";
-  App.tsx                  // useReducer over game engine; screen switching
+  App.tsx                  // useReducer over the engine; screens, bot turns, saving
   game/                    // PURE LOGIC — no React
-    types.ts               // Food, Habitat, BirdCard, BoardSlot, Player, GameState, GameAction
+    types.ts               // Food, Habitat, BirdCard, SlotRef, Player, GameState, GameAction, GameMessage
     birds.ts               // ~30 original bird card definitions (data only)
     goals.ts               // end-of-round goal definitions
     rng.ts                 // seeded PRNG (mulberry32) + shuffle
     setup.ts               // createGame(seed, playerConfigs) => GameState
-    engine.ts              // reduce(state, action) + legality helpers (canPlayBird, ...)
+    engine.ts              // reduce, validateAction + helpers (playableHabitats, canAfford, ...)
     powers.ts              // bird power resolution
     scoring.ts             // final + round-goal scoring
     bot.ts                 // chooseAction(state, playerId) => GameAction
+    save.ts                // versioned save format + validation
+    __tests__/             // vitest unit tests
   components/
     Board.tsx              // a player's three habitat rows
     HabitatRow.tsx         // one row: action button + 5 slots
@@ -126,16 +129,20 @@ src/
     ScoreScreen.tsx        // final scores breakdown
     StartScreen.tsx        // new game: vs bot / hot-seat
     GameScreen.tsx         // in-game layout; owns the in-progress turn draft
+    LanguageSwitch.tsx     // English | Magyar toggle
+    PowerText.tsx          // translated "When activated: …" power text
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction
   theme.ts                 // food/habitat icons and static Tailwind class maps
   persistence.ts           // localStorage load/save/clear of the game in progress
-  game/save.ts             // versioned save format + validation (pure)
   i18n/
     index.ts               // i18next init, LANGUAGES, language persistence
     message.ts             // formatMessage(t, GameMessage) for engine log/errors
     en-us.json             // English dictionary (source of truth for keys)
     hu-hu.json             // Hungarian dictionary (same keys)
+    __tests__/             // dictionary consistency tests
+public/
+  duck.png                 // source image for all generated app icons
 ```
 
 > Windows note: run vitest from a path with an upper-case drive letter (`C:\...`).
@@ -207,7 +214,8 @@ Tiebreak: most leftover food.
 
 Dice feeder, bonus cards, tucking cards, caching food, nest types, "when played"
 and "between turns" powers, predator powers, bird size stats, animations,
-persistence, online multiplayer.
+online multiplayer. (Persistence was originally on this list and has since been added;
+see "Persistence" under Conventions.)
 
 ## Players
 
