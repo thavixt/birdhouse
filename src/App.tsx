@@ -4,6 +4,7 @@ import ScoreScreen from './components/ScoreScreen'
 import StartScreen from './components/StartScreen'
 import { chooseAction } from './game/bot'
 import { reduce } from './game/engine'
+import { gameLog, logOnce } from './game/logger'
 import { createGame } from './game/setup'
 import type { GameAction, GameState, PlayerConfig } from './game/types'
 import { clearSavedGame, loadSavedGame, saveGame } from './persistence'
@@ -24,12 +25,24 @@ type AppAction =
 
 function appReduce(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'newGame':
-      return { game: createGame(action.seed, action.players), resumable: null }
+    case 'newGame': {
+      const game = createGame(action.seed, action.players)
+      logOnce(action, () =>
+        gameLog('info', `New game · seed ${action.seed} · ${action.players.map((p) => `${p.name} (${p.kind})`).join(', ')}`, {
+          goals: game.goals,
+          state: game,
+        }),
+      )
+      return { game, resumable: null }
+    }
     case 'resume':
+      logOnce(action, () => gameLog('info', `Continuing saved game (round ${state.resumable?.round})`, state.resumable))
       return { game: state.resumable, resumable: null }
-    case 'quit':
-      return { game: null, resumable: state.game?.phase === 'playing' ? state.game : null }
+    case 'quit': {
+      const keep = state.game?.phase === 'playing'
+      logOnce(action, () => gameLog('info', keep ? 'Quit to menu (game kept for Continue)' : 'Back to menu'))
+      return { game: null, resumable: keep ? state.game : null }
+    }
     default:
       return state.game ? { ...state, game: reduce(state.game, action) } : state
   }

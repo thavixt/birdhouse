@@ -13,6 +13,7 @@ export default function Hand({ cards, selected, isPlayable, onSelect }: Props) {
   return (
     <section className="flex flex-col gap-2">
       <h3 className="text-sm font-semibold text-stone-600">
+        <span aria-hidden>🤚 </span>
         {t('hand.title', { count: cards.length })} {onSelect && <span className="font-normal">{t('hand.hint')}</span>}
       </h3>
       {cards.length === 0 ? (

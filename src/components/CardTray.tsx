@@ -15,7 +15,10 @@ export default function CardTray({ tray, deckCount, pickedTray, pickedDeck, onPi
   const { t } = useTranslation()
   return (
     <section className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold text-stone-600">{t('tray.title')}</h3>
+      <h3 className="text-sm font-semibold text-stone-600">
+        <span aria-hidden>🐦 </span>
+        {t('tray.title')}
+      </h3>
       <div className="flex gap-2 overflow-x-auto pb-2">
         {tray.map((id, i) =>
           id ? (

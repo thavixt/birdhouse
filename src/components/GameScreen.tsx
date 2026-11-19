@@ -87,15 +87,6 @@ export default function GameScreen({ state, dispatch, onQuit }: Props) {
         <RoundTracker state={state} onQuit={onQuit} />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="flex min-w-0 flex-col gap-3">
-            <Board
-              player={viewed}
-              active={viewIdx === current}
-              turnsLeft={state.turnsLeft[viewIdx]}
-              onAction={interactive ? onHabitatAction : undefined}
-              onBirdClick={interactive && (draft.kind === 'layEggs' || draft.kind === 'playBird') ? onBirdClick : undefined}
-              eggDelta={interactive ? boardEggDelta : undefined}
-              nextSlot={interactive && draft.kind === 'playBird' ? draft.habitat : null}
-            />
             <Hand
               cards={viewed.hand}
               selected={draft.kind === 'playBird' ? draft.cardId : null}
@@ -110,8 +101,23 @@ export default function GameScreen({ state, dispatch, onQuit }: Props) {
               onPickTray={interactive && draft.kind === 'drawCards' ? onPickTray : undefined}
               onPickDeck={interactive && draft.kind === 'drawCards' ? onPickDeck : undefined}
             />
+            <Board
+              player={viewed}
+              active={viewIdx === current}
+              turnsLeft={state.turnsLeft[viewIdx]}
+              onAction={interactive ? onHabitatAction : undefined}
+              onBirdClick={interactive && (draft.kind === 'layEggs' || draft.kind === 'playBird') ? onBirdClick : undefined}
+              eggDelta={interactive ? boardEggDelta : undefined}
+              nextSlot={interactive && draft.kind === 'playBird' ? draft.habitat : null}
+            />
           </div>
-          <aside className="flex flex-col gap-3">
+          {/*
+            lg+: sticky within its grid column so the action panel and log stay in view while
+            the board and hand scroll. `self-start` stops the grid stretching it to the row's
+            full height (which would leave sticky nothing to do); it scrolls internally if
+            taller than the window.
+          */}
+          <aside className="flex flex-col gap-3 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
             <div className="hidden lg:block">
               <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} />
             </div>

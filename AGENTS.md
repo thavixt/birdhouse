@@ -68,6 +68,21 @@ Requires Node.js 22.12+ (vitest's minimum).
   visible at a time (`hidden lg:block` / `lg:hidden`), so tests and scripts that look
   up its text should filter to the visible one.
 
+### Debug logging
+
+- `src/game/logger.ts` is a silent logging hook (`gameLog`, `logOnce`). The game layer
+  logs through it without touching `console`, so it stays browser-free and tests stay quiet.
+- `src/debug.ts` connects it to the browser console at startup (`initDebugLogging()` in
+  `main.tsx`), with a green "birdhouse" tag. It's on in `npm run dev`; in production builds
+  run `localStorage.setItem('birdhouse.debug', '1')` in the console and reload.
+- Logged: every move (`R1 T3 · Name (kind) · …`, with the action, the events it caused
+  and the new state attached), rejected moves (warnings with the reason), round changes,
+  game over, new game (with its **seed**, so it can be replayed), continue, quit, and every
+  load / save / clear of the saved game.
+- **Log with `logOnce(action, …)` inside reducers.** React Strict Mode runs reducers twice
+  in development with the same action object; `logOnce` keeps the output to one line.
+  Logging must never change state.
+
 ### Persistence
 
 - The game in progress is saved to `localStorage` (`birdhouse.savedGame`) after every
@@ -132,6 +147,7 @@ src/
     scoring.ts             // final + round-goal scoring
     bot.ts                 // chooseAction(state, playerId) => GameAction
     save.ts                // versioned save format + validation
+    logger.ts              // silent debug-logging hook (see "Debug logging")
     __tests__/             // vitest unit tests
   components/
     Board.tsx              // a player's three habitat rows
@@ -152,6 +168,7 @@ src/
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction
   theme.ts                 // food/habitat icons and static Tailwind class maps
   persistence.ts           // localStorage load/save/clear of the game in progress
+  debug.ts                 // connects the game logger to the browser console
   i18n/
     index.ts               // i18next init, LANGUAGES, language persistence
     message.ts             // formatMessage(t, GameMessage) for engine log/errors

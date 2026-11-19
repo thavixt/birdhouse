@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import './i18n'
 import App from './App.tsx'
+import { initDebugLogging } from './debug'
+
+initDebugLogging()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,5 +1,6 @@
 import { BIRDS_BY_ID } from './birds'
 import { roundGoalAwards } from './goals'
+import { describeMessage, gameLog, logOnce } from './logger'
 import { activateHabitat } from './powers'
 import { TRAY_SIZE } from './setup'
 import {
@@ -218,7 +219,11 @@ export function validateAction(state: GameState, action: GameAction): GameMessag
 
 /** Pure reducer. Invalid actions return the state unchanged. */
 export function reduce(state: GameState, action: GameAction): GameState {
-  if (validateAction(state, action) !== null) return state
+  const error = validateAction(state, action)
+  if (error !== null) {
+    logOnce(action, () => logRejected(state, action, error))
+    return state
+  }
   // Work on a private deep copy; the input state is never touched.
   const draft = structuredClone(state) as GameState
   const idx = draft.currentPlayer
@@ -253,7 +258,55 @@ export function reduce(state: GameState, action: GameAction): GameState {
   }
 
   endTurn(draft)
+  logOnce(action, () => logTransition(state, action, draft))
   return draft
+}
+
+// ---------------------------------------------------------------- logging
+// Developer-facing debug output (see src/game/logger.ts). Never affects state.
+
+function describeAction(action: GameAction): string {
+  switch (action.type) {
+    case 'playBird': {
+      const eggs = action.eggPayment.reduce((s, p) => s + p.count, 0)
+      return `played ${action.cardId} → ${action.habitat} (paid ${action.payment.join(', ') || 'nothing'}${eggs ? ` + ${eggs} egg${eggs === 1 ? '' : 's'}` : ''})`
+    }
+    case 'gainFood':
+      return `gain food: ${action.foods.join(', ')}`
+    case 'layEggs': {
+      const n = action.placements.reduce((s, p) => s + p.count, 0)
+      return `lay ${n} egg${n === 1 ? '' : 's'}: ${action.placements.map((p) => `${slotKey(p.slot)}×${p.count}`).join(', ') || 'none'}`
+    }
+    case 'drawCards':
+      return `draw: ${action.picks.map((p) => (p.from === 'tray' ? `tray#${p.index + 1}` : 'deck')).join(', ') || 'none'}`
+  }
+}
+
+function who(state: GameState): string {
+  const p = state.players[state.currentPlayer]
+  return `${p.name} (${p.kind})`
+}
+
+function logRejected(state: GameState, action: GameAction, error: GameMessage): void {
+  gameLog('warn', `Rejected ${action.type} from ${who(state)}: ${describeMessage(error)}`, { action, state })
+}
+
+function logTransition(before: GameState, action: GameAction, after: GameState): void {
+  const turn = turnsPerRound(before.round) - before.turnsLeft[before.currentPlayer] + 1
+  gameLog('info', `R${before.round} T${turn} · ${who(before)} · ${describeAction(action)}`, {
+    action,
+    // Everything this action caused, including powers and round scoring.
+    events: after.log.slice(before.log.length).map(describeMessage),
+    state: after,
+  })
+  if (after.phase === 'gameOver') {
+    gameLog('info', 'Game over', {
+      goalPoints: Object.fromEntries(after.players.map((p) => [p.name, p.goalPoints])),
+      state: after,
+    })
+  } else if (after.round !== before.round) {
+    gameLog('info', `Round ${after.round} begins · ${who(after)} goes first · goal: ${after.goals[after.round - 1]}`)
+  }
 }
 
 function applyEggs(player: Player, placements: readonly EggPlacement[], sign: 1 | -1): void {
