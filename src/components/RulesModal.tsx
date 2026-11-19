@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Trans, useTranslation } from 'react-i18next'
-import { GOAL_POINTS } from '../game/goals'
+import { actionCount, eggCostForSlot, ROW_SIZE } from '../game/engine'
+import { GOAL_IDS, GOAL_POINTS } from '../game/goals'
+import { HABITATS, type Board } from '../game/types'
+import { HABITAT_ICON } from '../theme'
 
 type Props = { onClose: () => void }
 
@@ -38,8 +41,41 @@ const POWERS = [
   'rules.powers.drawCard',
   'rules.powers.allGainFood',
 ] as const
+const POWER_NOTES = ['rules.powers.notes.ownTurn', 'rules.powers.notes.extra', 'rules.powers.notes.skipped'] as const
+const DECK = ['rules.deck.copies', 'rules.deck.refill', 'rules.deck.newRound', 'rules.deck.empty'] as const
 const FINAL_SCORE = ['rules.end.birds', 'rules.end.eggs', 'rules.end.food', 'rules.end.goals'] as const
-const TIPS = ['rules.tips.engine', 'rules.tips.eggs', 'rules.tips.lastRound', 'rules.tips.goals'] as const
+const TIPS = [
+  'rules.tips.engine',
+  'rules.tips.powers',
+  'rules.tips.eggs',
+  'rules.tips.food',
+  'rules.tips.lastRound',
+  'rules.tips.goals',
+] as const
+
+/** A board with `n` birds in every row, to ask the engine how strong each action is. */
+const boardWith = (n: number): Board => {
+  const row = () => Array.from({ length: n }, () => ({ cardId: '', eggs: 0 }))
+  return { forest: row(), grassland: row(), wetland: row() }
+}
+/** Bird counts that share an action strength: 0–1, 2–3, 4–5. */
+const STRENGTH_ROWS = Array.from({ length: Math.ceil((ROW_SIZE + 1) / 2) }, (_, k) => 2 * k)
+const SLOTS = Array.from({ length: ROW_SIZE }, (_, i) => i)
+
+/** Tie example uses round 2's points, so it always matches GOAL_POINTS. */
+const TIE_ROUND = 2
+const tieFirst = GOAL_POINTS.first[TIE_ROUND - 1]
+const tieSecond = GOAL_POINTS.second[TIE_ROUND - 1]
+const TIE_PARAMS = {
+  round: TIE_ROUND,
+  first: tieFirst,
+  second: tieSecond,
+  split: Math.floor((tieFirst + tieSecond) / 2),
+  half: Math.floor(tieSecond / 2),
+}
+
+const tableClass = 'w-full max-w-sm text-center text-sm'
+const headClass = 'text-xs text-stone-500 uppercase'
 
 /**
  * Rendered into document.body (portal), so it looks the same wherever it's opened from
@@ -82,6 +118,51 @@ export default function RulesModal({ onClose }: Props) {
             <p>
               <Trans i18nKey="rules.board.text" components={bold} />
             </p>
+            <p>{t('rules.board.strength')}</p>
+            {/* Built from actionCount so the table always matches the engine. */}
+            <div className="overflow-x-auto">
+              <table className={tableClass}>
+                <thead className={headClass}>
+                  <tr>
+                    <th className="py-1 text-left">{t('rules.board.birdsInRow')}</th>
+                    {HABITATS.map((h) => (
+                      <th key={h}>
+                        {HABITAT_ICON[h]} {t(`habitats.${h}.action`)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="tabular-nums">
+                  {STRENGTH_ROWS.map((n) => (
+                    <tr key={n} className="border-t border-stone-200">
+                      <td className="py-1 text-left">
+                        {n}–{Math.min(n + 1, ROW_SIZE)}
+                      </td>
+                      {HABITATS.map((h) => (
+                        <td key={h}>×{actionCount(boardWith(n), h)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p>{t('rules.board.slots')}</p>
+            <table className={tableClass}>
+              <tbody className="tabular-nums">
+                <tr>
+                  <th className={`${headClass} py-1 text-left`}>{t('rules.board.slot')}</th>
+                  {SLOTS.map((i) => (
+                    <td key={i}>{i + 1}.</td>
+                  ))}
+                </tr>
+                <tr className="border-t border-stone-200">
+                  <th className={`${headClass} py-1 text-left`}>{t('rules.board.eggCost')}</th>
+                  {SLOTS.map((i) => (
+                    <td key={i}>{eggCostForSlot(i) ? `🥚 ${eggCostForSlot(i)}` : '—'}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
           </Section>
 
           <Section title={t('rules.cards.title')}>
@@ -99,14 +180,19 @@ export default function RulesModal({ onClose }: Props) {
           <Section title={t('rules.powers.title')}>
             <p>{t('rules.powers.text')}</p>
             <KeyList keys={POWERS} />
+            <KeyList keys={POWER_NOTES} />
+          </Section>
+
+          <Section title={t('rules.deck.title')}>
+            <KeyList keys={DECK} />
           </Section>
 
           <Section title={t('rules.rounds.title')}>
             <p>{t('rules.rounds.text')}</p>
             <p>{t('rules.rounds.goals')}</p>
             {/* Built from GOAL_POINTS so the table always matches the scoring code. */}
-            <table className="w-full max-w-xs text-center text-sm">
-              <thead className="text-xs text-stone-500 uppercase">
+            <table className={tableClass}>
+              <thead className={headClass}>
                 <tr>
                   <th className="py-1 text-left">{t('rules.rounds.round')}</th>
                   <th>{t('rules.rounds.first')}</th>
@@ -124,6 +210,15 @@ export default function RulesModal({ onClose }: Props) {
               </tbody>
             </table>
             <p>{t('rules.rounds.ties')}</p>
+            <p>{t('rules.rounds.tieExample', TIE_PARAMS)}</p>
+            <p>{t('rules.rounds.goalList')}</p>
+            <ul className="list-disc space-y-1 pl-5">
+              {GOAL_IDS.map((id) => (
+                <li key={id}>{t(`goals.${id}`)}</li>
+              ))}
+            </ul>
+            <p>{t('rules.rounds.goalNotes')}</p>
+            <p>{t('rules.rounds.solo')}</p>
           </Section>
 
           <Section title={t('rules.end.title')}>
