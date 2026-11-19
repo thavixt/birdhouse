@@ -13,25 +13,27 @@ type Props = {
   draft: Draft
   setDraft: (d: Draft) => void
   onConfirm: (action: GameAction) => void
+  /** Docked to the bottom of a phone screen: shorter idle text and a lifted shadow. */
+  docked?: boolean
 }
 
 const btn = 'rounded-md px-3 py-1.5 text-sm font-semibold cursor-pointer disabled:cursor-not-allowed disabled:opacity-40'
 const secondary = `${btn} bg-stone-200 hover:bg-stone-300`
 
 /** Contextual prompt for the current human player's in-progress action. */
-export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props) {
+export default function ActionPanel({ state, draft, setDraft, onConfirm, docked = false }: Props) {
   const { t } = useTranslation()
   const player = state.players[state.currentPlayer]
 
   if (state.phase === 'gameOver') return null
   if (player.kind === 'bot') {
-    return <Panel title={t('panel.botThinkingTitle', { name: player.name })}>{t('panel.botThinking')}</Panel>
+    return <PanelFrame docked={docked} title={t('panel.botThinkingTitle', { name: player.name })}>{t('panel.botThinking')}</PanelFrame>
   }
   if (draft.kind === 'idle') {
     return (
-      <Panel title={t('panel.yourTurnTitle', { name: player.name })}>
-        <Trans i18nKey="panel.yourTurn" components={{ b: <b /> }} />
-      </Panel>
+      <PanelFrame docked={docked} title={t('panel.yourTurnTitle', { name: player.name })}>
+        {docked ? t('panel.yourTurnShort') : <Trans i18nKey="panel.yourTurn" components={{ b: <b /> }} />}
+      </PanelFrame>
     )
   }
 
@@ -68,7 +70,7 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
       const left = { ...player.food }
       for (const f of [...card.cost.foods, ...draft.anyFoods]) left[f]--
       return (
-        <Panel title={t('panel.playBirdTitle', { card: t(`birds.${card.id}`) })}>
+        <PanelFrame docked={docked} title={t('panel.playBirdTitle', { card: t(`birds.${card.id}`) })}>
           <Step label={t('panel.habitat')}>
             {habitats.map((h) => (
               <button
@@ -108,14 +110,14 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
             </Step>
           )}
           {footer}
-        </Panel>
+        </PanelFrame>
       )
     }
 
     case 'gainFood': {
       const n = actionCount(player.board, 'forest')
       return (
-        <Panel title={t('panel.gainFoodTitle', { count: n })}>
+        <PanelFrame docked={docked} title={t('panel.gainFoodTitle', { count: n })}>
           <Step label={t('panel.chosenProgress', { done: draft.foods.length, total: n })}>
             {draft.foods.map((f, i) => (
               <FoodToken
@@ -130,14 +132,14 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
             <FoodPicker label={t('panel.take')} onPick={(f) => setDraft({ ...draft, foods: [...draft.foods, f] })} />
           )}
           {footer}
-        </Panel>
+        </PanelFrame>
       )
     }
 
     case 'layEggs': {
       const n = layCount(player)
       return (
-        <Panel title={t('panel.layEggsTitle', { count: n })}>
+        <PanelFrame docked={docked} title={t('panel.layEggsTitle', { count: n })}>
           <Step label={t('panel.placedProgress', { done: totalCount(draft.placements), total: n })}>
             <span className="text-xs text-stone-600">{n === 0 ? t('panel.noRoomForEggs') : t('panel.addEggsHint')}</span>
             {clearButton(() => setDraft({ ...draft, placements: [] }))}
@@ -146,29 +148,31 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm }: Props
             </button>
           </Step>
           {footer}
-        </Panel>
+        </PanelFrame>
       )
     }
 
     case 'drawCards': {
       const n = drawCount(state, state.currentPlayer)
       return (
-        <Panel title={t('panel.drawCardsTitle', { count: n })}>
+        <PanelFrame docked={docked} title={t('panel.drawCardsTitle', { count: n })}>
           <Step label={t('panel.pickedProgress', { done: draft.picks.length, total: n })}>
             <span className="text-xs text-stone-600">{t('panel.drawHint')}</span>
             {clearButton(() => setDraft({ ...draft, picks: [] }))}
           </Step>
           {footer}
-        </Panel>
+        </PanelFrame>
       )
     }
   }
 }
 
-function Panel({ title, children }: { title: string; children: ReactNode }) {
+function PanelFrame({ title, children, docked }: { title: string; children: ReactNode; docked: boolean }) {
   return (
-    <section className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm">
-      <h3 className="mb-2 font-bold text-violet-900">{title}</h3>
+    <section
+      className={`rounded-xl border border-violet-200 bg-violet-50 text-sm ${docked ? 'p-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.12)]' : 'p-3'}`}
+    >
+      <h3 className={`font-bold text-violet-900 ${docked ? 'mb-1' : 'mb-2'}`}>{title}</h3>
       {children}
     </section>
   )

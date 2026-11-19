@@ -111,7 +111,6 @@
     "round": "Round {{round}} / 4",
     "goal": "R{{round}}: {{name}} ({{first}}/{{second}})",
     "goalTitle": "1st place: {{first}} pts, 2nd place: {{second}} pts",
-    "rules": "Rules",
     "quit": "Quit"
   },
   "board": {
@@ -155,6 +154,7 @@
     "botThinkingTitle": "{{name}} is thinking…",
     "botThinking": "🤖 The bot will move in a moment.",
     "yourTurnTitle": "{{name}}, it's your turn",
+    "yourTurnShort": "Tap a bird in your hand, or a habitat button on your board.",
     "yourTurn": "Take <b>one</b> action: click a playable bird in your hand, or press a habitat button on your board to gain food, lay eggs or draw cards. Birds in that row then activate their powers right to left.",
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -227,15 +227,72 @@
   },
   "rules": {
     "title": "How to play",
-    "intro": "Attract birds to your three habitats over 4 rounds (8, 7, 6 and 5 turns each). On your turn take exactly one action:",
-    "playBird": "<b>Play a bird</b>: pay its food (❔ = any food) and place it in the leftmost empty slot of a habitat it allows. Slots 3-4 cost 1 egg, slot 5 costs 2 eggs.",
-    "gainFood": "<b>🌲 Gain food</b>: 1, plus 1 for every 2 forest birds.",
-    "layEggs": "<b>🌼 Lay eggs</b>: 2, plus 1 for every 2 grassland birds, up to each bird's egg limit.",
-    "drawCards": "<b>💧 Draw cards</b>: 1, plus 1 for every 2 wetland birds, from the tray or the deck.",
-    "powers": "After a habitat action, the birds in that row activate their powers (⚡) from right to left.",
-    "goals": "At the end of each round its goal is scored: 1st and 2nd place earn points. You need at least 1 to place; tied players share the points, rounded down.",
-    "scoring": "<b>Final score:</b> bird points + 1 per egg + 1 per leftover food (max 5) + goal points. Ties go to whoever has more leftover food.",
-    "close": "Got it"
+    "button": "Rules",
+    "close": "Got it",
+    "closeLabel": "Close",
+    "aim": {
+      "title": "The aim",
+      "text": "Attract birds to your <b>forest</b>, <b>grassland</b> and <b>wetland</b>. Every bird you place makes that habitat's action stronger, so your board grows into an engine. After 4 rounds, the player with the most points wins."
+    },
+    "setup": {
+      "title": "Setup",
+      "text": "Each player starts with 5 random bird cards in hand and 1 of each food (🌾 seed, 🐛 insect, 🐟 fish, 🍒 fruit, 🐭 rodent). Three bird cards are laid face up in the bird tray; the rest form the deck. Four round goals are drawn, one for each round."
+    },
+    "board": {
+      "title": "Your board",
+      "text": "Your board has three habitat rows with 5 slots each. The button at the start of a row is that habitat's action, and its <b>×N</b> shows how much it gives right now. It starts small and grows by 1 for every 2 birds in that row."
+    },
+    "cards": {
+      "title": "Bird cards",
+      "points": "<b>Points</b> (top right): scored at the end of the game.",
+      "cost": "<b>Food cost</b>: what you pay to play the bird. ❔ means any food of your choice.",
+      "habitats": "<b>Habitats</b>: the 🌲 🌼 💧 icons show where the bird can live.",
+      "eggLimit": "<b>Egg limit</b> (🥚 × N): the most eggs the bird can hold.",
+      "power": "<b>Power</b> (⚡, on some birds): a bonus that triggers when you use its habitat's action."
+    },
+    "turn": {
+      "title": "Your turn",
+      "text": "Players take turns one after another. On your turn, take <b>exactly one</b> of these four actions:",
+      "playBird": "<b>Play a bird</b>: choose a bird from your hand, pay its food cost, and place it in the leftmost empty slot of a habitat it can live in. The first two slots of a row are free; slots 3 and 4 also cost 1 egg, and slot 5 costs 2 eggs. You can take the eggs from any of your birds.",
+      "gainFood": "<b>🌲 Gain food</b>: take 1 food of your choice, plus 1 more for every 2 birds in your forest. The food supply never runs out.",
+      "layEggs": "<b>🌼 Lay eggs</b>: lay 2 eggs on any of your birds, plus 1 more for every 2 birds in your grassland. A bird can't hold more than its egg limit; if your birds run out of room, you lay fewer.",
+      "drawCards": "<b>💧 Draw cards</b>: take 1 card, plus 1 more for every 2 birds in your wetland, from the face-up tray or the top of the deck. There is no hand limit.",
+      "after": "After a habitat action (gain food, lay eggs or draw cards), the birds in that row use their powers. At the end of every turn, empty spaces in the bird tray are refilled from the deck."
+    },
+    "powers": {
+      "title": "Bird powers",
+      "text": "When you use a habitat's action, every bird in that row with a power (⚡) activates it, from right to left. Powers happen automatically:",
+      "gainFood": "<b>Gain food</b>: you gain 1 food of the type shown.",
+      "layEggSelf": "<b>Lay an egg on this bird</b>: 1 egg goes on the bird itself, if it has room.",
+      "layEggAny": "<b>Lay an egg on any bird</b>: 1 egg goes on whichever of your birds has the most room.",
+      "drawCard": "<b>Draw a card</b>: you draw 1 card from the deck.",
+      "allGainFood": "<b>Everyone gains food</b>: every player, including your opponents, gains 1 food of the type shown."
+    },
+    "rounds": {
+      "title": "Rounds and goals",
+      "text": "The game lasts 4 rounds. Each player gets 8 turns in round 1, 7 in round 2, 6 in round 3 and 5 in round 4, so every action counts for more as the game goes on. Each new round starts with a fresh bird tray, and the next player in turn order goes first.",
+      "goals": "At the end of each round, that round's goal (shown at the top of the screen) is scored. Whoever has the most of it comes 1st, the next player 2nd:",
+      "round": "Round",
+      "first": "1st place",
+      "second": "2nd place",
+      "ties": "You need at least 1 to place. Tied players share the points of the places they take, rounded down: if two players tie for 1st, they split the 1st and 2nd place points."
+    },
+    "end": {
+      "title": "End of the game",
+      "text": "After round 4, everyone adds up:",
+      "birds": "<b>Bird points</b>: the points of every bird on your board.",
+      "eggs": "<b>Eggs</b>: 1 point per egg.",
+      "food": "<b>Leftover food</b>: 1 point per food, up to 5.",
+      "goals": "<b>Goal points</b> from the four rounds.",
+      "tie": "The highest total wins. If it's a tie, the player with more leftover food wins; if that's tied too, they share the win."
+    },
+    "tips": {
+      "title": "Tips",
+      "engine": "Early on, play birds into the habitat you use most: a stronger action pays off on every turn after.",
+      "eggs": "Eggs are worth points, but you also need them to fill the later slots of a row.",
+      "lastRound": "In the last round, laying eggs is often worth more than starting something new.",
+      "goals": "Keep an eye on the next round's goal and plan for it."
+    }
   },
   "score": {
     "winner": "{{name}} wins!",

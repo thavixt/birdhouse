@@ -54,6 +54,20 @@ Requires Node.js 22.12+ (vitest's minimum).
 - **Components** are function components, one per file, PascalCase filenames.
 - Keep it **basic**. Prefer fewer features done well over many half-done ones.
 
+### Responsive layout
+
+- **Mobile-first Tailwind:** unprefixed classes are the phone layout; `sm:` (≥ 640px) and
+  `lg:` (≥ 1024px) restore the wider layouts. Desktop is the original design.
+- **No horizontal page scrolling** at 320px and up. Wide content scrolls inside its own
+  container instead (hand, bird tray, goal chips on phones, the score table).
+- **Habitat rows:** on phones the action button is a bar above the 5 slots; from `sm` it's
+  a column on the left. Placed birds show a compact egg count (🥚 2/5) on phones.
+- **Action panel:** from `lg` it sits in the sidebar. Below `lg` a second instance
+  (`docked`) is the `sticky bottom-0` last child of the page column, so prompts and
+  Confirm stay on screen without permanently covering content. Only one instance is
+  visible at a time (`hidden lg:block` / `lg:hidden`), so tests and scripts that look
+  up its text should filter to the visible one.
+
 ### Persistence
 
 - The game in progress is saved to `localStorage` (`birdhouse.savedGame`) after every
@@ -88,6 +102,8 @@ Requires Node.js 22.12+ (vitest's minimum).
   `hu-hu.json` (copy the English text if there's no translation yet). A test fails when
   the two files' keys differ or code uses a missing key.
 - **Plurals:** use `_one` / `_other` key suffixes and pass `count`.
+- **Rules dialog** (`RulesModal.tsx`, `rules.*` keys): when a rule changes, update its
+  text in both files. The goal points table is built from `GOAL_POINTS`, not the JSON.
 - **`src/game/` never imports i18n.** The engine emits `GameMessage = { key, params }`
   for log entries and validation errors; keys are paths in the JSON (`log.*`, `error.*`).
   `formatMessage(t, msg)` in `src/i18n/message.ts` translates params by name: `card` /
@@ -131,6 +147,7 @@ src/
     GameScreen.tsx         // in-game layout; owns the in-progress turn draft
     LanguageSwitch.tsx     // English | Magyar toggle
     PowerText.tsx          // translated "When activated: …" power text
+    RulesButton.tsx        // self-contained "Rules" button + dialog (start screen, game header)
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction
   theme.ts                 // food/habitat icons and static Tailwind class maps
@@ -234,8 +251,8 @@ see "Persistence" under Conventions.)
    ActionPanel, RoundTracker, ScoreScreen. Playable hot-seat.
 4. **Powers + round goals** ✅ — `powers.ts`, `goals.ts`, wired into engine & UI.
 5. **Bot** ✅ — `bot.ts`, auto-play bot turns.
-6. **Polish** (mostly ✅) — habitat colour theming, responsive layout, action log, rules help modal.
-   Colours, log and rules modal are in; the layout is responsive but only lightly tuned for phones.
+6. **Polish** ✅ — habitat colour theming, responsive layout, action log, rules help modal.
+   Phone layout checked at 320, 360, 375 and 414px (see "Responsive layout" under Conventions).
 
 ## Backlog — v2 ideas (not started)
 
@@ -246,15 +263,12 @@ see "Persistence" under Conventions.)
 
 ### Leftovers from v1
 
-- **Phone layout** — finish M6: the 5-slot rows and cards get cramped on phones; tune
-  card size, row layout and the side panel for ~375px width.
-- **Hungarian bird names** — confirm the less certain translations in `hu-hu.json`:
-  Keleti kékmadár (Eastern Bluebird), Nyugati réticsiröge (Western Meadowlark),
-  Amerikai vércse (American Kestrel), Üstökös harkály (Pileated Woodpecker).
+None. Phone layout and the Hungarian bird names (checked against Hungarian Wikipedia)
+are done.
 
 ### Suggested order
 
-1. ~~**Persistence**~~ ✅ + **phone layout** — cheap; fix the most noticeable friction.
+1. ~~**Persistence**~~ ✅ + ~~**phone layout**~~ ✅ — cheap; fix the most noticeable friction.
 2. **"When played" powers** + **bonus cards** — most strategic depth per effort; the
    engine already suits them.
 3. Later: **dice feeder**, **"between turns" / predator powers**, **online multiplayer** —

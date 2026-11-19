@@ -9,7 +9,6 @@ import CardTray from './CardTray'
 import GameLog from './GameLog'
 import Hand from './Hand'
 import RoundTracker from './RoundTracker'
-import RulesModal from './RulesModal'
 
 type Props = {
   state: GameState
@@ -23,7 +22,6 @@ export default function GameScreen({ state, dispatch, onQuit }: Props) {
   const [stamped, setStamped] = useState<{ at: number; draft: Draft }>({ at: turnStamp, draft: IDLE })
   const draft = stamped.at === turnStamp ? stamped.draft : IDLE
   const setDraft = (d: Draft) => setStamped({ at: turnStamp, draft: d })
-  const [showRules, setShowRules] = useState(false)
 
   const current = state.currentPlayer
   const player = state.players[current]
@@ -84,9 +82,9 @@ export default function GameScreen({ state, dispatch, onQuit }: Props) {
   const interactive = humanTurn && viewIdx === current
 
   return (
-    <main className="min-h-screen bg-linear-to-b from-emerald-50 to-stone-100 p-3 text-stone-900 md:p-4">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3">
-        <RoundTracker state={state} onHelp={() => setShowRules(true)} onQuit={onQuit} />
+    <main className="min-h-screen bg-linear-to-b from-emerald-50 to-stone-100 p-2 text-stone-900 sm:p-3 md:p-4">
+      <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:gap-3">
+        <RoundTracker state={state} onQuit={onQuit} />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="flex min-w-0 flex-col gap-3">
             <Board
@@ -114,15 +112,24 @@ export default function GameScreen({ state, dispatch, onQuit }: Props) {
             />
           </div>
           <aside className="flex flex-col gap-3">
-            <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} />
+            <div className="hidden lg:block">
+              <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} />
+            </div>
             <GameLog log={state.log} />
           </aside>
         </div>
         {state.players.map((p, i) =>
           i === viewIdx ? null : <Board key={p.id} player={p} active={i === current} turnsLeft={state.turnsLeft[i]} />,
         )}
+        {/*
+          Below lg the action panel is docked to the bottom of the screen. It is `sticky`
+          as the last child of the page column, so it stays in view while scrolling but
+          settles into its own space at the end and never permanently covers content.
+        */}
+        <div className="sticky bottom-0 z-20 -mx-2 max-h-[55vh] overflow-y-auto px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
+          <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} docked />
+        </div>
       </div>
-      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
     </main>
   )
 }

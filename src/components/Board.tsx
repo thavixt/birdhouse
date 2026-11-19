@@ -21,7 +21,7 @@ export default function Board({ player, active, turnsLeft, onAction, onBirdClick
   const score = scorePlayer(player)
   return (
     <section
-      className={`flex flex-col gap-2 rounded-xl border bg-white/80 p-3 shadow-sm ${active ? 'border-violet-400 ring-2 ring-violet-300' : 'border-stone-200'}`}
+      className={`flex flex-col gap-2 rounded-xl border bg-white/80 p-2 shadow-sm sm:p-3 ${active ? 'border-violet-400 ring-2 ring-violet-300' : 'border-stone-200'}`}
     >
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-baseline gap-2">
@@ -33,7 +33,7 @@ export default function Board({ player, active, turnsLeft, onAction, onBirdClick
         </div>
         <div className="flex items-center gap-3">
           <FoodSupply food={player.food} />
-          <span className="rounded-md bg-stone-800 px-2 py-0.5 text-sm font-bold text-white" title={t('board.scoreTitle')}>
+          <span className="rounded-md bg-stone-800 px-2 py-0.5 text-sm font-bold whitespace-nowrap text-white" title={t('board.scoreTitle')}>
             {t('board.score', { count: score.total })}
           </span>
         </div>

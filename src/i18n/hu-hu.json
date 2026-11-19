@@ -39,7 +39,7 @@
     "northern-cardinal": "Piros kardinális",
     "black-capped-chickadee": "Feketesapkás cinege",
     "downy-woodpecker": "Pelyhes harkály",
-    "pileated-woodpecker": "Üstökös harkály",
+    "pileated-woodpecker": "Kontyos feketeharkály",
     "great-horned-owl": "Virginiai uhu",
     "cedar-waxwing": "Cédrus-csonttollú",
     "ruby-throated-hummingbird": "Rubintorkú kolibri",
@@ -47,8 +47,8 @@
     "red-tailed-hawk": "Vörösfarkú ölyv",
     "wood-duck": "Karolinai réce",
     "bald-eagle": "Fehérfejű rétisas",
-    "american-kestrel": "Amerikai vércse",
-    "eastern-bluebird": "Keleti kékmadár",
+    "american-kestrel": "Tarka vércse",
+    "eastern-bluebird": "Vörösbegyű kékmadár",
     "western-meadowlark": "Nyugati réticsiröge",
     "mourning-dove": "Gyászgerle",
     "house-sparrow": "Házi veréb",
@@ -111,7 +111,6 @@
     "round": "{{round}}. kör / 4",
     "goal": "{{round}}. kör: {{name}} ({{first}}/{{second}})",
     "goalTitle": "1. hely: {{first}} pont, 2. hely: {{second}} pont",
-    "rules": "Szabályok",
     "quit": "Kilépés"
   },
   "board": {
@@ -155,6 +154,7 @@
     "botThinkingTitle": "{{name}} gondolkodik…",
     "botThinking": "🤖 A gép mindjárt lép.",
     "yourTurnTitle": "{{name}}, te jössz!",
+    "yourTurnShort": "Koppints egy madárra a kezedben, vagy egy élőhely gombjára a tábládon.",
     "yourTurn": "Válassz <b>egy</b> akciót: kattints egy kijátszható madárra a kezedben, vagy nyomd meg egy élőhely gombját a tábládon, hogy élelmet szerezz, tojást rakj vagy kártyát húzz. Ezután a sor madarai jobbról balra aktiválják a képességüket.",
     "confirm": "Megerősítés",
     "cancel": "Mégse",
@@ -227,15 +227,72 @@
   },
   "rules": {
     "title": "Játékszabályok",
-    "intro": "Csalogass madarakat a három élőhelyedre 4 körön át (körönként 8, 7, 6, majd 5 lépés). A lépésedben pontosan egy akciót hajts végre:",
-    "playBird": "<b>Madár kijátszása</b>: fizesd ki az élelemköltségét (❔ = bármilyen élelem), és tedd egy számára megfelelő élőhely bal szélső üres helyére. A 3-4. hely 1 tojásba, az 5. hely 2 tojásba kerül.",
-    "gainFood": "<b>🌲 Élelemszerzés</b>: 1, plusz minden 2 erdei madár után további 1.",
-    "layEggs": "<b>🌼 Tojásrakás</b>: 2, plusz minden 2 mezei madár után további 1, legfeljebb a madarak tojáskorlátjáig.",
-    "drawCards": "<b>💧 Kártyahúzás</b>: 1, plusz minden 2 vízparti madár után további 1, a felcsapott kártyák közül vagy a pakliból.",
-    "powers": "Egy élőhely-akció után az adott sor madarai jobbról balra aktiválják a képességüket (⚡).",
-    "goals": "Minden kör végén pontozzuk a kör célját: az 1. és a 2. helyezett pontot kap. A helyezéshez legalább 1 kell; holtverseny esetén a játékosok osztoznak a pontokon (lefelé kerekítve).",
-    "scoring": "<b>Végső pontszám:</b> madárpontok + tojásonként 1 + maradék élelmenként 1 (legfeljebb 5) + célpontok. Döntetlennél az nyer, akinek több élelme maradt.",
-    "close": "Értem"
+    "button": "Szabályok",
+    "close": "Értem",
+    "closeLabel": "Bezárás",
+    "aim": {
+      "title": "A játék célja",
+      "text": "Csalogass madarakat az <b>erdődbe</b>, a <b>meződre</b> és a <b>vízpartodra</b>. Minden lerakott madár erősebbé teszi az adott élőhely akcióját, így a táblád egyre hatékonyabb „motorrá” válik. 4 kör után a legtöbb pontot szerző játékos nyer."
+    },
+    "setup": {
+      "title": "Előkészületek",
+      "text": "Minden játékos 5 véletlenszerű madárkártyával és mindegyik élelemből 1-gyel kezd (🌾 mag, 🐛 rovar, 🐟 hal, 🍒 gyümölcs, 🐭 rágcsáló). Három madárkártya képpel felfelé kerül a felcsapott kártyák közé, a többi alkotja a paklit. Négy kör-cél kerül kisorsolásra, minden körre egy."
+    },
+    "board": {
+      "title": "A táblád",
+      "text": "A tábládon három élőhely-sor van, mindegyikben 5 hellyel. A sor elején lévő gomb az élőhely akciója, a <b>×N</b> pedig azt mutatja, mennyit ad éppen. Kicsiben indul, és a sorban lévő minden 2 madár után 1-gyel nő."
+    },
+    "cards": {
+      "title": "Madárkártyák",
+      "points": "<b>Pontérték</b> (jobb felső sarok): a játék végén számít.",
+      "cost": "<b>Élelemköltség</b>: ezt kell kifizetned a madár kijátszásához. A ❔ bármilyen, általad választott élelem.",
+      "habitats": "<b>Élőhelyek</b>: a 🌲 🌼 💧 ikonok mutatják, hol élhet a madár.",
+      "eggLimit": "<b>Tojáskorlát</b> (🥚 × N): legfeljebb ennyi tojás lehet a madáron.",
+      "power": "<b>Képesség</b> (⚡, csak egyes madaraknál): bónusz, amely akkor lép életbe, amikor a madár élőhelyének akcióját használod."
+    },
+    "turn": {
+      "title": "A lépésed",
+      "text": "A játékosok felváltva lépnek. A lépésedben az alábbi négy akció közül <b>pontosan egyet</b> hajts végre:",
+      "playBird": "<b>Madár kijátszása</b>: válassz egy madarat a kezedből, fizesd ki az élelemköltségét, és tedd egy számára megfelelő élőhely bal szélső üres helyére. Egy sor első két helye ingyenes; a 3. és 4. hely további 1 tojásba, az 5. hely 2 tojásba kerül. A tojásokat bármelyik madaradról leveheted.",
+      "gainFood": "<b>🌲 Élelemszerzés</b>: elveszel 1 általad választott élelmet, plusz az erdődben lévő minden 2 madár után további 1-et. Az élelemkészlet sosem fogy el.",
+      "layEggs": "<b>🌼 Tojásrakás</b>: lerakhatsz 2 tojást bármelyik madaradra, plusz a meződön lévő minden 2 madár után további 1-et. Egy madáron nem lehet több tojás a tojáskorlátjánál; ha elfogy a hely, kevesebbet raksz le.",
+      "drawCards": "<b>💧 Kártyahúzás</b>: elveszel 1 kártyát, plusz a vízpartodon lévő minden 2 madár után további 1-et, a felcsapott kártyák közül vagy a pakli tetejéről. A kezedben tartható kártyák száma nincs korlátozva.",
+      "after": "Egy élőhely-akció (élelemszerzés, tojásrakás vagy kártyahúzás) után az adott sor madarai használják a képességüket. Minden lépés végén a felcsapott kártyák üres helyei feltöltődnek a pakliból."
+    },
+    "powers": {
+      "title": "Madárképességek",
+      "text": "Amikor egy élőhely akcióját használod, a sorban lévő minden képességgel (⚡) rendelkező madár aktiválódik, jobbról balra haladva. A képességek automatikusan érvényesülnek:",
+      "gainFood": "<b>Élelemszerzés</b>: kapsz 1 élelmet a jelölt fajtából.",
+      "layEggSelf": "<b>Tojás erre a madárra</b>: 1 tojás kerül magára a madárra, ha van rajta hely.",
+      "layEggAny": "<b>Tojás bármelyik madárra</b>: 1 tojás kerül arra a madaradra, amelyiken a legtöbb hely van.",
+      "drawCard": "<b>Kártyahúzás</b>: húzol 1 kártyát a pakliból.",
+      "allGainFood": "<b>Mindenki élelmet kap</b>: minden játékos, az ellenfeleid is, kap 1 élelmet a jelölt fajtából."
+    },
+    "rounds": {
+      "title": "Körök és célok",
+      "text": "A játék 4 körig tart. Az 1. körben minden játékos 8-at lép, a 2.-ban 7-et, a 3.-ban 6-ot, a 4.-ben 5-öt, így a játék vége felé egyre értékesebb minden akció. Minden új kör friss felcsapott kártyákkal indul, és a sorban következő játékos kezd.",
+      "goals": "Minden kör végén pontozzuk az adott kör célját (a képernyő tetején látható). Akinek ebből a legtöbb van, az lesz az 1., a következő a 2.:",
+      "round": "Kör",
+      "first": "1. hely",
+      "second": "2. hely",
+      "ties": "A helyezéshez legalább 1 kell. Holtverseny esetén a játékosok osztoznak az általuk elfoglalt helyek pontjain, lefelé kerekítve: ha ketten holtversenyben elsők, megosztják az 1. és a 2. hely pontjait."
+    },
+    "end": {
+      "title": "A játék vége",
+      "text": "A 4. kör után mindenki összeszámolja:",
+      "birds": "<b>Madárpontok</b>: a tábládon lévő összes madár pontértéke.",
+      "eggs": "<b>Tojások</b>: tojásonként 1 pont.",
+      "food": "<b>Maradék élelem</b>: élelmenként 1 pont, legfeljebb 5.",
+      "goals": "<b>Célpontok</b> a négy körből.",
+      "tie": "A legmagasabb összpontszám nyer. Döntetlen esetén az nyer, akinek több élelme maradt; ha ez is egyenlő, osztoznak a győzelmen."
+    },
+    "tips": {
+      "title": "Tippek",
+      "engine": "Az elején abba az élőhelybe játssz ki madarakat, amelyiket a legtöbbet használod: az erősebb akció minden további lépésben megtérül.",
+      "eggs": "A tojás pontot ér, de a sorok későbbi helyeihez is szükséged van rá.",
+      "lastRound": "Az utolsó körben a tojásrakás gyakran többet ér, mint valami új elkezdése.",
+      "goals": "Figyeld a következő kör célját, és készülj rá."
+    }
   },
   "score": {
     "winner": "{{name}} nyert!",

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { GameState, PlayerConfig } from '../game/types'
 import LanguageSwitch from './LanguageSwitch'
+import RulesButton from './RulesButton'
 
 type Props = {
   onStart: (players: PlayerConfig[]) => void
@@ -36,9 +37,13 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
     <main className="flex min-h-screen items-center justify-center bg-linear-to-b from-emerald-50 to-stone-100 p-4 text-stone-900">
       <div className="relative flex w-full max-w-xl flex-col gap-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-lg">
         <div className="text-center min-h-24 flex flex-col gap-3">
-          <div className="flex justify-between items-center">
-            <h1 className="text-6xl font-bold text-emerald-900">🐦 {t('app.title')}</h1>
-            <LanguageSwitch />
+          {/* Phones: rules + language switch on their own line above the title, so nothing gets squeezed. */}
+          <div className="flex flex-col-reverse items-center gap-2 sm:flex-row sm:justify-between">
+            <h1 className="text-5xl font-bold text-emerald-900 min-[375px]:text-6xl">🐦 {t('app.title')}</h1>
+            <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
+              <RulesButton />
+              <LanguageSwitch />
+            </div>
           </div>
           <p className="text-sm text-stone-600">{t('app.tagline')}</p>
         </div>

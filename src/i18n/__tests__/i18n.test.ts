@@ -41,7 +41,12 @@ describe('dictionaries', () => {
   })
 
   it('contains every literal key used in components and the engine', () => {
-    const ui = sources('components').flatMap((s) => [...s.matchAll(/\bt\(\s*'([\w.-]+)'/g), ...s.matchAll(/i18nKey="([\w.-]+)"/g)])
+    const ui = sources('components').flatMap((s) => [
+      ...s.matchAll(/\bt\(\s*'([\w.-]+)'/g),
+      ...s.matchAll(/i18nKey="([\w.-]+)"/g),
+      // Keys kept in constant lists, e.g. RulesModal's sections.
+      ...s.matchAll(/'(rules\.[\w.-]+)'/g),
+    ])
     const game = sources('game').flatMap((s) => [...s.matchAll(/key: '([\w.-]+)'/g)])
     const errors = sources('game').flatMap((s) => [...s.matchAll(/\berr\('(\w+)'/g)].map((m) => ['', `error.${m[1]}`]))
     const used = [...ui, ...game].map((m) => m[1]).concat(errors.map((e) => e[1]))

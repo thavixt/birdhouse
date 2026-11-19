@@ -14,41 +14,44 @@ export default function ScoreScreen({ state, onRematch, onMenu }: Props) {
   const winner = state.players[standings[0].playerIdx]
   const shared = standings.filter((s) => s.rank === 1).length > 1
   return (
-    <main className="min-h-screen bg-linear-to-b from-emerald-50 to-stone-100 p-4 text-stone-900">
-      <div className="mx-auto flex max-w-4xl flex-col gap-4">
-        <section className="relative rounded-2xl border border-stone-200 bg-white p-6 shadow-lg">
-          <div className="absolute top-3 right-3">
+    <main className="min-h-screen bg-linear-to-b from-emerald-50 to-stone-100 p-2 text-stone-900 sm:p-4">
+      <div className="mx-auto flex max-w-4xl flex-col gap-2 sm:gap-4">
+        <section className="rounded-2xl border border-stone-200 bg-white p-4 shadow-lg sm:p-6">
+          <div className="flex justify-end">
             <LanguageSwitch />
           </div>
-          <h1 className="text-center text-3xl font-bold text-emerald-900">
+          <h1 className="mt-2 text-center text-2xl font-bold text-emerald-900 sm:text-3xl">
             {shared ? t('score.tie') : t('score.winner', { name: winner.name })}
           </h1>
-          <table className="mt-4 w-full text-left text-sm">
-            <thead className="text-xs text-stone-500 uppercase">
-              <tr>
-                <th className="py-1">{t('score.rank')}</th>
-                <th>{t('score.player')}</th>
-                <th className="text-right">{t('score.birds')}</th>
-                <th className="text-right">{t('score.eggs')}</th>
-                <th className="text-right">{t('score.food')}</th>
-                <th className="text-right">{t('score.goals')}</th>
-                <th className="text-right">{t('score.total')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {standings.map(({ playerIdx, breakdown, rank }) => (
-                <tr key={playerIdx} className="border-t border-stone-200">
-                  <td className="py-2">{MEDALS[rank - 1] ?? rank}</td>
-                  <td className="font-semibold">{state.players[playerIdx].name}</td>
-                  <td className="text-right tabular-nums">{breakdown.birds}</td>
-                  <td className="text-right tabular-nums">{breakdown.eggs}</td>
-                  <td className="text-right tabular-nums">{breakdown.food}</td>
-                  <td className="text-right tabular-nums">{breakdown.goals}</td>
-                  <td className="text-right text-base font-bold tabular-nums">{breakdown.total}</td>
+          {/* Scrolls sideways on narrow phones rather than squeezing the columns. */}
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs text-stone-500 uppercase">
+                <tr>
+                  <th className="py-1">{t('score.rank')}</th>
+                  <th>{t('score.player')}</th>
+                  <th className="text-right">{t('score.birds')}</th>
+                  <th className="text-right">{t('score.eggs')}</th>
+                  <th className="text-right">{t('score.food')}</th>
+                  <th className="text-right">{t('score.goals')}</th>
+                  <th className="text-right">{t('score.total')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {standings.map(({ playerIdx, breakdown, rank }) => (
+                  <tr key={playerIdx} className="border-t border-stone-200">
+                    <td className="py-2">{MEDALS[rank - 1] ?? rank}</td>
+                    <td className="font-semibold">{state.players[playerIdx].name}</td>
+                    <td className="text-right tabular-nums">{breakdown.birds}</td>
+                    <td className="text-right tabular-nums">{breakdown.eggs}</td>
+                    <td className="text-right tabular-nums">{breakdown.food}</td>
+                    <td className="text-right tabular-nums">{breakdown.goals}</td>
+                    <td className="text-right text-base font-bold tabular-nums">{breakdown.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="mt-5 flex justify-center gap-3">
             <button
               type="button"
