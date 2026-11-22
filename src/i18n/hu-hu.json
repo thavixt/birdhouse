@@ -144,6 +144,11 @@
     "hint": "— kattints egy kijátszható madárra",
     "empty": "Nincs kártyád. Húzz néhányat a vízparton."
   },
+  "handoff": {
+    "title": "{{name}} következik",
+    "body": "Add át az eszközt a következő játékosnak ({{name}}). A többiek ne lessenek a lapjaira!",
+    "ready": "Én vagyok {{name}} – mutasd a lapjaimat"
+  },
   "tray": {
     "title": "Felcsapott madarak",
     "empty": "üres",

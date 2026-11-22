@@ -143,11 +143,26 @@ export function pickDeck(state: GameState, draft: Draft): Draft {
 
 // ------------------------------------------------------------- view helpers
 
-/** Whose board and hand are shown up top: the acting human, or the first human while bots play. */
-export function viewedPlayer(state: GameState): number {
+/**
+ * Whose board and hand are shown up top: the acting human; while bots play, the human
+ * who last had the device (`revealedTo`), else the first human.
+ */
+export function viewedPlayer(state: GameState, revealedTo: number | null = null): number {
   const current = state.players[state.currentPlayer]
   if (current.kind === 'human' && state.phase === 'playing') return state.currentPlayer
+  if (revealedTo !== null && state.players[revealedTo]?.kind === 'human') return revealedTo
   return Math.max(0, state.players.findIndex((p) => p.kind === 'human'))
+}
+
+/**
+ * Hot-seat privacy: true when the hand about to be shown isn't the one last revealed and
+ * other humans share the device, so the screen must be covered until its owner is ready.
+ * Never needed with a single human (solo / against the computer).
+ */
+export function needsHandoff(state: GameState, revealedTo: number | null): boolean {
+  if (state.phase !== 'playing') return false
+  const humans = state.players.filter((p) => p.kind === 'human').length
+  return humans > 1 && viewedPlayer(state, revealedTo) !== revealedTo
 }
 
 /** True if the current player can afford the card and has a habitat to put it in. */

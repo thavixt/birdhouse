@@ -5,6 +5,7 @@ import {
   chooseHabitat,
   clickBird,
   IDLE,
+  needsHandoff,
   pickDeck,
   pickedDeck,
   pickedTray,
@@ -183,6 +184,37 @@ describe('view helpers', () => {
     ])
     expect(viewedPlayer(s)).toBe(1)
     expect(viewedPlayer({ ...s, currentPlayer: 2 })).toBe(2)
+  })
+
+  it('while a bot plays, keeps showing the human who last had the device', () => {
+    const s = createGame(1, [
+      { name: 'Bot', kind: 'bot' },
+      { name: 'Ann', kind: 'human' },
+      { name: 'Bea', kind: 'human' },
+    ])
+    expect(viewedPlayer(s, 2)).toBe(2)
+    expect(viewedPlayer(s, 0)).toBe(1) // not a human: fall back to the first human
+  })
+
+  it('needsHandoff covers the screen between different humans only', () => {
+    const hotSeat = createGame(1, [
+      { name: 'Ann', kind: 'human' },
+      { name: 'Bot', kind: 'bot' },
+      { name: 'Bea', kind: 'human' },
+    ])
+    expect(needsHandoff(hotSeat, null)).toBe(true) // game start / resumed game
+    expect(needsHandoff(hotSeat, 0)).toBe(false) // Ann already revealed
+    expect(needsHandoff({ ...hotSeat, currentPlayer: 1 }, 0)).toBe(false) // bot plays; Ann's view stays
+    expect(needsHandoff({ ...hotSeat, currentPlayer: 2 }, 0)).toBe(true) // Bea's turn
+    expect(needsHandoff({ ...hotSeat, currentPlayer: 2 }, 2)).toBe(false)
+    expect(needsHandoff({ ...hotSeat, phase: 'gameOver' }, null)).toBe(false)
+
+    const vsBot = createGame(1, [
+      { name: 'Ann', kind: 'human' },
+      { name: 'Bot', kind: 'bot' },
+    ])
+    expect(needsHandoff(vsBot, null)).toBe(false) // a single human never needs it
+    expect(needsHandoff(newGame(1, 1), null)).toBe(false)
   })
 
   it('canPlayCard needs food and a habitat with room', () => {

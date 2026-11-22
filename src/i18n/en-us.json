@@ -144,6 +144,11 @@
     "hint": "— click a playable bird to play it",
     "empty": "No cards. Draw some from the wetland."
   },
+  "handoff": {
+    "title": "{{name}}'s turn",
+    "body": "Pass the device to {{name}}. Everyone else: no peeking at their hand!",
+    "ready": "I'm {{name}} – show my hand"
+  },
   "tray": {
     "title": "Bird tray",
     "empty": "empty",

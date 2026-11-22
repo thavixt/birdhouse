@@ -169,6 +169,7 @@ src/
     LanguageSwitch.tsx     // English | Magyar toggle
     PowerText.tsx          // translated "When activated: …" power text
     RulesButton.tsx        // self-contained "Rules" button + dialog (start screen, game header)
+    HandoffOverlay.tsx     // hot-seat "pass the device" cover between different humans
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction, and what
                            // each click does to it (pure; tested in `src/__tests__/`)
@@ -275,6 +276,11 @@ see "Persistence" under Conventions.)
 - **The first player is always human** (the person at the device): no human/bot toggle
   and no remove button on that row. So the UI never starts an all-bot game, even though
   the engine would allow one.
+- **Hot-seat privacy:** with 2+ humans, a full-screen "pass the device" overlay
+  (`HandoffOverlay`) covers the game whenever the hand about to be shown belongs to a
+  different human than the one who last revealed theirs (`needsHandoff` in `draft.ts`),
+  including at the start of a game and after Continue. During bot turns the last revealed
+  human's board and hand stay up. Solo and vs-computer games never show it.
 - **Player names:** switching a player between human and bot swaps a preset name
   ("Player N", the bot names) for an unused one of the new kind; a name the user typed
   is kept. "Add player" adds a bot with the first unused bot name.
