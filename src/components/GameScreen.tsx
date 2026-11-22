@@ -1,10 +1,8 @@
-import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay } from '@dnd-kit/core'
 import { cn } from 'cn'
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import {
   boardEggDelta,
-  canDrag,
-  canDrop,
   canPlayCard,
   clickBird,
   isFirstTurn,
@@ -12,22 +10,19 @@ import {
   pickedTray,
   selectedHandIndex,
   startHabitatAction,
-  type DragItem,
-  type DropTarget,
 } from '../draft'
 import { drawCount } from '../game/engine'
+import { useCardDrag } from '../hooks/useCardDrag'
 import { useGame, useGameStore, useTurnView } from '../store/gameStore'
 import ActionPanel from './ActionPanel'
-import BirdInfo from './BirdInfo'
 import Board from './Board'
 import BotTurnOverlay from './BotTurnOverlay'
 import CardTray from './CardTray'
 import DragPreview from './DragPreview'
 import DropZone from './DropZone'
-import GameLog from './GameLog'
 import HandoffOverlay from './HandoffOverlay'
+import GameSidebar from './GameSidebar'
 import Hand from './Hand'
-import PlayerList from './PlayerList'
 import RoundTracker from './RoundTracker'
 
 // Loaded only when a tour runs (the tutorial is off by default), keeping react-joyride out of the main bundle.
@@ -67,10 +62,9 @@ const SOLO_BOARD_CELL = 'lg:col-start-2 lg:row-start-2 2xl:col-[2/4] 2xl:row-sta
 export default function GameScreen() {
   const state = useGame()
   const draft = useGameStore((s) => s.draft)
-  const inspected = useGameStore((s) => s.inspected)
   const tutorial = useGameStore((s) => s.tutorial)
   const toured = useGameStore((s) => s.toured)
-  const { setDraft, inspect, revealHand, finishTour, quit, clickHandCard, clickTrayCard, clickDeck, startDrag, endDrag } =
+  const { setDraft, inspect, revealHand, finishTour, quit, clickHandCard, clickTrayCard, clickDeck } =
     useGameStore.getState()
   const { current, viewIdx, handoff, interactive } = useTurnView()
 
@@ -83,36 +77,10 @@ export default function GameScreen() {
   // Tutorial: once per human, on their first turn; finishing or skipping it marks them done.
   const showTour = tutorial && interactive && isFirstTurn(state) && !toured.includes(current)
 
-  // Drag and drop (table-style shortcuts; see "Drag and drop" in draft.ts).
-  // Mouse: drag after moving 6px, so clicks still work (a short drag that goes nowhere still
-  // counts as a click, see `endDrag`). Touch: press and hold, so swiping still scrolls.
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-  )
-  // Only while the pointer is down; local because nothing outside this screen needs it.
-  const [dragging, setDragging] = useState<DragItem | null>(null)
-  const accepts = (target: DropTarget) => dragging !== null && canDrop(state, draft, dragging, target)
-  const dragEnabled = (item: DragItem) => interactive && canDrag(state, draft, item)
-
-  function onDragEnd({ active, over, delta }: DragEndEvent) {
-    setDragging(null)
-    const item = active.data.current as DragItem | undefined
-    if (!interactive || !item) return
-    endDrag(item, (over?.data.current as DropTarget | undefined) ?? null, delta)
-  }
+  const { dragging, accepts, canDrag, contextProps } = useCardDrag(interactive)
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={({ active }) => {
-        const item = (active.data.current as DragItem | undefined) ?? null
-        setDragging(item)
-        if (item && interactive) startDrag(item)
-      }}
-      onDragEnd={onDragEnd}
-      onDragCancel={() => setDragging(null)}
-    >
+    <DndContext {...contextProps}>
       {/* Keyed by player so the next human's tour starts from the first step. */}
       {showTour && (
         <Suspense fallback={null}>
@@ -161,7 +129,7 @@ export default function GameScreen() {
                     pickedDeck={pickedDeck(draft)}
                     onPickTray={canPickCards ? clickTrayCard : undefined}
                     onPickDeck={canPickCards ? clickDeck : undefined}
-                    canDrag={interactive ? dragEnabled : undefined}
+                    canDrag={interactive ? canDrag : undefined}
                     onInspect={inspect}
                   />
                 </div>
@@ -193,14 +161,9 @@ export default function GameScreen() {
               full height (which would leave sticky nothing to do); it scrolls internally if
               taller than the window.
             */}
-            <aside className={`flex flex-col gap-3 lg:col-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-22 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}>
-              <PlayerList />
-              <div data-tour="panel" className="hidden lg:block">
-                <ActionPanel />
-              </div>
-              {inspected && <BirdInfo cardId={inspected} onClose={() => inspect(null)} />}
-              <GameLog log={state.log} />
-            </aside>
+            <GameSidebar
+              className={`flex flex-col gap-3 lg:col-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-22 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}
+            />
             {opponents.map((i, k) => {
               const p = state.players[i]
               return (

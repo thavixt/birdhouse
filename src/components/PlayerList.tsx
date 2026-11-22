@@ -2,14 +2,14 @@ import { useTranslation } from 'react-i18next'
 import { scorePlayer } from '../game/scoring'
 import { useGame } from '../store/gameStore'
 import { cn } from 'cn'
+import SidebarCard from './ui/SidebarCard'
 
 /** Every player's name and current score; the player whose turn it is is highlighted. */
 export default function PlayerList() {
   const { t } = useTranslation()
   const state = useGame()
   return (
-    <section className="rounded-xl border border-stone-200 bg-white/80 p-3 text-sm shadow-sm">
-      <h3 className="mb-1 text-sm font-semibold text-stone-600">{t('players.title')}</h3>
+    <SidebarCard title={t('players.title')}>
       <ul className="flex flex-col gap-1">
         {state.players.map((player, i) => {
           const score = scorePlayer(player)
@@ -32,6 +32,6 @@ export default function PlayerList() {
           )
         })}
       </ul>
-    </section>
+    </SidebarCard>
   )
 }

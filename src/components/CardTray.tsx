@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
-import { useHorizontalWheel } from '../hooks/useHorizontalWheel'
 import type { DragItem } from '../draft'
 import BirdCard from './BirdCard'
-import DragSource from './DragSource'
+import CardBack from './CardBack'
+import CardRow from './CardRow'
+import CardSlot from './CardSlot'
 
 type Props = {
   tray: (string | null)[]
@@ -22,60 +23,39 @@ type Props = {
 /** The face-up cards and the deck. */
 export default function CardTray({ tray, deckCount, discardCount, pickedTray, pickedDeck, onPickTray, onPickDeck, canDrag, onInspect }: Props) {
   const { t } = useTranslation()
-  // The mouse wheel scrolls through the tray sideways.
-  const wheelScroll = useHorizontalWheel<HTMLDivElement>()
-  const deck = (
-    <button
-      type="button"
-      onClick={onPickDeck}
-      disabled={!onPickDeck}
-      data-deck
-      className={`flex min-h-52 w-36 shrink-0 flex-col items-center justify-center gap-1 rounded-lg border border-stone-400 bg-linear-to-br from-stone-600 to-stone-800 text-white shadow-sm ${onPickDeck ? 'cursor-pointer hover:ring-2 hover:ring-violet-400' : 'cursor-default'} ${pickedDeck > 0 ? 'ring-4 ring-violet-500' : ''}`}
-    >
-      <span className="text-2xl">🂠</span>
-      <span className="text-xs">{t('tray.deck', { count: deckCount })}</span>
-      {discardCount > 0 && <span className="text-[10px] text-stone-300">{t('tray.discard', { count: discardCount })}</span>}
-      {pickedDeck > 0 && <span className="text-xs font-bold">{t('tray.picked', { count: pickedDeck })}</span>}
-    </button>
-  )
+  const drag = (id: string, item: DragItem) => (canDrag ? { id, item, enabled: canDrag(item) } : undefined)
   return (
-    <section data-tour="tray" className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold text-stone-600">
-        <span aria-hidden>🐦 </span>
-        {t('tray.title')} {canDrag && onPickTray && <span className="font-normal">{t('tray.hint')}</span>}
-      </h3>
-      <div ref={wheelScroll} className="flex gap-2 overflow-x-auto pb-2">
-        {canDrag ? (
-          <DragSource id="deck" item={{ kind: 'deck' }} enabled={canDrag({ kind: 'deck' })}>
-            {deck}
-          </DragSource>
+    <CardRow tour="tray" icon="🐦" title={t('tray.title')} hint={canDrag && onPickTray && t('tray.hint')}>
+      <CardSlot drag={drag('deck', { kind: 'deck' })}>
+        <button
+          type="button"
+          onClick={onPickDeck}
+          disabled={!onPickDeck}
+          data-deck
+          // `flex` so the card back stretches to the row's height (a button centres its content).
+          className={`flex shrink-0 rounded-lg shadow-sm ${onPickDeck ? 'cursor-pointer hover:ring-2 hover:ring-violet-400' : 'cursor-default'} ${pickedDeck > 0 ? 'ring-4 ring-violet-500' : ''}`}
+        >
+          <CardBack>
+            <span className="text-xs">{t('tray.deck', { count: deckCount })}</span>
+            {discardCount > 0 && <span className="text-[10px] text-stone-300">{t('tray.discard', { count: discardCount })}</span>}
+            {pickedDeck > 0 && <span className="text-xs font-bold">{t('tray.picked', { count: pickedDeck })}</span>}
+          </CardBack>
+        </button>
+      </CardSlot>
+      {tray.map((id, i) =>
+        id ? (
+          <CardSlot key={i} drag={drag(`tray:${i}`, { kind: 'tray', index: i })}>
+            <BirdCard cardId={id} selected={pickedTray.includes(i)} onClick={onPickTray ? () => onPickTray(i) : onInspect && (() => onInspect(id))} />
+          </CardSlot>
         ) : (
-          deck
-        )}
-        {tray.map((id, i) => {
-          if (!id) {
-            return (
-              <div
-                key={i}
-                className="flex w-36 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-stone-300 text-xs text-stone-400"
-              >
-                {t('tray.empty')}
-              </div>
-            )
-          }
-          const card = <BirdCard cardId={id} selected={pickedTray.includes(i)} onClick={onPickTray ? () => onPickTray(i) : onInspect && (() => onInspect(id))} />
-          const item: DragItem = { kind: 'tray', index: i }
-          return canDrag ? (
-            <DragSource key={i} id={`tray:${i}`} item={item} enabled={canDrag(item)}>
-              {card}
-            </DragSource>
-          ) : (
-            <div key={i} className="flex shrink-0">
-              {card}
-            </div>
-          )
-        })}
-      </div>
-    </section>
+          <div
+            key={i}
+            className="flex w-36 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-stone-300 text-xs text-stone-400"
+          >
+            {t('tray.empty')}
+          </div>
+        ),
+      )}
+    </CardRow>
   )
 }

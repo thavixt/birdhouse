@@ -298,6 +298,8 @@ src/
     HabitatRow.tsx         // one row: action button + 5 slots
     HabitatScenery.tsx     // decorative per-habitat backdrop (sky gradient + repeating SVG scenery)
     BirdCard.tsx           // card visual (photo, name, habitat, cost, points, egg limit, power)
+    PointsBadge.tsx        // a bird's points badge (BirdCard, BirdInfo)
+    CardBack.tsx           // face-down card (deck, deck while dragged)
     BirdPhoto.tsx          // a species photo filling its parent from behind (see "Bird photos")
     BirdInfo.tsx           // "about this bird" card below the log (see "Bird info")
     DevBirdId.tsx          // dev-only id tag after a bird name (see "Debug logging")
@@ -305,6 +307,8 @@ src/
     Hand.tsx               // current player's cards
     FoodSupply.tsx         // shared food supply / player's food tokens
     CardTray.tsx           // 3 face-up cards + deck
+    CardRow.tsx            // headed, wheel-scrolling card row (Hand, CardTray)
+    CardSlot.tsx           // one card in a row: DragSource when draggable, else a plain wrapper
     ActionPanel.tsx        // contextual prompts: picks the panel for the current draft
     action-panel/          // one panel per action (PlayBird, GainFood, LayEggs, DrawCards)
                            // + PanelFrame, PanelStep, PanelFooter, FoodPicker, SecondaryButton
@@ -312,21 +316,27 @@ src/
     PlayerList.tsx         // players + current scores below the action panel; active player highlighted
     ScoreScreen.tsx        // final scores breakdown
     StartScreen.tsx        // new game: solo / vs computer / with friends, continue saved game
+    PlayerSetupRow.tsx     // one line-up row on the start screen (name, human/bot, remove)
     Leaderboard.tsx        // top scores on the start screen
     GameScreen.tsx         // in-game layout; wires board/tray/hand clicks to `draft.ts`
     LanguageSwitch.tsx     // English | Magyar toggle
     FullscreenButton.tsx   // fullscreen toggle icon, next to every LanguageSwitch (hidden if unsupported)
     PowerText.tsx          // translated "When activated: …" power text
     RulesButton.tsx        // self-contained "Rules" button + dialog (start screen, game header)
+    ScreenControls.tsx     // language, fullscreen, Rules, Quit: the same group on every screen
     HandoffOverlay.tsx     // hot-seat "pass the device" cover between different humans
+    GameSidebar.tsx        // game screen side column: players, action panel, bird info, log
     WelcomeOverlay.tsx     // one-time welcome on the first visit (see "Persistence")
     BotTurnOverlay.tsx     // see-through "bot is thinking" cover with a spinner
     DragSource.tsx, DropZone.tsx, DragPreview.tsx  // drag and drop (see "Drag and drop")
     TutorialTour.tsx       // optional guided tour on first turns (see "Tutorial")
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
+    ui/                    // generic building blocks, no game knowledge: ToolbarButton,
+                           // SidebarCard, ToggleSwitch, CoverDialog (green full-screen cover)
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction, and what
                            // each click does to it (pure; tested in `src/__tests__/`)
   hooks/useHorizontalWheel.ts  // callback ref: mouse wheel scrolls a sideways row (hand, tray, goal chips)
+  hooks/useCardDrag.ts     // GameScreen's drag and drop: DndContext props, dragged item, can drag / drop
   theme.ts                 // food/habitat icons and static Tailwind class maps
   bird-images.ts           // one Wikimedia Commons photo + credit per bird (see "Bird photos")
   bird-facts.ts            // scientific names + Wikipedia titles per bird (see "Bird info")

@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { PlayerConfig } from '../game/types'
 import { loadLeaderboard, loadTutorialEnabled, saveTutorialEnabled } from '../persistence'
-import FullscreenButton from './FullscreenButton'
-import LanguageSwitch from './LanguageSwitch'
 import Leaderboard from './Leaderboard'
-import RulesButton from './RulesButton'
+import PlayerSetupRow from './PlayerSetupRow'
+import ScreenControls from './ScreenControls'
+import ToggleSwitch from './ui/ToggleSwitch'
+import { BUTTON } from '../theme'
 import { useGameStore } from '../store/gameStore'
 
 const alone = (t: TFunction): PlayerConfig[] => [
@@ -56,8 +57,6 @@ const MODES: { mode: PlayMode; preset: (t: TFunction) => PlayerConfig[] }[] = [
   { mode: 'hotSeat', preset: hotSeat },
 ]
 
-const btn = 'cursor-pointer rounded-md px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40'
-
 export default function StartScreen() {
   const { t } = useTranslation()
   // A saved, unfinished game to offer for continuing.
@@ -90,11 +89,7 @@ export default function StartScreen() {
           {/* Phones: rules + language switch on their own line above the title, so nothing gets squeezed. */}
           <div className="flex flex-col-reverse items-center gap-2 sm:flex-row sm:justify-between">
             <h1 className="text-5xl font-bold text-emerald-900 min-[375px]:text-6xl">🐦 {t('app.title')}</h1>
-            <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
-              <RulesButton />
-              <LanguageSwitch />
-              <FullscreenButton />
-            </div>
+            <ScreenControls rules className="shrink-0 self-end sm:self-auto" />
           </div>
           <p className="text-sm text-stone-600">{t('app.tagline')}</p>
         </div>
@@ -110,7 +105,7 @@ export default function StartScreen() {
                 })}
               </p>
             </div>
-            <button type="button" className={`${btn} shrink-0 bg-violet-700 text-white hover:bg-violet-800`} onClick={onResume}>
+            <button type="button" className={`${BUTTON} shrink-0 bg-violet-700 text-white hover:bg-violet-800`} onClick={onResume}>
               {t('start.continue')}
             </button>
           </section>
@@ -127,7 +122,7 @@ export default function StartScreen() {
                   key={mode}
                   type="button"
                   aria-pressed={selected}
-                  className={`${btn} flex-1 ${selected ? 'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800' : 'bg-emerald-100 text-emerald-950 hover:bg-emerald-200'}`}
+                  className={`${BUTTON} flex-1 ${selected ? 'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800' : 'bg-emerald-100 text-emerald-950 hover:bg-emerald-200'}`}
                   onClick={() => setPlayers(preset(t))}
                 >
                   {t(`start.${mode}`)}
@@ -139,43 +134,19 @@ export default function StartScreen() {
 
         <ul className="flex flex-col gap-2 min-h-40">
           {players.map((p, i) => (
-            <li key={i} className="flex items-center gap-2">
-              <input
-                value={p.name}
-                onChange={(e) => update(i, { name: e.target.value })}
-                aria-label={t('start.playerNameLabel', { n: i + 1 })}
-                maxLength={20}
-                className="min-w-0 flex-1 rounded-md border border-stone-300 px-2 py-1"
-              />
-              <button
-                type="button"
-                // The first player is always a human (the one at the device): no toggle, hidden like
-                // the remove button below so the rows stay aligned.
-                className={`${btn} w-24 ${p.kind === 'bot' ? 'bg-stone-700 text-white' : 'bg-violet-100 text-violet-900'} ${i === 0 ? 'invisible' : ''}`}
-                disabled={i === 0}
-                onClick={() => toggleKind(i)}
-                title={t('start.toggleKind')}
-              >
-                {p.kind === 'bot' ? t('start.bot') : t('start.human')}
-              </button>
-              <button
-                type="button"
-                // The first player can't be removed, which also keeps the list non-empty. `invisible`
-                // keeps its space so the rows stay aligned, and takes it out of tab order and the
-                // accessibility tree.
-                className={`${btn} bg-stone-100 hover:bg-stone-200 ${i === 0 ? 'invisible' : ''}`}
-                disabled={i === 0}
-                onClick={() => setPlayers(players.filter((_, j) => j !== i))}
-                aria-label={t('start.removePlayer')}
-              >
-                ✕
-              </button>
-            </li>
+            <PlayerSetupRow
+              key={i}
+              player={p}
+              index={i}
+              onRename={(name) => update(i, { name })}
+              onToggleKind={() => toggleKind(i)}
+              onRemove={() => setPlayers(players.filter((_, j) => j !== i))}
+            />
           ))}
         </ul>
         <button
           type="button"
-          className={`${btn} bg-stone-100 hover:bg-stone-200`}
+          className={`${BUTTON} bg-stone-100 hover:bg-stone-200`}
           disabled={players.length >= 4}
           onClick={() => setPlayers([...players, { name: freshName(t, 'bot', players, players.length), kind: 'bot' }])}
         >
@@ -187,23 +158,12 @@ export default function StartScreen() {
             <span className="font-semibold">{t('start.tutorial')}</span>
             <span className="block text-xs text-stone-500">{t('start.tutorialHint')}</span>
           </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={tutorial}
-            onClick={() => setTutorial(!tutorial)}
-            className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${tutorial ? 'bg-violet-700' : 'bg-stone-300'}`}
-          >
-            <span
-              aria-hidden
-              className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${tutorial ? 'translate-x-5' : ''}`}
-            />
-          </button>
+          <ToggleSwitch checked={tutorial} onChange={setTutorial} />
         </label>
 
         <button
           type="button"
-          className={`${btn} bg-violet-700 py-2.5 text-base text-white hover:bg-violet-800`}
+          className={`${BUTTON} bg-violet-700 py-2.5 text-base text-white hover:bg-violet-800`}
           disabled={!valid}
           onClick={() => onStart(players.map((p) => ({ ...p, name: p.name.trim() })), tutorial)}
         >

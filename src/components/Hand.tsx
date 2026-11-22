@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { useHorizontalWheel } from '../hooks/useHorizontalWheel'
 import BirdCard from './BirdCard'
-import DragSource from './DragSource'
+import CardRow from './CardRow'
+import CardSlot from './CardSlot'
 
 type Props = {
   cards: string[]
@@ -21,33 +21,23 @@ type Props = {
 
 export default function Hand({ cards, selectedIndex, isPlayable, onCardClick, showHint = false, draggable = false }: Props) {
   const { t } = useTranslation()
-  const wheelScroll = useHorizontalWheel<HTMLDivElement>()
   return (
-    <section data-tour="hand" className="flex flex-col gap-2 max-w-[800px]">
-      <h3 className="text-sm font-semibold text-stone-600">
-        <span aria-hidden>🤚 </span>
-        {t('hand.title', { count: cards.length })} {showHint && <span className="font-normal">{t('hand.hint')}</span>}
-      </h3>
-      {cards.length === 0 ? (
-        <p className="text-sm text-stone-500 italic">{t('hand.empty')}</p>
-      ) : (
-        <div ref={wheelScroll} className="flex gap-2 overflow-x-auto pb-2">
-          {cards.map((id, i) => {
-            const playable = isPlayable(id)
-            const card = <BirdCard cardId={id} selected={selectedIndex === i} dimmed={!playable} onClick={() => onCardClick(i)} />
-            const key = `${id}-${i}`
-            return draggable ? (
-              <DragSource key={key} id={`hand:${i}`} item={{ kind: 'hand', cardId: id, handIndex: i }} enabled={playable}>
-                {card}
-              </DragSource>
-            ) : (
-              <div key={key} className="flex shrink-0">
-                {card}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </section>
+    <CardRow
+      tour="hand"
+      icon="🤚"
+      title={t('hand.title', { count: cards.length })}
+      hint={showHint && t('hand.hint')}
+      empty={cards.length === 0 && t('hand.empty')}
+      className="max-w-[800px]"
+    >
+      {cards.map((id, i) => {
+        const playable = isPlayable(id)
+        return (
+          <CardSlot key={`${id}-${i}`} drag={draggable ? { id: `hand:${i}`, item: { kind: 'hand', cardId: id, handIndex: i }, enabled: playable } : undefined}>
+            <BirdCard cardId={id} selected={selectedIndex === i} dimmed={!playable} onClick={() => onCardClick(i)} />
+          </CardSlot>
+        )
+      })}
+    </CardRow>
   )
 }

@@ -2,9 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useHorizontalWheel } from '../hooks/useHorizontalWheel'
 import { GOAL_POINTS } from '../game/goals'
 import { useGame, useGameStore } from '../store/gameStore'
-import FullscreenButton from './FullscreenButton'
-import LanguageSwitch from './LanguageSwitch'
-import RulesButton from './RulesButton'
+import ScreenControls from './ScreenControls'
 import { cn } from 'cn'
 
 type Props = { className?: string }
@@ -24,14 +22,7 @@ export default function RoundTracker({ className }: Props) {
           <h1 className="text-lg font-bold text-emerald-900 sm:text-xl">🐦 {t('app.title')}</h1>
           <span className="text-sm font-semibold">{t('tracker.round', { round: state.round })}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <LanguageSwitch />
-          <FullscreenButton />
-          <RulesButton />
-          <button type="button" onClick={onQuit} className="cursor-pointer rounded-md bg-stone-200 px-3 py-1 text-sm hover:bg-stone-300">
-            {t('tracker.quit')}
-          </button>
-        </div>
+        <ScreenControls rules onQuit={onQuit} />
       </div>
       {/* Phones: one horizontally scrollable line. Wider screens: chips wrap. */}
       <ol ref={wheelScroll} data-tour="goals" className="-mx-2 flex gap-2 overflow-x-auto px-2 pb-1 text-xs sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">

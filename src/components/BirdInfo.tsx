@@ -3,6 +3,7 @@ import { BIRD_FACTS_BY_ID, wikipediaUrl } from '../bird-facts'
 import { BIRD_IMAGE_BY_ID } from '../bird-images'
 import { BIRDS_BY_ID } from '../game/birds'
 import BirdPhoto from './BirdPhoto'
+import PointsBadge from './PointsBadge'
 
 type Props = {
   cardId: string
@@ -47,10 +48,7 @@ export default function BirdInfo({ cardId, onClose }: Props) {
           }} title={`Wikipedia: ${t(`birds.${cardId}`)}`}>
             {t(`birds.${cardId}`)}
           </h3>
-          {/* Same badge as on the game card (BirdCard). */}
-          <span className="shrink-0 rounded bg-stone-800 px-1.5 text-sm font-bold text-white" title={t('card.points')}>
-            {BIRDS_BY_ID[cardId].points}
-          </span>
+          <PointsBadge points={BIRDS_BY_ID[cardId].points} />
           {/* <DevBirdId id={cardId} /> */}
           {/* {facts && <p className="text-xs text-stone-500 italic">{facts.scientific}</p>} */}
         </div>

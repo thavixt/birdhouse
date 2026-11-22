@@ -3,6 +3,7 @@ import { BIRD_IMAGE_BY_ID } from '../bird-images'
 import { BIRDS_BY_ID } from '../game/birds'
 import { FOOD_ICON, HABITAT_ICON, HABITAT_STYLE } from '../theme'
 import BirdPhoto from './BirdPhoto'
+import PointsBadge from './PointsBadge'
 import PowerText from './PowerText'
 
 type Props = {
@@ -48,9 +49,7 @@ export default function BirdCard({ cardId, onClick, selected = false, dimmed = f
             </span>
             {/* <DevBirdId id={card.id} /> */}
           </div>
-          <span className="rounded bg-stone-800 px-1.5 text-sm font-bold text-white" title={t('card.points')}>
-            {card.points}
-          </span>
+          <PointsBadge points={card.points} />
         </div>
         <div className="min-h-14 flex-1" />
         <div className={`flex flex-col gap-0.5 px-1.5 py-1 ${PANEL}`}>
