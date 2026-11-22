@@ -11,6 +11,8 @@ habitat it lives in, so the board grows into an "engine" over four rounds.
 All names, card data, powers, rules text and visuals are **original to this project**.
 Do not copy card text, artwork, iconography, or layouts from any published board game.
 Real bird species names are fine; their stats and powers must be our own.
+Card photos are real photos of the species from Wikimedia Commons under free licences, credited
+as their licences require (see "Bird photos"); never use art from a published game.
 
 ## Tech stack
 
@@ -23,6 +25,8 @@ Real bird species names are fine; their stats and powers must be our own.
 - **vite-plugin-mkcert** — local HTTPS for `npm run dev` and `npm run preview`
   (`https://localhost:8236`). Not used by `npm run build`. The first run on a machine
   downloads mkcert and installs its local CA into the OS trust store (may show a prompt).
+- **@dnd-kit/core** — drag and drop for playing and drawing cards (see "Drag and drop")
+- **react-joyride** (v3) — the optional guided tour (see "Tutorial")
 
 ### Commands
 
@@ -65,11 +69,68 @@ branch pushes and tags; the build job keeps `dist/` as an artifact for a week.
   container instead (hand, bird tray, goal chips on phones, the score table).
 - **Habitat rows:** on phones the action button is a bar above the 5 slots; from `sm` it's
   a column on the left. Placed birds show a compact egg count (🥚 2/5) on phones.
-- **Action panel:** from `lg` it sits in the sidebar. Below `lg` a second instance
+- **Action panel:** from `lg` it sits in the left sidebar (with the log; it spans every board row, so it stays sticky). Below `lg` a second instance
   (`docked`) is the `sticky bottom-0` last child of the page column, so prompts and
   Confirm stay on screen without permanently covering content. Only one instance is
   visible at a time (`hidden lg:block` / `lg:hidden`), so tests and scripts that look
   up its text should filter to the visible one.
+
+### Drag and drop
+
+- Table-style shortcuts on top of the click flow, which stays complete (and is the
+  keyboard path): drag a playable bird from the hand onto a habitat row to play it; drag a
+  tray card or the deck into the hand to draw it.
+- **Drops commit.** Playing a bird dispatches at once, paying with the same automatic
+  choices the action panel pre-fills (`autoPlayBird`). Drawing collects picks and
+  dispatches when the draw count is reached; clicked and dragged picks mix.
+- The rules live in `src/draft.ts` (`canDrag`, `canDrop`, `drop`, `addDrawPick`; pure and
+  tested). Components: `DragSource` (wraps a card, attaches pointer listeners only),
+  `DropZone` (habitat rows, hand; outlined while it accepts the dragged item),
+  `DragPreview` (in `DragOverlay`, so cards can leave their scrolling containers).
+  `GameScreen` owns the `DndContext`; `Hand`, `CardTray` and `Board` only use dnd-kit when
+  given their drag props, so `Board` still renders outside it (score screen).
+- Sensors: mouse starts after 6px of movement (clicks still work); touch needs a 200ms
+  press-and-hold, so swiping still scrolls the hand and tray.
+
+### Bird photos
+
+- `src/bird-images.ts` lists one photo per bird (`BIRD_IMAGES`: `url`, `author`, `license`,
+  `source`): the species' Wikipedia lead image as a 330px Wikimedia thumbnail, hot-linked.
+  A test checks every bird has one, with a credit and a free (CC BY / BY-SA / CC0) licence.
+- **Credit every photo.** CC BY / BY-SA require attribution: the card's photo area has a
+  "Photo: author (licence)" tooltip, and the Rules dialog lists all credits with links to
+  the Commons file pages. When swapping a photo, update url, author, license and source together.
+- `BirdPhoto` renders one behind its parent (`absolute -z-10` in a `relative isolate`
+  parent): full strength on `BirdCard` (text sits on frosted white panels), faded on placed
+  birds in `HabitatRow`. Lazy-loaded, `crossOrigin="anonymous"`, cached by the service worker
+  (`runtimeCaching`, cache `bird-photos`) so the installed app keeps them offline once seen.
+
+### Bird info
+
+- Clicking (or dragging) any bird card — hand, tray, or a placed bird on any board — shows
+  `BirdInfo` below the game log: photo, name, scientific name, a 2–3 sentence description
+  and a Wikipedia link in the UI language (Hungarian article when one exists).
+- Descriptions are translated text in `birdFacts.<id>` (both dictionaries): basic or
+  unusual traits taken from each species' Wikipedia article, **written in our own words**
+  (don't paste article text). Language-neutral data (scientific name, article titles) is in
+  `src/bird-facts.ts`; a test checks every bird has both.
+- Clicks that already do something (select to play, pick from the tray, place eggs) also
+  update the info card; otherwise a click only shows info (`onInspect` on Hand, CardTray,
+  Board). It is cleared when a hot-seat player reveals their hand, so it never shows a card
+  from the previous player's hand.
+
+### Tutorial
+
+- A switch on the start screen (**off** by default, not remembered) turns on a guided
+  tour (`TutorialTour.tsx`, react-joyride) shown on **each human's first turn** of a new
+  game (`isFirstTurn` in `draft.ts`). Finishing or skipping it marks that player done;
+  taking an action also ends it. Continued games and rematches start without it.
+- Steps point at `data-tour` attributes: `hand`, `tray`, `goals`, `food`, `panel` and
+  `board` (only the player's own board is wrapped in `[data-tour="board"]`, so opponents'
+  boards never match). The action panel exists twice, so its step targets the visible one.
+  Keep these attributes when restructuring components.
+- Text lives under `tutorial.*` in the dictionaries. The component is lazy-loaded, so
+  react-joyride stays out of the main bundle.
 
 ### Debug logging
 
@@ -82,6 +143,18 @@ branch pushes and tags; the build job keeps `dist/` as an artifact for a week.
   and the new state attached), rejected moves (warnings with the reason), round changes,
   game over, new game (with its **seed**, so it can be replayed), continue, quit, and every
   load / save / clear of the saved game.
+- Every UI interaction that changes the turn in progress (`Turn draft · Name: play mallard
+  → wetland …`, from `useTurnDraft`, text by `describeDraft`) and every hand reveal after a
+  handoff is logged too, each with the current game state attached; clicks that change
+  nothing are skipped.
+- **Bird ids (dev only):** in `npm run dev` every bird name is followed by its id: a small
+  pink tag on cards, placed birds and the info card (`DevBirdId`), and " [id]" in plain text
+  (log, errors, panel titles) via `birdName(t, id)` in `src/i18n/birdName.ts`. Use those two
+  for any new place that shows a bird name. Off in production builds and in tests.
+- **Card gallery (dev only):** in `npm run dev` a "🃏 Cards" button (top-left, every screen)
+  opens `DevCardGallery`: every bird's game card and info card side by side, with its id and
+  photo source, to check all cards and images at once. Mounted from `main.tsx` behind
+  `import.meta.env.DEV` and lazy-loaded, so production builds don't contain it.
 - **Log with `logOnce(action, …)` inside reducers.** React Strict Mode runs reducers twice
   in development with the same action object; `logOnce` keeps the output to one line.
   Logging must never change state.
@@ -91,10 +164,20 @@ branch pushes and tags; the build job keeps `dist/` as an artifact for a week.
 - The game in progress is saved to `localStorage` (`birdhouse.savedGame`) after every
   action and offered as "Continue" on the start screen. "Quit" keeps the save; starting a
   new game replaces it; a finished game clears it.
+- It is saved again whenever the app may stop running (`saveWhenLeaving`): `visibilitychange`
+  → hidden (switching apps, locking the phone; the event mobile browsers reliably fire),
+  `pagehide` (closing, back/forward cache) and window `blur` (desktop). The turn in
+  progress (choices before Confirm) is UI state and is not saved.
 - `src/game/save.ts` (pure, tested) owns the format: `{ version: SAVE_VERSION, state }`.
   `deserializeGame` rejects missing, malformed or outdated saves and unknown card/goal ids.
   **Bump `SAVE_VERSION` whenever `GameState`'s shape changes**, so old saves are dropped
   instead of crashing the game.
+- **Leaderboard** (`birdhouse.leaderboard`): when a game finishes, App records its human
+  winners (everyone sharing first place; winning bots are skipped) once per game via
+  `recordWinners`. The start screen shows the top 10 (`Leaderboard.tsx`): name, score,
+  play mode and date. `src/game/leaderboard.ts` (pure, tested) owns the rules and the
+  format, a JSON array of `{ name, score, players, bots, date }`; malformed entries are
+  dropped on load.
 - `src/persistence.ts` is the only code touching storage; every call is wrapped in
   try/catch so the game still works when storage is unavailable.
 
@@ -129,6 +212,9 @@ branch pushes and tags; the build job keeps `dist/` as an artifact for a week.
   `foods` → "2 seed, 1 fish", `goal` → goal name, other arrays → comma-joined.
 - Bird names, goal names and power text are shown from the JSON (`birds.<id>`,
   `goals.<id>`, `powers.<kind>`); `BirdCard.name` in `birds.ts` is reference data only.
+- **Bird names are in sentence case** in both languages: only the first letter and proper
+  nouns are capitalised ("Great blue heron", "American white pelican"), matching the
+  species' Wikipedia article title. Keep `BirdCard.name` equal to the English name.
 - The chosen language is stored in `localStorage` (`birdhouse.language`); first visit
   defaults to Hungarian if the browser language is Hungarian, otherwise English.
 
@@ -150,12 +236,18 @@ src/
     scoring.ts             // final + round-goal scoring
     bot.ts                 // chooseAction(state, playerId) => GameAction
     save.ts                // versioned save format + validation
+    leaderboard.ts         // winners of finished games -> top-10 scores (format + rules)
     logger.ts              // silent debug-logging hook (see "Debug logging")
     __tests__/             // vitest unit tests
   components/
     Board.tsx              // a player's three habitat rows
     HabitatRow.tsx         // one row: action button + 5 slots
-    BirdCard.tsx           // card visual (name, habitat, cost, points, egg limit, power)
+    HabitatScenery.tsx     // decorative per-habitat backdrop (sky gradient + repeating SVG scenery)
+    BirdCard.tsx           // card visual (photo, name, habitat, cost, points, egg limit, power)
+    BirdPhoto.tsx          // a species photo filling its parent from behind (see "Bird photos")
+    BirdInfo.tsx           // "about this bird" card below the log (see "Bird info")
+    DevBirdId.tsx          // dev-only id tag after a bird name (see "Debug logging")
+    DevCardGallery.tsx     // dev-only overlay with every card + info card (see "Debug logging")
     Hand.tsx               // current player's cards
     FoodSupply.tsx         // shared food supply / player's food tokens
     CardTray.tsx           // 3 face-up cards + deck
@@ -165,17 +257,24 @@ src/
     RoundTracker.tsx       // round, turns left, goals
     ScoreScreen.tsx        // final scores breakdown
     StartScreen.tsx        // new game: solo / vs computer / with friends, continue saved game
+    Leaderboard.tsx        // top scores on the start screen
     GameScreen.tsx         // in-game layout; wires board/tray/hand clicks to `draft.ts`
     LanguageSwitch.tsx     // English | Magyar toggle
     PowerText.tsx          // translated "When activated: …" power text
     RulesButton.tsx        // self-contained "Rules" button + dialog (start screen, game header)
     HandoffOverlay.tsx     // hot-seat "pass the device" cover between different humans
+    BotTurnOverlay.tsx     // see-through "bot is thinking" cover with a spinner
+    DragSource.tsx, DropZone.tsx, DragPreview.tsx  // drag and drop (see "Drag and drop")
+    TutorialTour.tsx       // optional guided tour on first turns (see "Tutorial")
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction, and what
                            // each click does to it (pure; tested in `src/__tests__/`)
   useTurnDraft.ts          // the draft as React state; resets after every action
+  hooks/useHorizontalWheel.ts  // callback ref: mouse wheel scrolls a sideways row (hand, tray, goal chips)
   theme.ts                 // food/habitat icons and static Tailwind class maps
-  persistence.ts           // localStorage load/save/clear of the game in progress
+  bird-images.ts           // one Wikimedia Commons photo + credit per bird (see "Bird photos")
+  bird-facts.ts            // scientific names + Wikipedia titles per bird (see "Bird info")
+  persistence.ts           // localStorage: game in progress + leaderboard
   debug.ts                 // connects the game logger to the browser console
   __tests__/               // draft + persistence tests
   i18n/
@@ -286,7 +385,9 @@ see "Persistence" under Conventions.)
   is kept. "Add player" adds a bot with the first unused bot name.
 - **Bot (v1):** greedy heuristic — play the highest-points affordable bird; else take the
   action that best unlocks one (food it lacks, eggs if a slot needs them, cards if hand is
-  thin); late game, favour laying eggs. Bot turns run with a short delay for readability.
+  thin); late game, favour laying eggs. Bot turns take a random 1–3 s (`BOT_DELAY_MS` in `App.tsx`)
+  under a see-through "… is thinking" overlay (`BotTurnOverlay`, visual only: scrolling,
+  the log, Rules and Quit still work).
 
 ## Milestones
 
@@ -311,8 +412,11 @@ Persistence is done; everything else here is not started.
 
 ### Leftovers from v1
 
-None. Phone layout and the Hungarian bird names (checked against Hungarian Wikipedia)
-are done.
+None. Phone layout is done, and the Hungarian bird names were cross-checked on 2026-11-22:
+each `birds.<id>` in `hu-hu.json` matches the title of the species' Hungarian Wikipedia
+article (found via the English article's interlanguage link, or by scientific name). Use
+the standard Hungarian name, never a literal translation of the English one (e.g. the
+mourning dove is "sirató gerle", not "gyászgerle").
 
 ### Suggested order
 

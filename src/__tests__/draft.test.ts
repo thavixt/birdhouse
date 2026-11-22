@@ -1,16 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import {
+  addDrawPick,
   boardEggDelta,
+  canDrag,
+  canDrop,
   canPlayCard,
   chooseHabitat,
   clickBird,
+  describeDraft,
+  drop,
   IDLE,
+  isFirstTurn,
   needsHandoff,
   pickDeck,
   pickedDeck,
   pickedTray,
   pickTray,
   startHabitatAction,
+  autoLayEggs,
   startLayEggs,
   startPlayBird,
   toAction,
@@ -18,7 +25,7 @@ import {
   viewedPlayer,
   type Draft,
 } from '../draft'
-import { validateAction } from '../game/engine'
+import { reduce, validateAction } from '../game/engine'
 import { createGame } from '../game/setup'
 import type { Board, GameState, PlacedBird, SlotRef } from '../game/types'
 import { food, newGame, withPlayer } from '../game/__tests__/helpers'
@@ -85,9 +92,11 @@ describe('starting a bird', () => {
 describe('startHabitatAction', () => {
   it('starts the action of each habitat', () => {
     const s = setup({ board: board({ forest: [chick()] }) })
-    expect(startHabitatAction(s, 'forest')).toEqual({ kind: 'gainFood', foods: [] })
-    expect(startHabitatAction(s, 'grassland')).toEqual(startLayEggs(s))
-    expect(startHabitatAction(s, 'wetland')).toEqual({ kind: 'drawCards', picks: [] })
+    expect(startHabitatAction('forest')).toEqual({ kind: 'gainFood', foods: [] })
+    expect(startHabitatAction('grassland')).toEqual({ kind: 'layEggs', placements: [] }) // nothing pre-placed
+    expect(startLayEggs()).toEqual({ kind: 'layEggs', placements: [] })
+    expect(autoLayEggs(s)).toEqual({ kind: 'layEggs', placements: [{ slot: forest(0), count: 2 }] }) // the "Auto" button
+    expect(startHabitatAction('wetland')).toEqual({ kind: 'drawCards', picks: [] })
   })
 })
 
@@ -113,6 +122,36 @@ describe('clickBird', () => {
     d = clickBird(s, d, forest(1)) // cost is only 1
     expect(as(d, 'playBird').eggs).toEqual([{ slot: forest(1), count: 1 }])
     expect(validateAction(s, toAction(d)!)).toBeNull()
+  })
+
+  it('moves a pre-placed egg to the clicked bird once all eggs are placed', () => {
+    const s = setup({ board: board({ forest: [chick(0)], wetland: [egret(0)] }) }) // lay 2
+    const pre = as(autoLayEggs(s), 'layEggs') // Auto: both on the chickadee (most room)
+    expect(pre.placements).toEqual([{ slot: forest(0), count: 2 }])
+    let d: Draft = clickBird(s, pre, wetland(0))
+    expect(as(d, 'layEggs').placements).toEqual([
+      { slot: forest(0), count: 1 },
+      { slot: wetland(0), count: 1 },
+    ])
+    d = clickBird(s, d, wetland(0))
+    expect(as(d, 'layEggs').placements).toEqual([{ slot: wetland(0), count: 2 }])
+    expect(clickBird(s, d, wetland(0))).toBe(d) // nothing left to move
+    expect(validateAction(s, toAction(d)!)).toBeNull()
+  })
+
+  it('moves the egg payment to the clicked bird', () => {
+    const s = setup({ hand: ['black-capped-chickadee'], food: food(1), board: board({ forest: [chick(1), chick(3)] }) })
+    const pre = as(startPlayBird(s, 'black-capped-chickadee'), 'playBird') // pays from the fullest
+    expect(pre.eggs).toEqual([{ slot: forest(1), count: 1 }])
+    const d = clickBird(s, pre, forest(0))
+    expect(as(d, 'playBird').eggs).toEqual([{ slot: forest(0), count: 1 }])
+    expect(validateAction(s, toAction(d)!)).toBeNull()
+  })
+
+  it('does not move an egg onto a full bird', () => {
+    const s = setup({ board: board({ forest: [chick(5)], wetland: [egret(0)] }) })
+    const pre = autoLayEggs(s)
+    expect(clickBird(s, pre, forest(0))).toBe(pre)
   })
 
   it('ignores clicks when the draft takes no eggs, or on an empty slot', () => {
@@ -222,5 +261,95 @@ describe('view helpers', () => {
     expect(canPlayCard(setup({ hand: ['blue-jay'], food: food(2) }), 'blue-jay')).toBe(true)
     expect(canPlayCard(setup({ hand: ['blue-jay'], food: food(1) }), 'blue-jay')).toBe(false)
     expect(canPlayCard(setup({ hand: ['blue-jay'], food: food(2), board: full }), 'blue-jay')).toBe(false)
+  })
+})
+
+describe('drag and drop', () => {
+  it('dropping a bird on a habitat plays it at once, with automatic payment', () => {
+    const s = setup({ hand: ['blue-jay'], food: food(2) })
+    const result = drop(s, IDLE, { kind: 'hand', cardId: 'blue-jay' }, { kind: 'habitat', habitat: 'forest' })
+    expect(result).toEqual({ action: { type: 'playBird', cardId: 'blue-jay', habitat: 'forest', payment: ['seed', 'seed'], eggPayment: [] } })
+  })
+
+  it('pays the egg cost automatically from the fullest bird', () => {
+    const s = setup({ hand: ['black-capped-chickadee'], food: food(1), board: board({ forest: [chick(1), chick(3)] }) })
+    const result = drop(s, IDLE, { kind: 'hand', cardId: 'black-capped-chickadee' }, { kind: 'habitat', habitat: 'forest' })
+    expect(result && 'action' in result && validateAction(s, result.action)).toBeNull()
+    expect(result).toMatchObject({ action: { eggPayment: [{ slot: forest(1), count: 1 }] } })
+  })
+
+  it('rejects birds that cannot go there or cannot be paid for', () => {
+    const s = setup({ hand: ['blue-jay'], food: food(2) })
+    const jay = { kind: 'hand', cardId: 'blue-jay' } as const
+    expect(canDrop(s, IDLE, jay, { kind: 'habitat', habitat: 'wetland' })).toBe(false)
+    expect(drop(s, IDLE, jay, { kind: 'habitat', habitat: 'wetland' })).toBeNull()
+    expect(drop(s, IDLE, jay, { kind: 'hand' })).toBeNull()
+    const poor = setup({ hand: ['blue-jay'], food: food(1) })
+    expect(canDrag(poor, IDLE, jay)).toBe(false)
+    expect(drop(poor, IDLE, jay, { kind: 'habitat', habitat: 'forest' })).toBeNull()
+  })
+
+  it('dropping the last card to draw into the hand takes the turn', () => {
+    const s = setup({}) // empty wetland: draw 1
+    expect(drop(s, IDLE, { kind: 'tray', index: 1 }, { kind: 'hand' })).toEqual({
+      action: { type: 'drawCards', picks: [{ from: 'tray', index: 1 }] },
+    })
+    expect(drop(s, IDLE, { kind: 'deck' }, { kind: 'hand' })).toEqual({ action: { type: 'drawCards', picks: [{ from: 'deck' }] } })
+    expect(drop(s, IDLE, { kind: 'tray', index: 1 }, { kind: 'habitat', habitat: 'wetland' })).toBeNull()
+  })
+
+  it('collects picks until the draw count is reached, mixing in clicked picks', () => {
+    const s = setup({ board: board({ wetland: [egret(), egret()] }) }) // draw 2
+    const first = drop(s, IDLE, { kind: 'tray', index: 0 }, { kind: 'hand' })
+    expect(first).toEqual({ draft: { kind: 'drawCards', picks: [{ from: 'tray', index: 0 }] } })
+    const draft = (first as { draft: Draft }).draft
+    expect(canDrag(s, draft, { kind: 'tray', index: 0 })).toBe(false) // already picked
+    const second = drop(s, draft, { kind: 'deck' }, { kind: 'hand' })
+    expect(second && 'action' in second && validateAction(s, second.action)).toBeNull()
+
+    // A click-started draw finishes with a drag.
+    const clicked = pickDeck(s, { kind: 'drawCards', picks: [] })
+    expect(drop(s, clicked, { kind: 'tray', index: 2 }, { kind: 'hand' })).toMatchObject({ action: { type: 'drawCards' } })
+  })
+
+  it('cannot drag cards that are not there', () => {
+    const s = { ...setup({}), deck: [], tray: ['blue-jay', null, null] }
+    expect(canDrag(s, IDLE, { kind: 'deck' })).toBe(false)
+    expect(canDrag(s, IDLE, { kind: 'tray', index: 1 })).toBe(false)
+    expect(canDrag(s, IDLE, { kind: 'tray', index: 0 })).toBe(true)
+  })
+
+  it('addDrawPick starts a draw from any other draft and ignores repeats', () => {
+    const s = setup({ board: board({ wetland: [egret(), egret()] }) })
+    const d = addDrawPick(s, { kind: 'gainFood', foods: ['fish'] }, { from: 'tray', index: 0 })
+    expect(d).toEqual({ kind: 'drawCards', picks: [{ from: 'tray', index: 0 }] })
+    expect(addDrawPick(s, d, { from: 'tray', index: 0 })).toBe(d)
+  })
+})
+
+describe('isFirstTurn', () => {
+  it('is true only before the current player has taken a turn', () => {
+    const s = newGame(1, 2)
+    expect(isFirstTurn(s)).toBe(true)
+    const next = reduce(s, { type: 'gainFood', foods: ['seed'] }) // P1 done, P2's first turn
+    expect(next.currentPlayer).toBe(1)
+    expect(isFirstTurn(next)).toBe(true)
+    const back = reduce(next, { type: 'gainFood', foods: ['seed'] }) // P1's second turn
+    expect(isFirstTurn(back)).toBe(false)
+    expect(isFirstTurn({ ...s, round: 2 })).toBe(false)
+    expect(isFirstTurn({ ...s, phase: 'gameOver' })).toBe(false)
+  })
+})
+
+describe('describeDraft', () => {
+  it('summarises each kind of draft for the debug log', () => {
+    expect(describeDraft(IDLE)).toBe('idle')
+    expect(describeDraft({ kind: 'playBird', cardId: 'mallard', habitat: null, anyFoods: [], eggs: [] })).toBe('play mallard (no habitat yet)')
+    expect(
+      describeDraft({ kind: 'playBird', cardId: 'mallard', habitat: 'wetland', anyFoods: ['fish'], eggs: [{ slot: forest(1), count: 1 }] }),
+    ).toBe('play mallard → wetland any food: fish egg payment: forest:1×1')
+    expect(describeDraft({ kind: 'gainFood', foods: [] })).toBe('gain food: none chosen')
+    expect(describeDraft({ kind: 'layEggs', placements: [{ slot: wetland(0), count: 2 }] })).toBe('lay eggs: wetland:0×2')
+    expect(describeDraft({ kind: 'drawCards', picks: [{ from: 'tray', index: 0 }, { from: 'deck' }] })).toBe('draw: tray#1, deck')
   })
 })

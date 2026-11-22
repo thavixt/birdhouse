@@ -1,12 +1,18 @@
 import { useTranslation } from 'react-i18next'
+import RulesButton from './RulesButton';
+import LanguageSwitch from './LanguageSwitch';
 
-type Props = { name: string; onReady: () => void }
+type Props = {
+  name: string;
+  onReady: () => void;
+  onQuit: () => void;
+}
 
 /**
  * Opaque full-screen cover between hot-seat turns, so the next player's hand isn't shown
  * until they have the device. Covers everything, including the docked action panel.
  */
-export default function HandoffOverlay({ name, onReady }: Props) {
+export default function HandoffOverlay({ name, onQuit, onReady }: Props) {
   const { t } = useTranslation()
   return (
     <div
@@ -31,6 +37,13 @@ export default function HandoffOverlay({ name, onReady }: Props) {
         >
           {t('handoff.ready', { name })}
         </button>
+        <div className="flex items-center gap-2">
+          <LanguageSwitch />
+          <RulesButton className='text-emerald-900' />
+          <button type="button" onClick={onQuit} className="cursor-pointer rounded-md bg-stone-200 px-3 py-1 text-sm hover:bg-stone-300 text-emerald-900">
+            {t('tracker.quit')}
+          </button>
+        </div>
       </div>
     </div>
   )

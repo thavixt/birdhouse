@@ -1,9 +1,11 @@
 import type { TFunction } from 'i18next'
 import { FOODS, type Food, type GameMessage } from '../game/types'
+import { birdName } from './birdName'
 
 /**
  * Translates an engine message. Params are translated by name (see `GameMessage`):
  * bird ids, habitats, foods and goal ids become display text; the rest pass through.
+ * Bird names come from `birdName` (the global i18n instance).
  */
 export function formatMessage(t: TFunction, msg: GameMessage): string {
   const params: Record<string, string | number> = {}
@@ -11,7 +13,7 @@ export function formatMessage(t: TFunction, msg: GameMessage): string {
     if (Array.isArray(value)) {
       params[name] = name === 'foods' ? formatFoods(t, value as Food[]) : value.join(', ')
     } else if (name === 'card' || name === 'target') {
-      params[name] = t(`birds.${value}`)
+      params[name] = birdName(String(value))
     } else if (name === 'habitat') {
       params.habitat = t(`habitats.${value}.name`)
       params.habitatIn = t(`habitats.${value}.in`)

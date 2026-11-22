@@ -33,38 +33,38 @@
     }
   },
   "birds": {
-    "american-robin": "American Robin",
-    "barn-owl": "Barn Owl",
-    "blue-jay": "Blue Jay",
-    "northern-cardinal": "Northern Cardinal",
-    "black-capped-chickadee": "Black-capped Chickadee",
-    "downy-woodpecker": "Downy Woodpecker",
-    "pileated-woodpecker": "Pileated Woodpecker",
-    "great-horned-owl": "Great Horned Owl",
-    "cedar-waxwing": "Cedar Waxwing",
-    "ruby-throated-hummingbird": "Ruby-throated Hummingbird",
-    "wild-turkey": "Wild Turkey",
-    "red-tailed-hawk": "Red-tailed Hawk",
-    "wood-duck": "Wood Duck",
-    "bald-eagle": "Bald Eagle",
-    "american-kestrel": "American Kestrel",
-    "eastern-bluebird": "Eastern Bluebird",
-    "western-meadowlark": "Western Meadowlark",
-    "mourning-dove": "Mourning Dove",
-    "house-sparrow": "House Sparrow",
-    "barn-swallow": "Barn Swallow",
+    "american-robin": "American robin",
+    "barn-owl": "Barn owl",
+    "blue-jay": "Blue jay",
+    "northern-cardinal": "Northern cardinal",
+    "black-capped-chickadee": "Black-capped chickadee",
+    "downy-woodpecker": "Downy woodpecker",
+    "pileated-woodpecker": "Pileated woodpecker",
+    "great-horned-owl": "Great horned owl",
+    "cedar-waxwing": "Cedar waxwing",
+    "ruby-throated-hummingbird": "Ruby-throated hummingbird",
+    "wild-turkey": "Wild turkey",
+    "red-tailed-hawk": "Red-tailed hawk",
+    "wood-duck": "Wood duck",
+    "bald-eagle": "Bald eagle",
+    "american-kestrel": "American kestrel",
+    "eastern-bluebird": "Eastern bluebird",
+    "western-meadowlark": "Western meadowlark",
+    "mourning-dove": "Mourning dove",
+    "house-sparrow": "House sparrow",
+    "barn-swallow": "Barn swallow",
     "killdeer": "Killdeer",
-    "greater-prairie-chicken": "Greater Prairie-Chicken",
-    "burrowing-owl": "Burrowing Owl",
-    "red-winged-blackbird": "Red-winged Blackbird",
-    "great-blue-heron": "Great Blue Heron",
+    "greater-prairie-chicken": "Greater prairie-chicken",
+    "burrowing-owl": "Burrowing owl",
+    "red-winged-blackbird": "Red-winged blackbird",
+    "great-blue-heron": "Great blue heron",
     "mallard": "Mallard",
-    "belted-kingfisher": "Belted Kingfisher",
+    "belted-kingfisher": "Belted kingfisher",
     "osprey": "Osprey",
-    "common-loon": "Common Loon",
-    "american-white-pelican": "American White Pelican",
-    "sandhill-crane": "Sandhill Crane",
-    "snowy-egret": "Snowy Egret"
+    "common-loon": "Common loon",
+    "american-white-pelican": "American white pelican",
+    "sandhill-crane": "Sandhill crane",
+    "snowy-egret": "Snowy egret"
   },
   "powers": {
     "whenActivated": "When activated: {{text}}",
@@ -105,7 +105,16 @@
     "botName2": "Mech robin",
     "botName3": "Mech finch",
     "botName4": "Mech heron",
-    "botFallback": "Bot"
+    "botFallback": "Bot",
+    "tutorial": "Tutorial",
+    "tutorialHint": "Guided tips on each player's first turn"
+  },
+  "leaderboard": {
+    "title": "Top scores",
+    "empty": "No wins yet. Win a game to get on the board!",
+    "rank": "Rank {{rank}}",
+    "points_one": "{{count}} pt",
+    "points_other": "{{count}} pts"
   },
   "tracker": {
     "round": "Round {{round}} / 4",
@@ -132,7 +141,8 @@
     "foodCost": "Food cost",
     "anyFood": "❔ = any food",
     "habitats": "Habitats",
-    "eggLimit": "Egg limit"
+    "eggLimit": "Egg limit",
+    "photoCredit": "Photo: {{author}} ({{license}}), Wikimedia Commons"
   },
   "food": {
     "add": "Add {{food}}",
@@ -141,7 +151,7 @@
   },
   "hand": {
     "title": "Hand ({{count}})",
-    "hint": "— click a playable bird to play it",
+    "hint": "— drag a playable bird onto a habitat, or click it",
     "empty": "No cards. Draw some from the wetland."
   },
   "handoff": {
@@ -153,14 +163,16 @@
     "title": "Bird tray",
     "empty": "empty",
     "deck": "Deck: {{count}}",
-    "picked": "+{{count}} picked"
+    "picked": "+{{count}} picked",
+    "hint": "— drag cards into your hand to draw them",
+    "deckCard": "Deck"
   },
   "panel": {
     "botThinkingTitle": "{{name}} is thinking…",
     "botThinking": "🤖 The bot will move in a moment.",
     "yourTurnTitle": "{{name}}, it's your turn",
-    "yourTurnShort": "Tap a bird in your hand, or a habitat button on your board.",
-    "yourTurn": "Take <b>one</b> action: click a playable bird in your hand, or press a habitat button on your board to gain food, lay eggs or draw cards. Birds in that row then activate their powers right to left.",
+    "yourTurnShort": "Drag a bird onto your board, a card into your hand, or tap a habitat button.",
+    "yourTurn": "Take <b>one</b> action: drag a playable bird onto a habitat (or click it), drag tray cards or the deck into your hand to draw, or press a habitat button on your board to gain food, lay eggs or draw cards. Birds in that row then activate their powers right to left.",
     "confirm": "Confirm",
     "cancel": "Cancel",
     "clear": "Clear",
@@ -171,7 +183,7 @@
     "food": "Food",
     "pickAny": "pick any:",
     "eggsProgress": "Eggs {{done}}/{{total}}",
-    "removeEggsHint": "Click birds on your board to remove eggs.",
+    "removeEggsHint": "Click birds on your board to pay eggs from them. When all are chosen, a click moves the payment to that bird.",
     "gainFoodTitle": "Gain {{count}} food",
     "chosenProgress": "Chosen {{done}}/{{total}}",
     "take": "Take:",
@@ -179,7 +191,7 @@
     "layEggsTitle_other": "Lay {{count}} eggs",
     "placedProgress": "Placed {{done}}/{{total}}",
     "noRoomForEggs": "No room for eggs; you can still confirm.",
-    "addEggsHint": "Click your birds to add eggs.",
+    "addEggsHint": "Click your birds to place eggs. When all are placed, a click moves one to that bird.",
     "drawCardsTitle_one": "Draw {{count}} card",
     "drawCardsTitle_other": "Draw {{count}} cards",
     "pickedProgress": "Picked {{done}}/{{total}}",
@@ -320,6 +332,10 @@
       "food": "Leftover food is worth at most 5 points, so spend the rest before the game ends.",
       "lastRound": "In the last round, laying eggs is often worth more than starting something new.",
       "goals": "Keep an eye on the next round's goal and plan for it."
+    },
+    "photos": {
+      "title": "Photo credits",
+      "text": "Bird photos are from Wikimedia Commons, used under their Creative Commons licences. Tap a name for the photo’s page and full licence."
     }
   },
   "score": {
@@ -334,5 +350,91 @@
     "total": "Total",
     "playAgain": "Play again",
     "mainMenu": "Main menu"
+  },
+  "tutorial": {
+    "welcome": {
+      "title": "Welcome, {{name}}!",
+      "body": "Over 4 rounds you attract birds to your forest, grassland and wetland. On each turn you take exactly one action. Here is a quick look around."
+    },
+    "hand": {
+      "title": "Your hand",
+      "body": "Each card shows the bird’s points (top right), food cost, the habitats it can live in and its egg limit. Drag a playable bird onto a matching habitat row to play it, or click it to choose the details."
+    },
+    "food": {
+      "title": "Your food",
+      "body": "Birds are paid for with food from here. ❔ on a card means any food. Leftover food is worth 1 point each at the end (up to 5)."
+    },
+    "board": {
+      "title": "Your board",
+      "body": "Three habitats with 5 slots each. Birds fill a row from left to right; slots 3–5 also cost eggs, shown in the empty slot."
+    },
+    "actions": {
+      "title": "Habitat actions",
+      "body": "Instead of playing a bird, use a habitat: 🌲 gain food, 🌼 lay eggs, 💧 draw cards. Every 2 birds in a row make its action stronger, and those birds then use their powers, right to left."
+    },
+    "tray": {
+      "title": "The bird tray",
+      "body": "Face-up cards and the deck. Drag them into your hand (or click them) to draw: that’s the wetland action."
+    },
+    "goals": {
+      "title": "Round goals",
+      "body": "Each round ends with a goal. The leaders score bonus points, more in later rounds. A round ends when everyone has used their turns."
+    },
+    "panel": {
+      "title": "Your choices",
+      "body": "Whatever you start appears here: pick the details and press Confirm. Score points with birds, eggs, leftover food and goals. Good luck!"
+    },
+    "back": "Back",
+    "close": "Close",
+    "last": "Let’s play",
+    "next": "Next",
+    "nextWithProgress": "Next ({current}/{total})",
+    "skip": "Skip tutorial"
+  },
+  "birdFacts": {
+    "american-robin": "North America's most abundant land bird. It was named after the European robin for its orange-red breast, though the two aren't closely related. Often seen tugging earthworms out of lawns.",
+    "barn-owl": "Easy to recognise by its pale, heart-shaped face. Barn owls are among the most widespread birds on Earth and hunt mice and voles at night, largely by sound.",
+    "blue-jay": "A noisy, crested relative of crows in bright blue, white and black. It buries acorns to eat later, and the forgotten ones help oak forests spread.",
+    "northern-cardinal": "The male is bright red with a black face mask; the female is olive-brown with red accents. This crested songbird is the state bird of seven US states.",
+    "black-capped-chickadee": "A tiny tit with a black cap and bib, named after its 'chick-a-dee-dee-dee' call. It hides food for winter, and the part of its brain that remembers the hiding places grows in caching season.",
+    "downy-woodpecker": "The smallest woodpecker in North America, only 14–18 cm long. It nests in tree holes and eats mostly insects, and looks almost identical to the larger hairy woodpecker.",
+    "pileated-woodpecker": "A crow-sized woodpecker with a flaming red crest, the largest in North America. It chisels big, almost rectangular holes into trees to reach ants and other insects.",
+    "great-horned-owl": "A big owl with feathered 'horns' (ear tufts), nicknamed the 'tiger of the air'. It hunts rabbits and rodents and is one of the few regular predators of skunks.",
+    "cedar-waxwing": "A sleek brown, grey and yellow bird. Some wing feathers end in red tips that look like drops of sealing wax, which gives it its name. It lives largely on berries.",
+    "ruby-throated-hummingbird": "Eastern North America's most common hummingbird; the male has a glittering red throat. On migration this tiny bird crosses the Gulf of Mexico without stopping.",
+    "wild-turkey": "The heaviest of the chicken-like birds and the wild ancestor of the domestic turkey. Despite its bulk it flies well over short distances and sleeps in trees.",
+    "red-tailed-hawk": "One of North America's most common hawks, living everywhere from deserts to cities. Adults have a brick-red tail, and its raspy scream is often used for eagles in films.",
+    "wood-duck": "One of North America's most colourful waterfowl. It nests in tree holes, and the ducklings leap to the ground the day after hatching.",
+    "bald-eagle": "The national bird of the United States: a sea eagle that snatches fish from the water with its talons. It builds the largest tree nests ever recorded, up to 4 m deep and a tonne in weight.",
+    "american-kestrel": "The smallest and most common falcon in the Americas, about the size of a blue jay. It hovers over fields before dropping onto insects and small rodents.",
+    "eastern-bluebird": "A small thrush: the male's bright blue back and rusty breast make it a birdwatchers' favourite. It nests in tree holes and nest boxes and is the state bird of Missouri and New York.",
+    "western-meadowlark": "A ground-nesting grassland bird with a yellow breast and a black 'V' necklace. Its flute-like song is so loved that six US states chose it as their state bird.",
+    "mourning-dove": "One of North America's most abundant birds, named for its soft, sad-sounding coo. Its wings whistle on take-off, and a pair can raise up to six broods a year.",
+    "house-sparrow": "Carried around the globe by people, it is the most widely distributed wild bird. It lives almost wherever humans do, in cities and on farms alike.",
+    "barn-swallow": "The world's most widespread swallow, recognisable by its long, deeply forked tail. It builds a cup of mud for a nest, usually inside barns and other buildings.",
+    "killdeer": "A plover named after its shrill 'kill-deer' call. To lure predators away from its nest, it pretends to have a broken wing and drags it along the ground.",
+    "greater-prairie-chicken": "A grouse famous for its 'booming' courtship: males inflate orange air sacs on their necks to make a deep hooting sound. Once abundant, it is now rare due to habitat loss.",
+    "burrowing-owl": "A small, long-legged owl that lives underground, usually in burrows dug by prairie dogs or ground squirrels. Unlike most owls, it is often active during the day.",
+    "red-winged-blackbird": "Males are glossy black with red-and-yellow shoulder patches that they flash while singing from cattails. Possibly North America's most numerous land bird, it winters in flocks of over a million.",
+    "great-blue-heron": "A large, patient wading bird that stands still in shallow water to spear fish. An all-white form in Florida and the Caribbean is called the great white heron.",
+    "mallard": "The ancestor of most domestic ducks, found across the Northern Hemisphere. Drakes have glossy green heads, females are speckled brown, and both have a blue wing patch.",
+    "belted-kingfisher": "A shaggy-crested kingfisher that dives headfirst for fish. Unusually, the female is more colourful than the male, with an extra rusty belly band. It nests in tunnels dug into riverbanks.",
+    "osprey": "A fish-hunting raptor found on every continent except Antarctica. It plunges feet-first into the water and can turn one toe backwards to grip slippery fish.",
+    "common-loon": "A large diving bird of northern lakes, with a black-and-white chequered back in summer. Its haunting, yodelling call is a classic sound of the North American wilderness.",
+    "american-white-pelican": "A huge white pelican that doesn't dive: groups herd fish into the shallows together and scoop them up. In breeding season a horn-like plate grows on its bill.",
+    "sandhill-crane": "A tall grey crane with a red forehead, named after Nebraska's Sandhills. Up to 450,000 gather along the Platte River on their spring migration.",
+    "snowy-egret": "A small white heron with black legs and bright yellow feet. Its fine plumes were once so prized for hats that it was nearly wiped out; legal protection let it recover."
+  },
+  "birdInfo": {
+    "title": "About this bird",
+    "readMore": "Read more on Wikipedia",
+    "close": "Close bird info"
+  },
+  "dev": {
+    "cards": {
+      "open": "Cards",
+      "title": "All cards ({{count}})",
+      "close": "Close"
+    }
   }
 }

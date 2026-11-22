@@ -1,7 +1,17 @@
 // The choices a human is collecting before dispatching one complete GameAction.
 import { BIRDS_BY_ID } from './game/birds'
-import { autoEggPayment, autoEggPlacements } from './game/bot'
-import { canPayCost, drawCount, eggCostForSlot, layCount, playableHabitats, slotKey, suggestPayment } from './game/engine'
+import { autoEggPayment, autoEggPlacements, autoPlayBird } from './game/bot'
+import {
+  canPayCost,
+  drawCount,
+  eggCostForSlot,
+  layCount,
+  playableHabitats,
+  slotKey,
+  suggestPayment,
+  turnsPerRound,
+  validateAction,
+} from './game/engine'
 import type { CardPick, EggPlacement, Food, GameAction, GameState, Habitat, SlotRef } from './game/types'
 
 export type Draft =
@@ -53,7 +63,13 @@ export function chooseHabitat(state: GameState, draft: Extract<Draft, { kind: 'p
   return { ...draft, habitat, eggs }
 }
 
-export function startLayEggs(state: GameState): Draft {
+/** Starts the lay-eggs action with no eggs placed: the player clicks the birds to place them. */
+export function startLayEggs(): Draft {
+  return { kind: 'layEggs', placements: [] }
+}
+
+/** All eggs placed automatically on the birds with the most room (the panel's "Auto" button). */
+export function autoLayEggs(state: GameState): Draft {
   const player = state.players[state.currentPlayer]
   return { kind: 'layEggs', placements: autoEggPlacements(player, layCount(player)) }
 }
@@ -78,9 +94,9 @@ export function totalCount(placements: readonly EggPlacement[]): number {
 // doesn't apply (wrong draft kind, nothing left to choose, no room, ...).
 
 /** Starts the habitat's non-play action: gain food, lay eggs or draw cards. */
-export function startHabitatAction(state: GameState, habitat: Habitat): Draft {
+export function startHabitatAction(habitat: Habitat): Draft {
   if (habitat === 'forest') return { kind: 'gainFood', foods: [] }
-  if (habitat === 'grassland') return startLayEggs(state)
+  if (habitat === 'grassland') return startLayEggs()
   return { kind: 'drawCards', picks: [] }
 }
 
@@ -91,16 +107,35 @@ export function clickBird(state: GameState, draft: Draft, slot: SlotRef): Draft 
   if (!bird) return draft
   if (draft.kind === 'layEggs') {
     const room = BIRDS_BY_ID[bird.cardId].eggLimit - bird.eggs - eggDelta(draft.placements, slot)
-    if (room > 0 && totalCount(draft.placements) < layCount(player)) {
-      return { ...draft, placements: addEgg(draft.placements, slot) }
-    }
-  } else if (draft.kind === 'playBird' && draft.habitat) {
+    const placements = placeOrMove(draft.placements, slot, room > 0, layCount(player))
+    return placements ? { ...draft, placements } : draft
+  }
+  if (draft.kind === 'playBird' && draft.habitat) {
     const needed = eggCostForSlot(player.board[draft.habitat].length)
-    if (bird.eggs - eggDelta(draft.eggs, slot) > 0 && totalCount(draft.eggs) < needed) {
-      return { ...draft, eggs: addEgg(draft.eggs, slot) }
-    }
+    const eggs = placeOrMove(draft.eggs, slot, bird.eggs - eggDelta(draft.eggs, slot) > 0, needed)
+    return eggs ? { ...draft, eggs } : draft
   }
   return draft
+}
+
+/**
+ * One egg onto (laying) or from (paying) `slot`. While fewer than `total` are assigned it is
+ * added; once all are assigned (e.g. the automatic pre-fill) it is moved here from the
+ * bird that was assigned one most recently, so clicking re-distributes without "Clear".
+ * Null if `slot` can't take another (`canTake`) or there is nothing to move.
+ */
+function placeOrMove(placements: readonly EggPlacement[], slot: SlotRef, canTake: boolean, total: number): EggPlacement[] | null {
+  if (!canTake) return null
+  if (totalCount(placements) < total) return addEgg(placements, slot)
+  const from = placements.findLast((p) => slotKey(p.slot) !== slotKey(slot))
+  if (!from) return null
+  return addEgg(removeEgg(placements, from.slot), slot)
+}
+
+/** Takes one egg off `slot`'s placement, dropping it when it reaches zero. */
+export function removeEgg(placements: readonly EggPlacement[], slot: SlotRef): EggPlacement[] {
+  const key = slotKey(slot)
+  return placements.flatMap((p) => (slotKey(p.slot) !== key ? [p] : p.count > 1 ? [{ ...p, count: p.count - 1 }] : []))
 }
 
 /** How the draft changes a bird's egg count on the board: + when laying, − when paying. */
@@ -169,4 +204,93 @@ export function needsHandoff(state: GameState, revealedTo: number | null): boole
 export function canPlayCard(state: GameState, cardId: string): boolean {
   const player = state.players[state.currentPlayer]
   return canPayCost(player, BIRDS_BY_ID[cardId].cost) && playableHabitats(state, state.currentPlayer, cardId).length > 0
+}
+
+// ---------------------------------------------------------- drag and drop
+// Table-style shortcuts: drag a bird from the hand onto a habitat to play it, or a tray
+// card / the deck into the hand to draw it. Dropping commits the move as soon as it is
+// complete; payment uses the same automatic choices the action panel pre-fills.
+
+/** Something the player can pick up. */
+export type DragItem = { kind: 'hand'; cardId: string } | { kind: 'tray'; index: number } | { kind: 'deck' }
+
+/** Somewhere it can be put down. */
+export type DropTarget = { kind: 'habitat'; habitat: Habitat } | { kind: 'hand' }
+
+/** What a drop does: dispatch a complete action, update the draft, or nothing. */
+export type DropResult = { action: GameAction } | { draft: Draft } | null
+
+const toPick = (item: Exclude<DragItem, { kind: 'hand' }>): CardPick =>
+  item.kind === 'tray' ? { from: 'tray', index: item.index } : { from: 'deck' }
+
+/** Adds a card to the draw action, starting it if another (or no) action was in progress. */
+export function addDrawPick(state: GameState, draft: Draft, pick: CardPick): Draft {
+  const base: Draft = draft.kind === 'drawCards' ? draft : { kind: 'drawCards', picks: [] }
+  if (pick.from === 'tray') {
+    // Picking an already picked card again is a no-op here, not an un-pick.
+    if (pickedTray(base).includes(pick.index)) return base
+    return pickTray(state, base, pick.index)
+  }
+  return pickDeck(state, base)
+}
+
+/** True if the current player may start dragging `item` right now. */
+export function canDrag(state: GameState, draft: Draft, item: DragItem): boolean {
+  if (item.kind === 'hand') return canPlayCard(state, item.cardId)
+  const base: Draft = draft.kind === 'drawCards' ? draft : { kind: 'drawCards', picks: [] }
+  if (drawsLeft(state, base) <= 0) return false
+  if (item.kind === 'tray') return state.tray[item.index] != null && !pickedTray(base).includes(item.index)
+  return pickedDeck(base) < state.deck.length
+}
+
+/** True if `item` may be dropped on `target` (used to highlight valid targets). */
+export function canDrop(state: GameState, draft: Draft, item: DragItem, target: DropTarget): boolean {
+  if (!canDrag(state, draft, item)) return false
+  if (item.kind === 'hand') {
+    return target.kind === 'habitat' && playableHabitats(state, state.currentPlayer, item.cardId).includes(target.habitat)
+  }
+  return target.kind === 'hand'
+}
+
+export function drop(state: GameState, draft: Draft, item: DragItem, target: DropTarget): DropResult {
+  if (!canDrop(state, draft, item, target)) return null
+  if (item.kind === 'hand' && target.kind === 'habitat') {
+    const action = autoPlayBird(state, state.currentPlayer, item.cardId, target.habitat)
+    return action && validateAction(state, action) === null ? { action } : null
+  }
+  if (item.kind === 'hand') return null
+  const next = addDrawPick(state, draft, toPick(item))
+  if (drawsLeft(state, next) > 0) return { draft: next }
+  const action = toAction(next)
+  return action && validateAction(state, action) === null ? { action } : { draft: next }
+}
+
+// --------------------------------------------------------------- tutorial
+
+/** True on the current player's very first turn of the game (round 1, no turns taken). */
+export function isFirstTurn(state: GameState): boolean {
+  return state.phase === 'playing' && state.round === 1 && state.turnsLeft[state.currentPlayer] === turnsPerRound(1)
+}
+
+// ------------------------------------------------------------ debug output
+
+/** Short developer-facing text for a draft (debug log only; not translated). */
+export function describeDraft(draft: Draft): string {
+  const eggs = (placements: readonly EggPlacement[]) => placements.map((p) => `${slotKey(p.slot)}×${p.count}`).join(', ')
+  switch (draft.kind) {
+    case 'idle':
+      return 'idle'
+    case 'playBird': {
+      const parts = [`play ${draft.cardId}`, draft.habitat ? `→ ${draft.habitat}` : '(no habitat yet)']
+      if (draft.anyFoods.length) parts.push(`any food: ${draft.anyFoods.join(', ')}`)
+      if (draft.eggs.length) parts.push(`egg payment: ${eggs(draft.eggs)}`)
+      return parts.join(' ')
+    }
+    case 'gainFood':
+      return `gain food: ${draft.foods.join(', ') || 'none chosen'}`
+    case 'layEggs':
+      return `lay eggs: ${eggs(draft.placements) || 'none placed'}`
+    case 'drawCards':
+      return `draw: ${draft.picks.map((p) => (p.from === 'tray' ? `tray#${p.index + 1}` : 'deck')).join(', ') || 'none picked'}`
+  }
 }

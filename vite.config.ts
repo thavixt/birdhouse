@@ -38,6 +38,20 @@ export default defineConfig({
         // (No `webmanifest` here: the plugin adds the manifest itself, and a duplicate
         // entry makes Workbox's precache fail silently.)
         globPatterns: ['**/*.{js,css,html,png,ico,svg}'],
+        // Bird photos (src/bird-images.ts) come from Wikimedia: cache each the first time it
+        // is shown, so cards keep their photos offline. Wikimedia sends CORS headers, so the
+        // cards load them with crossOrigin="anonymous" and only real 200 responses are kept.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.hostname.endsWith('.wikimedia.org'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'bird-photos',
+              expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
       },
     }),
   ],

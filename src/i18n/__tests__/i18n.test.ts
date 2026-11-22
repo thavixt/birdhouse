@@ -1,4 +1,5 @@
 import { createInstance, type TFunction } from 'i18next'
+import { initReactI18next } from 'react-i18next'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { BIRDS } from '../../game/birds'
 import { chooseAction } from '../../game/bot'
@@ -58,7 +59,8 @@ describe('dictionaries', () => {
 describe('engine messages render in English', () => {
   let t: TFunction
   beforeAll(async () => {
-    const i18n = createInstance()
+    // Registered like the app's instance (src/i18n/index.ts): `birdName` reads it via getI18n().
+    const i18n = createInstance().use(initReactI18next)
     await i18n.init({ lng: 'en-us', lowerCaseLng: true, resources: { 'en-us': { translation: enUS } }, interpolation: { escapeValue: false } })
     t = i18n.t
   })

@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { actionCount, eggCostForSlot, ROW_SIZE } from '../game/engine'
 import { GOAL_IDS, GOAL_POINTS } from '../game/goals'
 import { HABITATS, type Board } from '../game/types'
+import { BIRD_IMAGES } from '../bird-images'
 import { HABITAT_ICON } from '../theme'
 
 type Props = { onClose: () => void }
@@ -229,6 +230,21 @@ export default function RulesModal({ onClose }: Props) {
 
           <Section title={t('rules.tips.title')}>
             <KeyList keys={TIPS} />
+          </Section>
+
+          {/* Required attribution for the card photos (CC BY / CC BY-SA). */}
+          <Section title={t('rules.photos.title')}>
+            <p>{t('rules.photos.text')}</p>
+            <ul className="columns-1 gap-4 text-xs text-stone-600 sm:columns-2">
+              {BIRD_IMAGES.map((img) => (
+                <li key={img.id} className="break-inside-avoid">
+                  <a href={img.source} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline">
+                    {t(`birds.${img.id}`)}
+                  </a>
+                  : {img.author} ({img.license})
+                </li>
+              ))}
+            </ul>
           </Section>
         </div>
 

@@ -35,34 +35,34 @@
   "birds": {
     "american-robin": "Vándorrigó",
     "barn-owl": "Gyöngybagoly",
-    "blue-jay": "Kékszajkó",
-    "northern-cardinal": "Piros kardinális",
-    "black-capped-chickadee": "Feketesapkás cinege",
-    "downy-woodpecker": "Pelyhes harkály",
+    "blue-jay": "Kék szajkó",
+    "northern-cardinal": "Vörös kardinálispinty",
+    "black-capped-chickadee": "Kanadai cinege",
+    "downy-woodpecker": "Pehelyharkály",
     "pileated-woodpecker": "Kontyos feketeharkály",
-    "great-horned-owl": "Virginiai uhu",
-    "cedar-waxwing": "Cédrus-csonttollú",
-    "ruby-throated-hummingbird": "Rubintorkú kolibri",
+    "great-horned-owl": "Amerikai uhu",
+    "cedar-waxwing": "Cédruscsonttollú",
+    "ruby-throated-hummingbird": "Tüzestorkú kolibri",
     "wild-turkey": "Vadpulyka",
-    "red-tailed-hawk": "Vörösfarkú ölyv",
+    "red-tailed-hawk": "Rőtfarkú ölyv",
     "wood-duck": "Karolinai réce",
     "bald-eagle": "Fehérfejű rétisas",
     "american-kestrel": "Tarka vércse",
     "eastern-bluebird": "Vörösbegyű kékmadár",
     "western-meadowlark": "Nyugati réticsiröge",
-    "mourning-dove": "Gyászgerle",
+    "mourning-dove": "Sirató gerle",
     "house-sparrow": "Házi veréb",
     "barn-swallow": "Füsti fecske",
     "killdeer": "Ékfarkú lile",
     "greater-prairie-chicken": "Nagy prérityúk",
     "burrowing-owl": "Üregi bagoly",
-    "red-winged-blackbird": "Vörösvállú csiröge",
-    "great-blue-heron": "Nagy kékgém",
+    "red-winged-blackbird": "Pirosvállú csiröge",
+    "great-blue-heron": "Királygém",
     "mallard": "Tőkés réce",
     "belted-kingfisher": "Örvös halkapó",
     "osprey": "Halászsas",
     "common-loon": "Jeges búvár",
-    "american-white-pelican": "Tüskéscsőrű gödény",
+    "american-white-pelican": "Orrszarvú pelikán",
     "sandhill-crane": "Kanadai daru",
     "snowy-egret": "Hókócsag"
   },
@@ -105,7 +105,16 @@
     "botName2": "Gépi rigó",
     "botName3": "Gépi pinty",
     "botName4": "Gépi gém",
-    "botFallback": "Gép"
+    "botFallback": "Gép",
+    "tutorial": "Útmutató",
+    "tutorialHint": "Tippek minden játékos első körében"
+  },
+  "leaderboard": {
+    "title": "Legjobb eredmények",
+    "empty": "Még nincs győzelem. Nyerj meg egy játékot, hogy felkerülj a listára!",
+    "rank": "{{rank}}. hely",
+    "points_one": "{{count}} pont",
+    "points_other": "{{count}} pont"
   },
   "tracker": {
     "round": "{{round}}. kör / 4",
@@ -132,7 +141,8 @@
     "foodCost": "Élelemköltség",
     "anyFood": "❔ = bármilyen élelem",
     "habitats": "Élőhelyek",
-    "eggLimit": "Tojáskorlát"
+    "eggLimit": "Tojáskorlát",
+    "photoCredit": "Fotó: {{author}} ({{license}}), Wikimedia Commons"
   },
   "food": {
     "add": "Hozzáadás: {{food}}",
@@ -141,7 +151,7 @@
   },
   "hand": {
     "title": "Kéz ({{count}})",
-    "hint": "— kattints egy kijátszható madárra",
+    "hint": "— húzz egy kijátszható madarat egy élőhelyre, vagy kattints rá",
     "empty": "Nincs kártyád. Húzz néhányat a vízparton."
   },
   "handoff": {
@@ -153,14 +163,16 @@
     "title": "Felcsapott madarak",
     "empty": "üres",
     "deck": "Pakli: {{count}}",
-    "picked": "+{{count}} kiválasztva"
+    "picked": "+{{count}} kiválasztva",
+    "hint": "— húzd a lapokat a kezedbe, hogy felhúzd őket",
+    "deckCard": "Pakli"
   },
   "panel": {
     "botThinkingTitle": "{{name}} gondolkodik…",
     "botThinking": "🤖 A gép mindjárt lép.",
     "yourTurnTitle": "{{name}}, te jössz!",
-    "yourTurnShort": "Koppints egy madárra a kezedben, vagy egy élőhely gombjára a tábládon.",
-    "yourTurn": "Válassz <b>egy</b> akciót: kattints egy kijátszható madárra a kezedben, vagy nyomd meg egy élőhely gombját a tábládon, hogy élelmet szerezz, tojást rakj vagy kártyát húzz. Ezután a sor madarai jobbról balra aktiválják a képességüket.",
+    "yourTurnShort": "Húzz egy madarat a tábládra, egy lapot a kezedbe, vagy koppints egy élőhely gombjára.",
+    "yourTurn": "Válassz <b>egy</b> akciót: húzz egy kijátszható madarat egy élőhelyre (vagy kattints rá), húzz felcsapott lapokat vagy a paklit a kezedbe, vagy nyomd meg egy élőhely gombját a tábládon, hogy élelmet szerezz, tojást rakj vagy kártyát húzz. Ezután a sor madarai jobbról balra aktiválják a képességüket.",
     "confirm": "Megerősítés",
     "cancel": "Mégse",
     "clear": "Törlés",
@@ -171,7 +183,7 @@
     "food": "Élelem",
     "pickAny": "válassz bármit:",
     "eggsProgress": "Tojás {{done}}/{{total}}",
-    "removeEggsHint": "Kattints a tábládon lévő madarakra a tojások levételéhez.",
+    "removeEggsHint": "Kattints a tábládon lévő madarakra, hogy róluk fizesd a tojásokat. Ha már mind ki van választva, a kattintás arra a madárra teszi át a fizetést.",
     "gainFoodTitle": "Szerezz {{count}} élelmet",
     "chosenProgress": "Választva {{done}}/{{total}}",
     "take": "Válassz:",
@@ -179,7 +191,7 @@
     "layEggsTitle_other": "Rakj le {{count}} tojást",
     "placedProgress": "Lerakva {{done}}/{{total}}",
     "noRoomForEggs": "Nincs hely tojásnak; így is megerősítheted.",
-    "addEggsHint": "Kattints a madaraidra a tojások lerakásához.",
+    "addEggsHint": "Kattints a madaraidra a tojások lerakásához. Ha már mind le van rakva, a kattintás egyet átrak arra a madárra.",
     "drawCardsTitle_one": "Húzz {{count}} kártyát",
     "drawCardsTitle_other": "Húzz {{count}} kártyát",
     "pickedProgress": "Választva {{done}}/{{total}}",
@@ -320,6 +332,10 @@
       "food": "A maradék élelem legfeljebb 5 pontot ér, a többit érdemes a játék vége előtt elkölteni.",
       "lastRound": "Az utolsó körben a tojásrakás gyakran többet ér, mint valami új elkezdése.",
       "goals": "Figyeld a következő kör célját, és készülj rá."
+    },
+    "photos": {
+      "title": "Fotók forrása",
+      "text": "A madárfotók a Wikimedia Commonsról származnak, Creative Commons licenc alapján. Egy névre koppintva megnyílik a fotó oldala a teljes licenccel."
     }
   },
   "score": {
@@ -334,5 +350,91 @@
     "total": "Összesen",
     "playAgain": "Új játék",
     "mainMenu": "Főmenü"
+  },
+  "tutorial": {
+    "welcome": {
+      "title": "Üdv, {{name}}!",
+      "body": "4 forduló alatt madarakat csalogatsz az erdődbe, a meződre és a vízpartodra. Minden körben pontosan egy akciót választasz. Nézzünk körül!"
+    },
+    "hand": {
+      "title": "A kezed",
+      "body": "Minden kártyán ott a madár pontértéke (jobb fent), az élelemköltsége, az élőhelyei és a tojáskorlátja. Húzz egy kijátszható madarat egy megfelelő élőhely sorába, vagy kattints rá a részletekért."
+    },
+    "food": {
+      "title": "Az élelmed",
+      "body": "A madarakat innen fizeted ki. A ❔ a kártyán bármilyen élelmet jelent. A megmaradt élelem a végén 1-1 pontot ér (legfeljebb 5-öt)."
+    },
+    "board": {
+      "title": "A táblád",
+      "body": "Három élőhely, mindegyikben 5 hely. A madarak balról jobbra töltik fel a sort; a 3–5. hely tojásba is kerül, ezt az üres hely mutatja."
+    },
+    "actions": {
+      "title": "Élőhely-akciók",
+      "body": "Madár kijátszása helyett használhatsz egy élőhelyet: 🌲 élelemszerzés, 🌼 tojásrakás, 💧 kártyahúzás. A sorban minden 2 madár erősíti az akciót, majd ezek a madarak jobbról balra használják a képességüket."
+    },
+    "tray": {
+      "title": "Felcsapott madarak",
+      "body": "A felcsapott lapok és a pakli. Húzd őket a kezedbe (vagy kattints rájuk) a húzáshoz: ez a vízparti akció."
+    },
+    "goals": {
+      "title": "Fordulócélok",
+      "body": "Minden forduló egy céllal zárul. Az élen állók bónuszpontot kapnak, a későbbi fordulókban többet. A forduló akkor ér véget, ha mindenki elhasználta a köreit."
+    },
+    "panel": {
+      "title": "A választásaid",
+      "body": "Amit elkezdesz, itt jelenik meg: add meg a részleteket, és nyomd meg a Megerősítést. Pontot a madarak, tojások, megmaradt élelem és célok érnek. Jó játékot!"
+    },
+    "back": "Vissza",
+    "close": "Bezárás",
+    "last": "Kezdjük!",
+    "next": "Tovább",
+    "nextWithProgress": "Tovább ({current}/{total})",
+    "skip": "Útmutató kihagyása"
+  },
+  "birdFacts": {
+    "american-robin": "Észak-Amerika leggyakoribb szárazföldi madara. Narancsvörös melle miatt az európai vörösbegyről nevezték el, pedig nem közeli rokonok. Gyakran látni, ahogy gilisztát húz ki a gyepből.",
+    "barn-owl": "Fehér, szív alakú arcáról könnyű felismerni. A gyöngybaglyok a Föld legelterjedtebb madarai közé tartoznak; éjjel egerekre és pockokra vadásznak, főleg hallás alapján.",
+    "blue-jay": "Zajos, bóbitás varjúféle élénk kék, fehér és fekete tollazattal. Makkot ás el későbbre, és az elfelejtett makkokból kinőve a tölgyesek terjedését is segíti.",
+    "northern-cardinal": "A hím élénkpiros, fekete arcmaszkkal, a tojó olajbarna, piros árnyalatokkal. Ez a bóbitás énekesmadár hét amerikai állam címermadara.",
+    "black-capped-chickadee": "Apró cinege fekete sapkával és torokfolttal; angol nevét „csik-a-dí-dí-dí” hívóhangjáról kapta. Télire elrejti az élelmét, és a rejtekhelyekre emlékező agyterülete ilyenkor megnő.",
+    "downy-woodpecker": "Észak-Amerika legkisebb harkálya, mindössze 14–18 cm. Faodúban fészkel, főleg rovarokat eszik, és szinte ugyanúgy néz ki, mint a nagyobb szőrös hőcsik.",
+    "pileated-woodpecker": "Varjú nagyságú harkály lángvörös bóbitával, Észak-Amerika legnagyobb harkálya. Nagy, szinte téglalap alakú lyukakat váj a fákba, hogy elérje a hangyákat és más rovarokat.",
+    "great-horned-owl": "Nagy termetű bagoly tollfülekkel, becenevén „a levegő tigrise”. Nyulakra és rágcsálókra vadászik, és egyike a bűzösborz kevés rendszeres ragadozójának.",
+    "cedar-waxwing": "Elegáns barna, szürke és sárga madár. Egyes szárnytollai pecsétviasz-cseppre emlékeztető piros hegyben végződnek, innen az angol neve. Főleg bogyókon él.",
+    "ruby-throated-hummingbird": "Kelet-Észak-Amerika leggyakoribb kolibrije; a hím torka csillogó vörös. Vonuláskor ez az apró madár megállás nélkül repüli át a Mexikói-öblöt.",
+    "wild-turkey": "A tyúkalakúak legnehezebb faja és a házi pulyka vadon élő őse. Termete ellenére rövid távon jól repül, és fákon alszik.",
+    "red-tailed-hawk": "Észak-Amerika egyik leggyakoribb ölyve, a sivatagtól a városokig mindenütt él. A kifejlett madarak farka téglavörös, rekedt kiáltását a filmekben gyakran sasok hangjaként használják.",
+    "wood-duck": "Észak-Amerika egyik legszínesebb vízimadara. Faodúban fészkel, a kiskacsák pedig a kikelés utáni napon leugranak a földre.",
+    "bald-eagle": "Az Egyesült Államok nemzeti madara: tengeri sas, amely karmaival kapja ki a halat a vízből. Ő építi a valaha mért legnagyobb fészkeket a fákon, akár 4 m mélyet és egy tonna súlyút.",
+    "american-kestrel": "Amerika legkisebb és leggyakoribb sólyma, nagyjából kék szajkó méretű. Mezők fölött szitál, majd rovarokra és kis rágcsálókra csap le.",
+    "eastern-bluebird": "Kis termetű rigóféle: a hím élénkkék háta és rozsdavörös melle a madármegfigyelők kedvencévé teszi. Faodúban és mesterséges odúban költ; Missouri és New York állam madara.",
+    "western-meadowlark": "Földön fészkelő pusztai madár sárga mellel és fekete, V alakú „nyaklánccal”. Fuvolaszerű énekét annyira szeretik, hogy hat amerikai állam választotta címermadarául.",
+    "mourning-dove": "Észak-Amerika egyik leggyakoribb madara, nevét lágy, szomorúan szóló búgásáról kapta. Felszálláskor szárnya fütyül, és egy pár évente akár hat fészekaljat is felnevelhet.",
+    "house-sparrow": "Az ember szinte az egész világra elvitte, így ez a legelterjedtebb vadon élő madár. Szinte mindenütt megél, ahol ember lakik, városban és tanyán egyaránt.",
+    "barn-swallow": "A világ legelterjedtebb fecskéje, hosszú, mélyen villás farkáról ismerhető fel. Csésze alakú sárfészket rak, többnyire istállókban és más épületekben.",
+    "killdeer": "Lileféle, amely éles „kill-dír” hívóhangjáról kapta angol nevét. Hogy elcsalja a ragadozókat a fészkétől, törött szárnyat színlel, és a földön vonszolja a szárnyát.",
+    "greater-prairie-chicken": "Fajdféle, amely „dübörgő” nászáról híres: a hímek felfújják narancssárga nyaki légzsákjukat, és mély, búgó hangot adnak. Egykor gyakori volt, ma élőhelyei pusztulása miatt ritka.",
+    "burrowing-owl": "Kis termetű, hosszú lábú bagoly, amely a föld alatt él, többnyire prérikutyák vagy ürgék ásta üregekben. A legtöbb bagollyal ellentétben gyakran nappal is aktív.",
+    "red-winged-blackbird": "A hím fényes fekete, piros-sárga vállfolttal, amelyet a gyékényen énekelve villant meg. Talán Észak-Amerika legnépesebb szárazföldi madara; télen akár milliós csapatokba verődik.",
+    "great-blue-heron": "Nagy termetű, türelmes gázlómadár, amely mozdulatlanul áll a sekély vízben, és lesi a halakat. Floridában és a Karib-térségben egy csupa fehér változata is él.",
+    "mallard": "A legtöbb házikacsa őse, az egész északi féltekén elterjedt. A gácsér feje fényes zöld, a tojó barnán pettyezett, és mindkettő szárnyán kék tükör látszik.",
+    "belted-kingfisher": "Borzas bóbitájú jégmadár, amely fejest ugrik a halakért. Szokatlan módon a tojó színesebb a hímnél: egy rozsdavörös hasi sávval több van rajta. Folyópartba vájt üregben fészkel.",
+    "osprey": "Halakra vadászó ragadozó madár, amely az Antarktisz kivételével minden kontinensen él. Lábbal előre csap a vízbe, és egyik ujját hátra tudja fordítani, hogy jobban tartsa a csúszós halat.",
+    "common-loon": "Északi tavak nagy termetű bukómadara, nyáron fekete-fehér kockás háttal. Kísérteties, jódlizó hívása az észak-amerikai vadon klasszikus hangja.",
+    "american-white-pelican": "Hatalmas fehér pelikán, amely nem bukik a vízbe: csapatban terelik a halakat a sekély vízbe, és ott merítik ki őket. Költési időben szaruszerű dudor nő a csőrén – innen magyar neve.",
+    "sandhill-crane": "Magas, szürke daru piros homlokkal; angol nevét a nebraskai Sandhills vidékről kapta. Tavaszi vonuláskor akár 450 000 madár gyűlik össze a Platte folyó mentén.",
+    "snowy-egret": "Kis termetű fehér gém fekete lábbal és élénksárga lábfejjel. Finom díszes tollai egykor annyira keresettek voltak a kalapokhoz, hogy majdnem kiirtották; a védelemnek köszönhetően mára megerősödött."
+  },
+  "birdInfo": {
+    "title": "A madárról",
+    "readMore": "Bővebben a Wikipédián",
+    "close": "Madárinfó bezárása"
+  },
+  "dev": {
+    "cards": {
+      "open": "Kártyák",
+      "title": "Minden kártya ({{count}})",
+      "close": "Bezárás"
+    }
   }
 }

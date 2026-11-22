@@ -1,15 +1,20 @@
 import { useTranslation } from 'react-i18next'
+import { useHorizontalWheel } from '../hooks/useHorizontalWheel'
 import { GOAL_POINTS } from '../game/goals'
 import type { GameState } from '../game/types'
 import LanguageSwitch from './LanguageSwitch'
 import RulesButton from './RulesButton'
+import { cn } from 'cn'
 
-type Props = { state: GameState; onQuit: () => void }
+type Props = { className?: string; state: GameState; onQuit: () => void }
 
-export default function RoundTracker({ state, onQuit }: Props) {
+export default function RoundTracker({ className, state, onQuit }: Props) {
   const { t } = useTranslation()
+  // Narrow screens: the goal chips are one sideways-scrolling line, so the wheel scrolls it.
+  // From sm they wrap and don't overflow, so the hook leaves the wheel alone.
+  const wheelScroll = useHorizontalWheel<HTMLOListElement>()
   return (
-    <header className="flex flex-col gap-2 rounded-xl border border-stone-200 bg-white/80 p-2 shadow-sm sm:p-3">
+    <header className={cn("flex flex-col gap-2 rounded-xl border border-stone-200 bg-white p-2 shadow-sm sm:p-3", className)}>
       {/* Title and controls share a row when they fit; on phones the controls wrap below. */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-baseline gap-3">
@@ -25,7 +30,7 @@ export default function RoundTracker({ state, onQuit }: Props) {
         </div>
       </div>
       {/* Phones: one horizontally scrollable line. Wider screens: chips wrap. */}
-      <ol className="-mx-2 flex gap-2 overflow-x-auto px-2 pb-1 text-xs sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+      <ol ref={wheelScroll} data-tour="goals" className="-mx-2 flex gap-2 overflow-x-auto px-2 pb-1 text-xs sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
         {state.goals.map((id, i) => {
           const done = i + 1 < state.round || state.phase === 'gameOver'
           const current = i + 1 === state.round && !done

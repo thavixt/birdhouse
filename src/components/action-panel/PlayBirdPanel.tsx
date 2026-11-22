@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { birdName } from '../../i18n/birdName'
 import { chooseHabitat, totalCount } from '../../draft'
 import { BIRDS_BY_ID } from '../../game/birds'
 import { eggCostForSlot, playableHabitats } from '../../game/engine'
@@ -21,7 +22,7 @@ export default function PlayBirdPanel({ state, draft, setDraft, footer, docked }
   for (const f of [...card.cost.foods, ...draft.anyFoods]) left[f]--
 
   return (
-    <PanelFrame docked={docked} title={t('panel.playBirdTitle', { card: t(`birds.${card.id}`) })}>
+    <PanelFrame docked={docked} title={t('panel.playBirdTitle', { card: birdName(card.id) })}>
       <PanelStep label={t('panel.habitat')}>
         {habitats.map((h) => (
           <button

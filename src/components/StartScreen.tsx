@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { GameState, PlayerConfig } from '../game/types'
+import { loadLeaderboard } from '../persistence'
 import LanguageSwitch from './LanguageSwitch'
+import Leaderboard from './Leaderboard'
 import RulesButton from './RulesButton'
 
 type Props = {
-  onStart: (players: PlayerConfig[]) => void
+  /** `tutorial`: show the guided tour on each human's first turn. */
+  onStart: (players: PlayerConfig[], tutorial: boolean) => void
   /** A saved, unfinished game to offer for continuing. */
   resumable: GameState | null
   onResume: () => void
@@ -64,6 +67,9 @@ const btn = 'cursor-pointer rounded-md px-3 py-1.5 text-sm font-semibold disable
 export default function StartScreen({ onStart, resumable, onResume }: Props) {
   const { t } = useTranslation()
   const [players, setPlayers] = useState<PlayerConfig[]>(() => alone(t))
+  // Read once per visit to the start screen (it remounts after every game).
+  const [leaderboard] = useState(loadLeaderboard)
+  const [tutorial, setTutorial] = useState(true)
   const update = (i: number, patch: Partial<PlayerConfig>) => setPlayers(players.map((p, j) => (j === i ? { ...p, ...patch } : p)))
   // Switching human/bot also swaps a preset name for one that fits; a typed name is kept.
   const toggleKind = (i: number) => {
@@ -173,14 +179,35 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
           {t('start.addPlayer')}
         </button>
 
+        <label className="flex cursor-pointer items-center justify-between gap-3 text-sm">
+          <span>
+            <span className="font-semibold">{t('start.tutorial')}</span>
+            <span className="block text-xs text-stone-500">{t('start.tutorialHint')}</span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={tutorial}
+            onClick={() => setTutorial(!tutorial)}
+            className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${tutorial ? 'bg-violet-700' : 'bg-stone-300'}`}
+          >
+            <span
+              aria-hidden
+              className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${tutorial ? 'translate-x-5' : ''}`}
+            />
+          </button>
+        </label>
+
         <button
           type="button"
           className={`${btn} bg-violet-700 py-2.5 text-base text-white hover:bg-violet-800`}
           disabled={!valid}
-          onClick={() => onStart(players.map((p) => ({ ...p, name: p.name.trim() })))}
+          onClick={() => onStart(players.map((p) => ({ ...p, name: p.name.trim() })), tutorial)}
         >
           {t('start.startGame')}
         </button>
+
+        <Leaderboard entries={leaderboard} />
       </div>
     </main>
   )
