@@ -1,13 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { scorePlayer } from '../game/scoring'
-import type { GameState } from '../game/types'
+import { useGame } from '../store/gameStore'
 import { cn } from 'cn'
 
-type Props = { state: GameState }
-
 /** Every player's name and current score; the player whose turn it is is highlighted. */
-export default function PlayerList({ state }: Props) {
+export default function PlayerList() {
   const { t } = useTranslation()
+  const state = useGame()
   return (
     <section className="rounded-xl border border-stone-200 bg-white/80 p-3 text-sm shadow-sm">
       <h3 className="mb-1 text-sm font-semibold text-stone-600">{t('players.title')}</h3>

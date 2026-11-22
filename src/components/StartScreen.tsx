@@ -1,20 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import type { GameState, PlayerConfig } from '../game/types'
+import type { PlayerConfig } from '../game/types'
 import { loadLeaderboard, loadTutorialEnabled, saveTutorialEnabled } from '../persistence'
 import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch'
 import Leaderboard from './Leaderboard'
 import RulesButton from './RulesButton'
-
-type Props = {
-  /** `tutorial`: show the guided tour on each human's first turn. */
-  onStart: (players: PlayerConfig[], tutorial: boolean) => void
-  /** A saved, unfinished game to offer for continuing. */
-  resumable: GameState | null
-  onResume: () => void
-}
+import { useGameStore } from '../store/gameStore'
 
 const alone = (t: TFunction): PlayerConfig[] => [
   { name: t('start.defaultYou'), kind: 'human' },
@@ -65,8 +58,12 @@ const MODES: { mode: PlayMode; preset: (t: TFunction) => PlayerConfig[] }[] = [
 
 const btn = 'cursor-pointer rounded-md px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40'
 
-export default function StartScreen({ onStart, resumable, onResume }: Props) {
+export default function StartScreen() {
   const { t } = useTranslation()
+  // A saved, unfinished game to offer for continuing.
+  const resumable = useGameStore((s) => s.resumable)
+  const onResume = useGameStore((s) => s.resume)
+  const onStart = useGameStore((s) => s.newGame)
   const [players, setPlayers] = useState<PlayerConfig[]>(() => alone(t))
   // Read once per visit to the start screen (it remounts after every game).
   const [leaderboard] = useState(loadLeaderboard)

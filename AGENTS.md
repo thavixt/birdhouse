@@ -27,6 +27,7 @@ as their licences require (see "Bird photos"); never use art from a published ga
   downloads mkcert and installs its local CA into the OS trust store (may show a prompt).
 - **@dnd-kit/core** — drag and drop for playing and drawing cards (see "Drag and drop")
 - **react-joyride** (v3) — the optional guided tour (see "Tutorial")
+- **zustand** — the app's game and turn-UI state in one store (see "State store")
 
 ### Commands
 
@@ -50,8 +51,9 @@ Results are under the repository's **Actions** tab.
   no React imports, no DOM, no `Math.random()` calls inline — randomness goes through
   a seeded RNG stored in state so games are reproducible and testable.
 - **Single source of truth:** one `GameState` object, updated only by
-  `reduce(state, action) => state` in `src/game/engine.ts`. The UI calls
-  `useReducer(reduce, …)` and dispatches `GameAction`s.
+  `reduce(state, action) => state` in `src/game/engine.ts`. The UI keeps it in the zustand
+  store (`src/store/gameStore.ts`) and changes it only through the store's `dispatch(action)`,
+  which calls `reduce`. See "State store".
 - **Immutable updates.** Never mutate state in the reducer; return new objects.
 - **No manual memoization.** Don't add `useMemo` / `useCallback` / `React.memo` —
   React Compiler does it. Follow the Rules of React (pure render, no mutation of props/state).
@@ -61,6 +63,27 @@ Results are under the repository's **Actions** tab.
   Extract repeated class sets into small components, not `@apply`.
 - **Components** are function components, one per file, PascalCase filenames.
 - Keep it **basic**. Prefer fewer features done well over many half-done ones.
+
+### State store
+
+- `src/store/gameStore.ts` (zustand) holds the game (`game`, `resumable`, `tutorial`) and the
+  turn in progress, which is UI only and never saved: `draft` (choices before Confirm),
+  `revealedTo` (hot-seat), `inspected` (the bird in the info card) and `toured`.
+- Components read it with `useGameStore(selector)`, or `useGame()` for the game on screen
+  (GameScreen, ScoreScreen and below) and `useTurnView()` for who is acting / viewed /
+  covered. No `state` / `draft` / `setDraft` props: presentational components (`Board`,
+  `Hand`, `CardTray`, `BirdCard`) still take plain props so they render anywhere.
+- **Selectors return existing values only** (`s.game`, `s.draft`, an action). A selector that
+  builds a new object or array on every call makes zustand re-render forever; derive such
+  values in the component instead, as `turnView` does.
+- Actions: `newGame` / `rematch` / `resume` / `quit` reset the turn UI; `dispatch` runs the
+  engine, resets the draft, saves, and on the game-ending action clears the save and
+  records the winners (once, since later actions are rejected). Click handlers
+  (`clickHandCard`, `clickTrayCard`, `clickDeck`, `endDrag`) are thin glue over the pure,
+  tested functions in `src/draft.ts`. Store tests: `src/__tests__/gameStore.test.ts`.
+- Hand selection is by **hand position** (`handIndex` on the `playBird` draft, UI only), so
+  with two copies of a bird only the clicked one is highlighted. Clicking an unplayable card
+  shows its info and cancels a bird that was about to be played.
 
 ### Responsive layout
 
@@ -102,6 +125,9 @@ Results are under the repository's **Actions** tab.
   given their drag props, so `Board` still renders outside it (score screen).
 - Sensors: mouse starts after 6px of movement (clicks still work); touch needs a 200ms
   press-and-hold, so swiping still scrolls the hand and tray.
+- A drag that drops nowhere after moving less than `CLICK_SLOP` (16px) counts as a click on
+  the card (`isClickLike`, `clickItem`): starting the drag swallows the browser's click event,
+  so a slightly shaky click would otherwise do nothing.
 
 ### Bird photos
 
@@ -159,7 +185,7 @@ Results are under the repository's **Actions** tab.
   game over, new game (with its **seed**, so it can be replayed), continue, quit, and every
   load / save / clear of the saved game.
 - Every UI interaction that changes the turn in progress (`Turn draft · Name: play mallard
-  → wetland …`, from `useTurnDraft`, text by `describeDraft`) and every hand reveal after a
+  → wetland …`, from the store's `setDraft`, text by `describeDraft`) and every hand reveal after a
   handoff is logged too, each with the current game state attached; clicks that change
   nothing are skipped.
 - **Bird ids (dev only):** in `npm run dev` every bird name is followed by its id: a small
@@ -170,8 +196,9 @@ Results are under the repository's **Actions** tab.
   opens `DevCardGallery`: every bird's game card and info card side by side, with its id and
   photo source, to check all cards and images at once. Mounted from `main.tsx` behind
   `import.meta.env.DEV` and lazy-loaded, so production builds don't contain it.
-- **Log with `logOnce(action, …)` inside reducers.** React Strict Mode runs reducers twice
-  in development with the same action object; `logOnce` keeps the output to one line.
+- **Log with `logOnce(action, …)` inside the engine's `reduce`.** It must stay safe to call
+  twice with the same action object (React Strict Mode does that to reducers); `logOnce` keeps
+  the output to one line. Store actions run once per event, so they log with `gameLog`.
   Logging must never change state.
 
 ### Persistence
@@ -187,7 +214,7 @@ Results are under the repository's **Actions** tab.
   `deserializeGame` rejects missing, malformed or outdated saves and unknown card/goal ids.
   **Bump `SAVE_VERSION` whenever `GameState`'s shape changes**, so old saves are dropped
   instead of crashing the game.
-- **Leaderboard** (`birdhouse.leaderboard`): when a game finishes, App records its human
+- **Leaderboard** (`birdhouse.leaderboard`): when a game finishes, the store's `dispatch` records its human
   winners (everyone sharing first place; winning bots are skipped) once per game via
   `recordWinners`. The start screen shows the top 10 (`Leaderboard.tsx`): name, score,
   play mode and date. `src/game/leaderboard.ts` (pure, tested) owns the rules and the
@@ -247,7 +274,8 @@ Results are under the repository's **Actions** tab.
 src/
   main.tsx                 // entry: loads i18n, mounts <App/>
   index.css                // @import "tailwindcss";
-  App.tsx                  // useReducer over the engine; screens, bot turns, saving
+  App.tsx                  // picks the screen from the store; bot turns, save-on-leave
+  store/gameStore.ts       // zustand store: game + turn UI state, actions (see "State store")
   game/                    // PURE LOGIC — no React
     types.ts               // Food, Habitat, BirdCard, SlotRef, Player, GameState, GameAction, GameMessage
     birds.ts               // 32 original bird card definitions (data only)
@@ -295,7 +323,6 @@ src/
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction, and what
                            // each click does to it (pure; tested in `src/__tests__/`)
-  useTurnDraft.ts          // the draft as React state; resets after every action
   hooks/useHorizontalWheel.ts  // callback ref: mouse wheel scrolls a sideways row (hand, tray, goal chips)
   theme.ts                 // food/habitat icons and static Tailwind class maps
   bird-images.ts           // one Wikimedia Commons photo + credit per bird (see "Bird photos")

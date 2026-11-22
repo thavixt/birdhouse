@@ -1,6 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next'
-import type { Draft } from '../draft'
-import type { GameAction, GameState } from '../game/types'
+import { useGame, useGameStore } from '../store/gameStore'
 import DrawCardsPanel from './action-panel/DrawCardsPanel'
 import GainFoodPanel from './action-panel/GainFoodPanel'
 import LayEggsPanel from './action-panel/LayEggsPanel'
@@ -9,17 +8,15 @@ import PanelFrame from './action-panel/PanelFrame'
 import PlayBirdPanel from './action-panel/PlayBirdPanel'
 
 type Props = {
-  state: GameState
-  draft: Draft
-  setDraft: (d: Draft) => void
-  onConfirm: (action: GameAction) => void
   /** Docked to the bottom of a phone screen: shorter idle text and a lifted shadow. */
   docked?: boolean
 }
 
 /** Contextual prompt for the current human player's in-progress action. */
-export default function ActionPanel({ state, draft, setDraft, onConfirm, docked = false }: Props) {
+export default function ActionPanel({ docked = false }: Props) {
   const { t } = useTranslation()
+  const state = useGame()
+  const draft = useGameStore((s) => s.draft)
   const player = state.players[state.currentPlayer]
 
   if (state.phase === 'gameOver') return null
@@ -31,8 +28,8 @@ export default function ActionPanel({ state, draft, setDraft, onConfirm, docked 
     )
   }
 
-  const footer = <PanelFooter state={state} draft={draft} setDraft={setDraft} onConfirm={onConfirm} />
-  const common = { state, setDraft, footer, docked }
+  const footer = <PanelFooter />
+  const common = { footer, docked }
   switch (draft.kind) {
     case 'idle':
       return (

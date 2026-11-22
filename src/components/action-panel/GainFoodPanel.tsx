@@ -4,11 +4,14 @@ import FoodToken from '../FoodToken'
 import FoodPicker from './FoodPicker'
 import PanelFrame from './PanelFrame'
 import PanelStep from './PanelStep'
+import { useGame, useGameStore } from '../../store/gameStore'
 import type { PanelProps } from './types'
 
 /** Forest action: choose N foods from the supply. */
-export default function GainFoodPanel({ state, draft, setDraft, footer, docked }: PanelProps<'gainFood'>) {
+export default function GainFoodPanel({ draft, footer, docked }: PanelProps<'gainFood'>) {
   const { t } = useTranslation()
+  const state = useGame()
+  const setDraft = useGameStore((s) => s.setDraft)
   const n = actionCount(state.players[state.currentPlayer].board, 'forest')
   return (
     <PanelFrame docked={docked} title={t('panel.gainFoodTitle', { count: n })}>

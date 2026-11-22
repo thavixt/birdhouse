@@ -1,16 +1,17 @@
 import { useTranslation } from 'react-i18next'
 import { finalStandings } from '../game/scoring'
-import type { GameState } from '../game/types'
 import Board from './Board'
 import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch'
-
-type Props = { state: GameState; onRematch: () => void; onMenu: () => void }
+import { useGame, useGameStore } from '../store/gameStore'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export default function ScoreScreen({ state, onRematch, onMenu }: Props) {
+export default function ScoreScreen() {
   const { t } = useTranslation()
+  const state = useGame()
+  const onRematch = useGameStore((s) => s.rematch)
+  const onMenu = useGameStore((s) => s.quit)
   const standings = finalStandings(state)
   const winner = state.players[standings[0].playerIdx]
   const shared = standings.filter((s) => s.rank === 1).length > 1

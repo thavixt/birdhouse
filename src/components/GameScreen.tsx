@@ -2,29 +2,21 @@ import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensor
 import { cn } from 'cn'
 import { lazy, Suspense, useState } from 'react'
 import {
-  addDrawPick,
   boardEggDelta,
   canDrag,
   canDrop,
   canPlayCard,
   clickBird,
-  drop,
   isFirstTurn,
-  needsHandoff,
-  pickDeck,
   pickedDeck,
   pickedTray,
-  pickTray,
+  selectedHandIndex,
   startHabitatAction,
-  startPlayBird,
-  viewedPlayer,
   type DragItem,
   type DropTarget,
 } from '../draft'
 import { drawCount } from '../game/engine'
-import { gameLog } from '../game/logger'
-import type { GameAction, GameState } from '../game/types'
-import { useTurnDraft } from '../hooks/useTurnDraft'
+import { useGame, useGameStore, useTurnView } from '../store/gameStore'
 import ActionPanel from './ActionPanel'
 import BirdInfo from './BirdInfo'
 import Board from './Board'
@@ -68,72 +60,46 @@ const BOARD_CELLS = [
 /** A solo game's only board spans both board columns from 2xl. */
 const SOLO_BOARD_CELL = 'lg:col-start-2 lg:row-start-2 2xl:col-[2/4] 2xl:row-start-2'
 
-type Props = {
-  state: GameState
-  dispatch: (action: GameAction) => void
-  onQuit: () => void
-  /** Show the guided tour on each human's first turn (start screen switch). */
-  tutorial?: boolean
-}
+/**
+ * In-game layout. Game and turn state live in the store (`src/store/gameStore.ts`); what
+ * each click does to the turn draft lives in `src/draft.ts`.
+ */
+export default function GameScreen() {
+  const state = useGame()
+  const draft = useGameStore((s) => s.draft)
+  const inspected = useGameStore((s) => s.inspected)
+  const tutorial = useGameStore((s) => s.tutorial)
+  const toured = useGameStore((s) => s.toured)
+  const { setDraft, inspect, revealHand, finishTour, quit, clickHandCard, clickTrayCard, clickDeck, endDrag } =
+    useGameStore.getState()
+  const { current, viewIdx, handoff, interactive } = useTurnView()
 
-/** In-game layout. What each click does to the turn draft lives in `src/draft.ts`. */
-export default function GameScreen({ state, dispatch, onQuit, tutorial = false }: Props) {
-  const [draft, setDraft] = useTurnDraft(state)
-  // Hot-seat: the human whose hand is currently uncovered (null until someone reveals).
-  const [revealedTo, setRevealedTo] = useState<number | null>(null)
-
-  const current = state.currentPlayer
-  const viewIdx = viewedPlayer(state, revealedTo)
   const viewed = state.players[viewIdx]
   // Every other player's index, in seat order: their boards follow the viewed player's own.
   const opponents = state.players.map((_, i) => i).filter((i) => i !== viewIdx)
-  const handoff = needsHandoff(state, revealedTo)
-  const interactive =
-    !handoff && state.players[current].kind === 'human' && state.phase === 'playing' && viewIdx === current
   const clickableBirds = interactive && (draft.kind === 'layEggs' || draft.kind === 'playBird')
   // Tray and deck clicks start the draw action if it isn't already in progress.
   const canPickCards = interactive && drawCount(state, current) > 0
   // Tutorial: once per human, on their first turn; finishing or skipping it marks them done.
-  const [toured, setToured] = useState<number[]>([])
   const showTour = tutorial && interactive && isFirstTurn(state) && !toured.includes(current)
 
-  function revealHand() {
-    gameLog('info', `Handoff · ${viewed.name} revealed their hand`, state)
-    setRevealedTo(viewIdx)
-    setInspected(null) // it may show a card from the previous player's hand
-  }
-
-  // The bird shown in the info card below the log: the last bird card clicked (or dragged).
-  const [inspected, setInspected] = useState<string | null>(null)
-
-  // A click on a tray card toggles it while drawing; otherwise it starts the draw with it.
-  function onPickTray(index: number) {
-    setInspected(state.tray[index])
-    setDraft(draft.kind === 'drawCards' ? pickTray(state, draft, index) : addDrawPick(state, draft, { from: 'tray', index }))
-  }
-  function onPickDeck() {
-    setDraft(draft.kind === 'drawCards' ? pickDeck(state, draft) : addDrawPick(state, draft, { from: 'deck' }))
-  }
-
   // Drag and drop (table-style shortcuts; see "Drag and drop" in draft.ts).
-  // Mouse: drag after moving 6px, so clicks still work. Touch: press and hold, so swiping
-  // still scrolls the hand and tray.
+  // Mouse: drag after moving 6px, so clicks still work (a short drag that goes nowhere still
+  // counts as a click, see `endDrag`). Touch: press and hold, so swiping still scrolls.
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
   )
+  // Only while the pointer is down; local because nothing outside this screen needs it.
   const [dragging, setDragging] = useState<DragItem | null>(null)
   const accepts = (target: DropTarget) => dragging !== null && canDrop(state, draft, dragging, target)
   const dragEnabled = (item: DragItem) => interactive && canDrag(state, draft, item)
 
-  function onDragEnd({ active, over }: DragEndEvent) {
+  function onDragEnd({ active, over, delta }: DragEndEvent) {
     setDragging(null)
     const item = active.data.current as DragItem | undefined
-    const target = over?.data.current as DropTarget | undefined
-    if (!interactive || !item || !target) return
-    const result = drop(state, draft, item, target)
-    if (result && 'action' in result) dispatch(result.action)
-    else if (result) setDraft(result.draft)
+    if (!interactive || !item) return
+    endDrag(item, (over?.data.current as DropTarget | undefined) ?? null, delta)
   }
 
   return (
@@ -142,8 +108,8 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
       onDragStart={({ active }) => {
         const item = (active.data.current as DragItem | undefined) ?? null
         setDragging(item)
-        if (item?.kind === 'hand') setInspected(item.cardId)
-        else if (item?.kind === 'tray') setInspected(state.tray[item.index])
+        if (item?.kind === 'hand') inspect(item.cardId)
+        else if (item?.kind === 'tray') inspect(state.tray[item.index])
       }}
       onDragEnd={onDragEnd}
       onDragCancel={() => setDragging(null)}
@@ -151,16 +117,17 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
       {/* Keyed by player so the next human's tour starts from the first step. */}
       {showTour && (
         <Suspense fallback={null}>
-          <TutorialTour key={current} name={viewed.name} onDone={() => setToured([...toured, current])} />
+          <TutorialTour key={current} name={viewed.name} onDone={() => finishTour(current)} />
         </Suspense>
       )}
       {!handoff && state.phase === 'playing' && state.players[current].kind === 'bot' && (
         <BotTurnOverlay name={state.players[current].name} />
       )}
-      {handoff && <HandoffOverlay name={viewed.name} onQuit={onQuit} onReady={revealHand} />}
+      {handoff && <HandoffOverlay name={viewed.name} onQuit={quit} onReady={revealHand} />}
       <main inert={handoff} className="min-h-screen bg-linear-to-b from-stone-100 to-emerald-200 p-2 text-stone-900 sm:p-3 md:p-4">
         <div className="relative mx-auto flex max-w-7xl flex-col gap-2 sm:gap-3 2xl:max-w-363">
-          <RoundTracker className="lg:sticky z-10 top-0" state={state} onQuit={onQuit} />
+          <RoundTracker className="lg:sticky z-10 -top-2" />
+          {/* <RoundTracker /> */}
           {/*
             lg+: sidebar (action panel + log) on the left, boards on the right. Items are placed
             explicitly so the DOM order, and with it the phone layout, stays boards-first.
@@ -178,17 +145,10 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
                   <DropZone target={{ kind: 'hand' }} enabled={accepts({ kind: 'hand' })}>
                     <Hand
                       cards={viewed.hand}
-                      selected={draft.kind === 'playBird' ? draft.cardId : null}
+                      selectedIndex={interactive ? selectedHandIndex(state, draft) : null}
                       isPlayable={(id) => !interactive || canPlayCard(state, id)}
-                      onSelect={
-                        interactive
-                          ? (id) => {
-                            setInspected(id)
-                            setDraft(startPlayBird(state, id))
-                          }
-                          : undefined
-                      }
-                      onInspect={setInspected}
+                      onCardClick={interactive ? clickHandCard : (i) => inspect(viewed.hand[i])}
+                      showHint={interactive}
                       draggable={interactive}
                     />
                   </DropZone>
@@ -200,10 +160,10 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
                     discardCount={state.discard.length}
                     pickedTray={pickedTray(draft)}
                     pickedDeck={pickedDeck(draft)}
-                    onPickTray={canPickCards ? onPickTray : undefined}
-                    onPickDeck={canPickCards ? onPickDeck : undefined}
+                    onPickTray={canPickCards ? clickTrayCard : undefined}
+                    onPickDeck={canPickCards ? clickDeck : undefined}
                     canDrag={interactive ? dragEnabled : undefined}
-                    onInspect={setInspected}
+                    onInspect={inspect}
                   />
                 </div>
               </div>
@@ -217,12 +177,12 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
                 onBirdClick={
                   clickableBirds
                     ? (slot) => {
-                      setInspected(viewed.board[slot.habitat][slot.index].cardId)
+                      inspect(viewed.board[slot.habitat][slot.index].cardId)
                       setDraft(clickBird(state, draft, slot))
                     }
                     : undefined
                 }
-                onInspect={setInspected}
+                onInspect={inspect}
                 eggDelta={interactive ? (slot) => boardEggDelta(draft, slot) : undefined}
                 nextSlot={interactive && draft.kind === 'playBird' ? draft.habitat : null}
                 canDropOn={interactive ? (habitat) => accepts({ kind: 'habitat', habitat }) : undefined}
@@ -234,11 +194,11 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
               full height (which would leave sticky nothing to do); it scrolls internally if
               taller than the window.
             */}
-            <aside className={`flex flex-col gap-3 lg:col-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-24 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}>
-              <PlayerList state={state} />
-              {inspected && <BirdInfo cardId={inspected} onClose={() => setInspected(null)} />}
+            <aside className={`flex flex-col gap-3 lg:col-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-22 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}>
+              <PlayerList />
+              {inspected && <BirdInfo cardId={inspected} onClose={() => inspect(null)} />}
               <div data-tour="panel" className="hidden lg:block">
-                <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} />
+                <ActionPanel />
               </div>
               <GameLog log={state.log} />
             </aside>
@@ -246,7 +206,7 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
               const p = state.players[i]
               return (
                 <div key={p.id} className={cn('min-w-0', BOARD_CELLS[k + 1])}>
-                  <Board player={p} active={i === current} turnsLeft={state.turnsLeft[i]} onInspect={setInspected} />
+                  <Board player={p} active={i === current} turnsLeft={state.turnsLeft[i]} onInspect={inspect} />
                 </div>
               )
             })}
@@ -256,13 +216,13 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
             settles into its own space at the end and never permanently covers content.
           */}
             <div data-tour="panel" className="sticky bottom-0 z-20 -mx-2 max-h-[55vh] overflow-y-auto px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
-              <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} docked />
+              <ActionPanel docked />
             </div>
           </div>
         </div>
       </main>
       {/* Follows the pointer; null drop animation so a committed move doesn't fly back. */}
-      <DragOverlay dropAnimation={null}>{dragging && <DragPreview item={dragging} state={state} />}</DragOverlay>
+      <DragOverlay dropAnimation={null}>{dragging && <DragPreview item={dragging} />}</DragOverlay>
     </DndContext>
   )
 }

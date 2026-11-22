@@ -17,7 +17,18 @@ import type { CardPick, EggPlacement, Food, GameAction, GameState, Habitat, Slot
 
 export type Draft =
   | { kind: 'idle' }
-  | { kind: 'playBird'; cardId: string; habitat: Habitat | null; anyFoods: Food[]; eggs: EggPlacement[] }
+  | {
+      kind: 'playBird'
+      cardId: string
+      /**
+       * UI only: which hand position was picked, so with two copies of a bird in hand only the
+       * clicked one is highlighted. Not part of the action (both copies play the same).
+       */
+      handIndex?: number
+      habitat: Habitat | null
+      anyFoods: Food[]
+      eggs: EggPlacement[]
+    }
   | { kind: 'gainFood'; foods: Food[] }
   | { kind: 'layEggs'; placements: EggPlacement[] }
   | { kind: 'drawCards'; picks: CardPick[] }
@@ -49,12 +60,19 @@ export function toAction(draft: Draft): GameAction | null {
 }
 
 /** Starts playing a card with auto-filled choices the player can then change. */
-export function startPlayBird(state: GameState, cardId: string): Draft {
+export function startPlayBird(state: GameState, cardId: string, handIndex?: number): Draft {
   const player = state.players[state.currentPlayer]
   const card = BIRDS_BY_ID[cardId]
   const payment = suggestPayment(player, card.cost) ?? card.cost.foods
   const habitats = playableHabitats(state, state.currentPlayer, cardId)
-  const draft: Draft = { kind: 'playBird', cardId, habitat: null, anyFoods: payment.slice(card.cost.foods.length), eggs: [] }
+  const draft: Draft = {
+    kind: 'playBird',
+    cardId,
+    handIndex: handIndex ?? player.hand.indexOf(cardId),
+    habitat: null,
+    anyFoods: payment.slice(card.cost.foods.length),
+    eggs: [],
+  }
   return habitats.length === 1 ? chooseHabitat(state, draft, habitats[0]) : draft
 }
 
@@ -207,13 +225,62 @@ export function canPlayCard(state: GameState, cardId: string): boolean {
   return canPayCost(player, BIRDS_BY_ID[cardId].cost) && playableHabitats(state, state.currentPlayer, cardId).length > 0
 }
 
+// ------------------------------------------------------------ card clicks
+
+/**
+ * A click on the current player's hand card at `index`: a playable bird starts playing
+ * it (that position is the one highlighted). An unplayable one cancels a bird that was
+ * about to be played, so the highlight never stays on a card the player moved away from;
+ * any other action in progress is kept.
+ */
+export function clickHandCard(state: GameState, draft: Draft, index: number): Draft {
+  const cardId = state.players[state.currentPlayer].hand[index]
+  if (cardId === undefined) return draft
+  if (canPlayCard(state, cardId)) return startPlayBird(state, cardId, index)
+  return draft.kind === 'playBird' ? IDLE : draft
+}
+
+/** The hand position to highlight: the card being played, if any. */
+export function selectedHandIndex(state: GameState, draft: Draft): number | null {
+  if (draft.kind !== 'playBird') return null
+  return draft.handIndex ?? state.players[state.currentPlayer].hand.indexOf(draft.cardId)
+}
+
+/** A click on a tray card toggles it while drawing; otherwise it starts the draw with it. */
+export function clickTrayCard(state: GameState, draft: Draft, index: number): Draft {
+  return draft.kind === 'drawCards' ? pickTray(state, draft, index) : addDrawPick(state, draft, { from: 'tray', index })
+}
+
+/** A click on the deck adds a blind draw, starting the draw action if needed. */
+export function clickDeck(state: GameState, draft: Draft): Draft {
+  return draft.kind === 'drawCards' ? pickDeck(state, draft) : addDrawPick(state, draft, { from: 'deck' })
+}
+
 // ---------------------------------------------------------- drag and drop
 // Table-style shortcuts: drag a bird from the hand onto a habitat to play it, or a tray
 // card / the deck into the hand to draw it. Dropping commits the move as soon as it is
 // complete; payment uses the same automatic choices the action panel pre-fills.
 
 /** Something the player can pick up. */
-export type DragItem = { kind: 'hand'; cardId: string } | { kind: 'tray'; index: number } | { kind: 'deck' }
+export type DragItem = { kind: 'hand'; cardId: string; handIndex: number } | { kind: 'tray'; index: number } | { kind: 'deck' }
+
+/**
+ * A drag that ends without a drop and moved less than this (px) was a click with a shaky
+ * hand: the mouse sensor starts dragging after 6px, which swallows the click event.
+ */
+export const CLICK_SLOP = 16
+
+/** True if a drag that went nowhere should count as a click on the item instead. */
+export function isClickLike(delta: { x: number; y: number }): boolean {
+  return Math.hypot(delta.x, delta.y) < CLICK_SLOP
+}
+
+/** What clicking `item` does to the draft (used for drags that turn out to be clicks). */
+export function clickItem(state: GameState, draft: Draft, item: DragItem): Draft {
+  if (item.kind === 'hand') return clickHandCard(state, draft, item.handIndex)
+  if (item.kind === 'tray') return clickTrayCard(state, draft, item.index)
+  return clickDeck(state, draft)
+}
 
 /** Somewhere it can be put down. */
 export type DropTarget = { kind: 'habitat'; habitat: Habitat } | { kind: 'hand' }

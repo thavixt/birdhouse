@@ -1,16 +1,18 @@
 import { useTranslation } from 'react-i18next'
 import { useHorizontalWheel } from '../hooks/useHorizontalWheel'
 import { GOAL_POINTS } from '../game/goals'
-import type { GameState } from '../game/types'
+import { useGame, useGameStore } from '../store/gameStore'
 import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch'
 import RulesButton from './RulesButton'
 import { cn } from 'cn'
 
-type Props = { className?: string; state: GameState; onQuit: () => void }
+type Props = { className?: string }
 
-export default function RoundTracker({ className, state, onQuit }: Props) {
+export default function RoundTracker({ className }: Props) {
   const { t } = useTranslation()
+  const state = useGame()
+  const onQuit = useGameStore((s) => s.quit)
   // Narrow screens: the goal chips are one sideways-scrolling line, so the wheel scrolls it.
   // From sm they wrap and don't overflow, so the hook leaves the wheel alone.
   const wheelScroll = useHorizontalWheel<HTMLOListElement>()

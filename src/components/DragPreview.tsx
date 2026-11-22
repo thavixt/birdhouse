@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import type { DragItem } from '../draft'
-import type { GameState } from '../game/types'
+import { useGame } from '../store/gameStore'
 import BirdCard from './BirdCard'
 
 /** What follows the pointer while dragging (rendered in dnd-kit's DragOverlay). */
-export default function DragPreview({ item, state }: { item: DragItem; state: GameState }) {
+export default function DragPreview({ item }: { item: DragItem }) {
   const { t } = useTranslation()
+  const state = useGame()
   const cardId = item.kind === 'hand' ? item.cardId : item.kind === 'tray' ? state.tray[item.index] : null
   return (
     <div className="pointer-events-none rotate-3 cursor-grabbing shadow-2xl">

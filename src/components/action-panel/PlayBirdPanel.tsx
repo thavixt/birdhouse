@@ -9,11 +9,14 @@ import FoodPicker from './FoodPicker'
 import PanelFrame from './PanelFrame'
 import PanelStep from './PanelStep'
 import SecondaryButton from './SecondaryButton'
+import { useGame, useGameStore } from '../../store/gameStore'
 import type { PanelProps } from './types'
 
 /** Playing a bird: pick the habitat, the "any" food, and which birds pay the egg cost. */
-export default function PlayBirdPanel({ state, draft, setDraft, footer, docked }: PanelProps<'playBird'>) {
+export default function PlayBirdPanel({ draft, footer, docked }: PanelProps<'playBird'>) {
   const { t } = useTranslation()
+  const state = useGame()
+  const setDraft = useGameStore((s) => s.setDraft)
   const player = state.players[state.currentPlayer]
   const card = BIRDS_BY_ID[draft.cardId]
   const habitats = playableHabitats(state, state.currentPlayer, draft.cardId)
