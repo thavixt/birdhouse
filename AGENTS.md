@@ -40,8 +40,9 @@ as their licences require (see "Bird photos"); never use art from a published ga
 
 Requires Node.js 22.12+ (vitest's minimum).
 
-**CI:** `.gitlab-ci.yml` runs `lint` → `test` → `build` (on `node:22`) for merge requests,
-branch pushes and tags; the build job keeps `dist/` as an artifact for a week.
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) runs `lint` → `test` → `build` on Node 22
+for every push and pull request; a newer push to the same branch cancels the older run.
+Results are under the repository's **Actions** tab.
 
 ## Conventions
 
