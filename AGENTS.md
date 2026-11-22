@@ -90,7 +90,8 @@ Results are under the repository's **Actions** tab.
 - **Mobile-first Tailwind:** unprefixed classes are the phone layout; `sm:` (≥ 640px) and
   `lg:` (≥ 1024px) restore the wider layouts. Desktop is the original design.
 - **No horizontal page scrolling** at 320px and up. Wide content scrolls inside its own
-  container instead (hand, bird tray, goal chips on phones, the score table).
+  container instead (goal chips on phones, the score table). The hand and the bird tray never
+  scroll: their cards overlap more as the row narrows.
 - **Boards grid:** from `lg` the sidebar sits left of one column (hand + tray, then one board
   per row). From `2xl` (≥ 1536px; the page widens to `120rem`) hand + tray span two columns
   and the boards fill a 2×2 grid, own board top left (a solo board spans both). Cells come
@@ -98,8 +99,8 @@ Results are under the repository's **Actions** tab.
   layout) stays hand, tray, own board, sidebar, opponents.
 - **Hand + tray:** stacked, or side by side once their area is ≥ 64rem wide (a Tailwind
   container query, `@container` / `@5xl:`): the tray keeps its natural width, the hand
-  scrolls in the rest. The `min-w-0` wrappers around both are required, or the hand's card
-  row widens the page. Grid cells use explicit ranges (`col-[2/4]`), not `col-span-*`, which
+  fills the rest. The `min-w-0` wrappers around both are required, or the hand's fan can't
+  shrink and widens the page. Grid cells use explicit ranges (`col-[2/4]`), not `col-span-*`, which
   resets `col-start-*` in Tailwind v4.
 - **Habitat rows:** on phones the action button is a bar above the 5 slots; from `sm` it's
   a column on the left. Placed birds show a compact egg count (🥚 2/5) on phones.
@@ -124,7 +125,7 @@ Results are under the repository's **Actions** tab.
   `GameScreen` owns the `DndContext`; `Hand`, `CardTray` and `Board` only use dnd-kit when
   given their drag props, so `Board` still renders outside it (score screen).
 - Sensors: mouse starts after 6px of movement (clicks still work); touch needs a 200ms
-  press-and-hold, so swiping still scrolls the hand and tray.
+  press-and-hold, so swiping over cards still scrolls the page.
 - **Picking up a hand card selects it** (`startDrag`), exactly like a click. Once a drag starts
   (6px), the drag preview sits under the pointer, so the browser never fires the click: a
   quick click that moved while pressed would otherwise do nothing and leave the previous
@@ -304,10 +305,11 @@ src/
     BirdInfo.tsx           // "about this bird" card below the log (see "Bird info")
     DevBirdId.tsx          // dev-only id tag after a bird name (see "Debug logging")
     DevCardGallery.tsx     // dev-only overlay with every card + info card (see "Debug logging")
-    Hand.tsx               // current player's cards
+    Hand.tsx               // current player's cards as a fan of overlapping cards that always
+                           // fits its width (no scrolling); hover lifts a card to the front
     FoodSupply.tsx         // shared food supply / player's food tokens
     CardTray.tsx           // 3 face-up cards + deck
-    CardRow.tsx            // headed, wheel-scrolling card row (Hand, CardTray)
+    CardRow.tsx            // headed card row; the caller sets the layout (Hand's fan, CardTray's overlap)
     CardSlot.tsx           // one card in a row: DragSource when draggable, else a plain wrapper
     ActionPanel.tsx        // contextual prompts: picks the panel for the current draft
     action-panel/          // one panel per action (PlayBird, GainFood, LayEggs, DrawCards)
@@ -335,7 +337,7 @@ src/
                            // SidebarCard, ToggleSwitch, CoverDialog (green full-screen cover)
   draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction, and what
                            // each click does to it (pure; tested in `src/__tests__/`)
-  hooks/useHorizontalWheel.ts  // callback ref: mouse wheel scrolls a sideways row (hand, tray, goal chips)
+  hooks/useHorizontalWheel.ts  // callback ref: mouse wheel scrolls a sideways row (goal chips)
   hooks/useCardDrag.ts     // GameScreen's drag and drop: DndContext props, dragged item, can drag / drop
   theme.ts                 // food/habitat icons and static Tailwind class maps
   bird-images.ts           // one Wikimedia Commons photo + credit per bird (see "Bird photos")

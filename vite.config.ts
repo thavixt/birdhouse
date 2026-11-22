@@ -109,6 +109,6 @@ export default defineConfig({
   server: {
     port: 8546,
     host: true,
-    // open: true,
+    open: true,
   }
 })

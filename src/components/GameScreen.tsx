@@ -91,7 +91,7 @@ export default function GameScreen() {
         <BotTurnOverlay name={state.players[current].name} />
       )}
       {handoff && <HandoffOverlay name={viewed.name} onQuit={quit} onReady={revealHand} />}
-      <main inert={handoff} className="min-h-screen bg-linear-to-b from-stone-100 to-emerald-200 p-2 text-stone-900 sm:p-3 md:p-4">
+      <main inert={handoff} className="min-h-screen bg-linear-to-b from-stone-100 to-emerald-200 p-2 text-stone-900 sm:p-3 md:p-4 select-none">
         <div className="relative mx-auto flex max-w-7xl flex-col gap-2 sm:gap-3 2xl:max-w-363">
           <RoundTracker className="lg:sticky z-10 -top-2" />
           {/* <RoundTracker /> */}
@@ -103,8 +103,8 @@ export default function GameScreen() {
             {/*
               Hand and tray: stacked, or side by side once this area is ≥ 64rem wide (container
               query; the tray alone is ~600px), with the tray at its natural width and the hand
-              scrolling in the rest. The `min-w-0` wrappers are required: without them a flex
-              item can't shrink below its content, so the hand's full card row widens the page.
+              fanned out in the rest. The `min-w-0` wrappers are required: without them a flex
+              item can't shrink below its content, so the hand's fan widens the page.
             */}
             <div className="@container min-w-0 lg:col-start-2 lg:row-start-1 2xl:col-[2/4]">
               <div className="flex flex-col gap-3 @5xl:flex-row @5xl:items-start @5xl:gap-12">

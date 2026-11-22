@@ -33,7 +33,7 @@ export default function BirdCard({ cardId, onClick, selected = false, dimmed = f
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={`m-1 relative isolate flex min-h-52 w-36 shrink-0 flex-col overflow-hidden rounded-lg border border-stone-300 bg-stone-100 text-left shadow-sm transition ${ring} ${dimmed ? 'opacity-50 pointer-events-none' : ''} ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
+      className={`group-hover:opacity-100 group-hover:z-100 m-1 relative isolate flex min-h-52 w-36 shrink-0 flex-col overflow-hidden rounded-lg border border-stone-300 bg-stone-100 text-left shadow-sm transition ${ring} ${dimmed ? 'opacity-50 pointer-events-none' : ''} ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
     >
       {photo && <BirdPhoto photo={photo} />}
       <div className="flex h-3 border-b-amber-400 border-b">
