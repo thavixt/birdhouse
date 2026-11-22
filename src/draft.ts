@@ -13,7 +13,7 @@ import {
   turnsPerRound,
   validateAction,
 } from './game/engine'
-import type { CardPick, EggPlacement, Food, GameAction, GameState, Habitat, SlotRef } from './game/types'
+import { HABITATS, type CardPick, type EggPlacement, type Food, type GameAction, type GameState, type Habitat, type SlotRef } from './game/types'
 
 export type Draft =
   | { kind: 'idle' }
@@ -21,11 +21,12 @@ export type Draft =
       kind: 'playBird'
       cardId: string
       /**
-       * UI only: which hand position was picked, so with two copies of a bird in hand only the
-       * clicked one is highlighted. Not part of the action (both copies play the same).
+       * UI only: which hand position was dropped, so with two copies of a bird in hand only
+       * that one is highlighted. Not part of the action (both copies play the same).
        */
       handIndex?: number
-      habitat: Habitat | null
+      /** Where it was dropped. */
+      habitat: Habitat
       anyFoods: Food[]
       eggs: EggPlacement[]
     }
@@ -40,7 +41,6 @@ export function toAction(draft: Draft): GameAction | null {
     case 'idle':
       return null
     case 'playBird': {
-      if (!draft.habitat) return null
       const card = BIRDS_BY_ID[draft.cardId]
       return {
         type: 'playBird',
@@ -59,27 +59,42 @@ export function toAction(draft: Draft): GameAction | null {
   }
 }
 
-/** Starts playing a card with auto-filled choices the player can then change. */
-export function startPlayBird(state: GameState, cardId: string, handIndex?: number): Draft {
+/**
+ * Playing a bird dropped on `habitat`, with the automatic payment pre-filled (the same one a
+ * drop commits when there is nothing to choose); the action panel lets the player change it.
+ */
+export function startPlayBird(state: GameState, cardId: string, habitat: Habitat, handIndex?: number): Draft {
   const player = state.players[state.currentPlayer]
   const card = BIRDS_BY_ID[cardId]
   const payment = suggestPayment(player, card.cost) ?? card.cost.foods
-  const habitats = playableHabitats(state, state.currentPlayer, cardId)
-  const draft: Draft = {
+  return {
     kind: 'playBird',
     cardId,
     handIndex: handIndex ?? player.hand.indexOf(cardId),
-    habitat: null,
+    habitat,
     anyFoods: payment.slice(card.cost.foods.length),
-    eggs: [],
+    eggs: autoEggPayment(player, eggCostForSlot(player.board[habitat].length)),
   }
-  return habitats.length === 1 ? chooseHabitat(state, draft, habitats[0]) : draft
 }
 
-export function chooseHabitat(state: GameState, draft: Extract<Draft, { kind: 'playBird' }>, habitat: Habitat): Draft {
+/**
+ * True if playing `cardId` in `habitat` leaves the player a real choice of payment: an "any"
+ * food with 2+ kinds of food left to pay it with, or an egg cost with 2+ birds holding eggs.
+ * Otherwise the payment is forced and a drop plays the bird at once.
+ */
+export function hasPaymentChoice(state: GameState, cardId: string, habitat: Habitat): boolean {
   const player = state.players[state.currentPlayer]
-  const eggs = autoEggPayment(player, eggCostForSlot(player.board[habitat].length))
-  return { ...draft, habitat, eggs }
+  const card = BIRDS_BY_ID[cardId]
+  if (card.cost.anyCount > 0) {
+    const left = { ...player.food }
+    for (const f of card.cost.foods) left[f]--
+    if (Object.values(left).filter((n) => n > 0).length > 1) return true
+  }
+  if (eggCostForSlot(player.board[habitat].length) > 0) {
+    const withEggs = HABITATS.flatMap((h) => player.board[h]).filter((b) => b.eggs > 0)
+    if (withEggs.length > 1) return true
+  }
+  return false
 }
 
 /** Starts the lay-eggs action with no eggs placed: the player clicks the birds to place them. */
@@ -111,12 +126,19 @@ export function totalCount(placements: readonly EggPlacement[]): number {
 // ------------------------------------------------- board / tray interactions
 // What a click does to the draft. Each returns the draft unchanged when the click
 // doesn't apply (wrong draft kind, nothing left to choose, no room, ...).
+// Drawing cards has no clicks: it is drag and drop only (see below).
 
-/** Starts the habitat's non-play action: gain food, lay eggs or draw cards. */
-export function startHabitatAction(habitat: Habitat): Draft {
-  if (habitat === 'forest') return { kind: 'gainFood', foods: [] }
-  if (habitat === 'grassland') return startLayEggs()
-  return { kind: 'drawCards', picks: [] }
+/** Habitats whose action starts with a click on its button. Wetland (draw) is drag only. */
+export type ButtonHabitat = Exclude<Habitat, 'wetland'>
+
+/** True if the habitat's action button starts its action (the wetland's draw is dragged). */
+export function isButtonHabitat(habitat: Habitat): habitat is ButtonHabitat {
+  return habitat !== 'wetland'
+}
+
+/** Starts the habitat's non-play action: gain food or lay eggs. */
+export function startHabitatAction(habitat: ButtonHabitat): Draft {
+  return habitat === 'forest' ? { kind: 'gainFood', foods: [] } : startLayEggs()
 }
 
 /** Clicking one of the current player's birds: lay an egg on it, or pay an egg from it. */
@@ -129,7 +151,7 @@ export function clickBird(state: GameState, draft: Draft, slot: SlotRef): Draft 
     const placements = placeOrMove(draft.placements, slot, room > 0, layCount(player))
     return placements ? { ...draft, placements } : draft
   }
-  if (draft.kind === 'playBird' && draft.habitat) {
+  if (draft.kind === 'playBird') {
     const needed = eggCostForSlot(player.board[draft.habitat].length)
     const eggs = placeOrMove(draft.eggs, slot, bird.eggs - eggDelta(draft.eggs, slot) > 0, needed)
     return eggs ? { ...draft, eggs } : draft
@@ -225,62 +247,23 @@ export function canPlayCard(state: GameState, cardId: string): boolean {
   return canPayCost(player, BIRDS_BY_ID[cardId].cost) && playableHabitats(state, state.currentPlayer, cardId).length > 0
 }
 
-// ------------------------------------------------------------ card clicks
+// ------------------------------------------------------------ hand
 
-/**
- * A click on the current player's hand card at `index`: a playable bird starts playing
- * it (that position is the one highlighted). An unplayable one cancels a bird that was
- * about to be played, so the highlight never stays on a card the player moved away from;
- * any other action in progress is kept.
- */
-export function clickHandCard(state: GameState, draft: Draft, index: number): Draft {
-  const cardId = state.players[state.currentPlayer].hand[index]
-  if (cardId === undefined) return draft
-  if (canPlayCard(state, cardId)) return startPlayBird(state, cardId, index)
-  return draft.kind === 'playBird' ? IDLE : draft
-}
-
-/** The hand position to highlight: the card being played, if any. */
+/** The hand position to highlight: the bird waiting for its payment to be confirmed, if any. */
 export function selectedHandIndex(state: GameState, draft: Draft): number | null {
   if (draft.kind !== 'playBird') return null
   return draft.handIndex ?? state.players[state.currentPlayer].hand.indexOf(draft.cardId)
 }
 
-/** A click on a tray card toggles it while drawing; otherwise it starts the draw with it. */
-export function clickTrayCard(state: GameState, draft: Draft, index: number): Draft {
-  return draft.kind === 'drawCards' ? pickTray(state, draft, index) : addDrawPick(state, draft, { from: 'tray', index })
-}
-
-/** A click on the deck adds a blind draw, starting the draw action if needed. */
-export function clickDeck(state: GameState, draft: Draft): Draft {
-  return draft.kind === 'drawCards' ? pickDeck(state, draft) : addDrawPick(state, draft, { from: 'deck' })
-}
-
 // ---------------------------------------------------------- drag and drop
-// Table-style shortcuts: drag a bird from the hand onto a habitat to play it, or a tray
-// card / the deck into the hand to draw it. Dropping commits the move as soon as it is
-// complete; payment uses the same automatic choices the action panel pre-fills.
+// The only way to play a bird or draw cards (clicking a card just shows its info): drag a
+// bird from the hand onto a habitat to play it, or a tray card / the deck into the hand to
+// draw it. A dropped bird is played at once with the automatic payment, unless the player has
+// a real choice of payment (`hasPaymentChoice`): then the action panel opens, pre-filled, to
+// change and confirm it. Draws commit when the last card is dropped.
 
 /** Something the player can pick up. */
 export type DragItem = { kind: 'hand'; cardId: string; handIndex: number } | { kind: 'tray'; index: number } | { kind: 'deck' }
-
-/**
- * A drag that ends without a drop and moved less than this (px) was a click with a shaky
- * hand: the mouse sensor starts dragging after 6px, which swallows the click event.
- */
-export const CLICK_SLOP = 16
-
-/** True if a drag that went nowhere should count as a click on the item instead. */
-export function isClickLike(delta: { x: number; y: number }): boolean {
-  return Math.hypot(delta.x, delta.y) < CLICK_SLOP
-}
-
-/** What clicking `item` does to the draft (used for drags that turn out to be clicks). */
-export function clickItem(state: GameState, draft: Draft, item: DragItem): Draft {
-  if (item.kind === 'hand') return clickHandCard(state, draft, item.handIndex)
-  if (item.kind === 'tray') return clickTrayCard(state, draft, item.index)
-  return clickDeck(state, draft)
-}
 
 /** Somewhere it can be put down. */
 export type DropTarget = { kind: 'habitat'; habitat: Habitat } | { kind: 'hand' }
@@ -323,6 +306,9 @@ export function canDrop(state: GameState, draft: Draft, item: DragItem, target: 
 export function drop(state: GameState, draft: Draft, item: DragItem, target: DropTarget): DropResult {
   if (!canDrop(state, draft, item, target)) return null
   if (item.kind === 'hand' && target.kind === 'habitat') {
+    if (hasPaymentChoice(state, item.cardId, target.habitat)) {
+      return { draft: startPlayBird(state, item.cardId, target.habitat, item.handIndex) }
+    }
     const action = autoPlayBird(state, state.currentPlayer, item.cardId, target.habitat)
     return action && validateAction(state, action) === null ? { action } : null
   }
@@ -349,7 +335,7 @@ export function describeDraft(draft: Draft): string {
     case 'idle':
       return 'idle'
     case 'playBird': {
-      const parts = [`play ${draft.cardId}`, draft.habitat ? `→ ${draft.habitat}` : '(no habitat yet)']
+      const parts = [`play ${draft.cardId} → ${draft.habitat}`]
       if (draft.anyFoods.length) parts.push(`any food: ${draft.anyFoods.join(', ')}`)
       if (draft.eggs.length) parts.push(`egg payment: ${eggs(draft.eggs)}`)
       return parts.join(' ')

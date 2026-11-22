@@ -13,6 +13,8 @@ type Props = {
   birds: PlacedBird[]
   count: number // how many food/eggs/cards this row's action gives
   onAction?: () => void
+  /** The action is taken by dragging, not with this button (wetland: drag cards into the hand). */
+  dragOnly?: boolean
   onBirdClick?: (index: number) => void
   /** Click on a placed bird when it takes no eggs right now: show its info. */
   onInspect?: (index: number) => void
@@ -21,7 +23,7 @@ type Props = {
   highlightNext?: boolean
 }
 
-export default function HabitatRow({ habitat, birds, count, onAction, onBirdClick, onInspect, eggDelta, highlightNext = false }: Props) {
+export default function HabitatRow({ habitat, birds, count, onAction, dragOnly = false, onBirdClick, onInspect, eggDelta, highlightNext = false }: Props) {
   const { t } = useTranslation()
   const style = HABITAT_STYLE[habitat]
   const action = t(`habitats.${habitat}.action`)
@@ -36,8 +38,9 @@ export default function HabitatRow({ habitat, birds, count, onAction, onBirdClic
         type="button"
         onClick={onAction}
         disabled={!onAction}
-        className={`flex shrink-0 items-center justify-center gap-2 rounded-md px-2 py-1.5 text-center text-sm font-semibold disabled:opacity-60 sm:w-24 sm:flex-col sm:gap-0 sm:px-1 sm:py-2 sm:text-xs ${style.button} ${onAction ? 'cursor-pointer' : 'cursor-default'}`}
-        title={`${t(`habitats.${habitat}.name`)}: ${action}`}
+        // A drag-only action isn't greyed out: it is available, just not by clicking.
+        className={`flex shrink-0 items-center justify-center gap-2 rounded-md px-2 py-1.5 text-center text-sm font-semibold sm:w-24 sm:flex-col sm:gap-0 sm:px-1 sm:py-2 sm:text-xs ${style.button} ${onAction ? 'cursor-pointer' : 'cursor-default'} ${dragOnly ? '' : 'disabled:opacity-60'}`}
+        title={`${t(`habitats.${habitat}.name`)}: ${action}${dragOnly ? ` — ${t('board.drawByDragging')}` : ''}`}
         data-habitat={habitat}
       >
         <span className="text-base sm:text-lg">{HABITAT_ICON[habitat]}</span>

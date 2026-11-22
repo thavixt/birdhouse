@@ -14,7 +14,7 @@ export default function PanelFooter() {
   const dispatch = useGameStore((s) => s.dispatch)
   const action = toAction(draft)
   const error = action ? validateAction(state, action) : null
-  const errorText = !action ? t('panel.chooseHabitat') : error ? formatMessage(t, error) : null
+  const errorText = error ? formatMessage(t, error) : null
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
       <button

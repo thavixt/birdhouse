@@ -11,7 +11,6 @@ import {
   selectedHandIndex,
   startHabitatAction,
 } from '../draft'
-import { drawCount } from '../game/engine'
 import { useCardDrag } from '../hooks/useCardDrag'
 import { useGame, useGameStore, useTurnView } from '../store/gameStore'
 import ActionPanel from './ActionPanel'
@@ -64,16 +63,13 @@ export default function GameScreen() {
   const draft = useGameStore((s) => s.draft)
   const tutorial = useGameStore((s) => s.tutorial)
   const toured = useGameStore((s) => s.toured)
-  const { setDraft, inspect, revealHand, finishTour, quit, clickHandCard, clickTrayCard, clickDeck } =
-    useGameStore.getState()
+  const { setDraft, inspect, revealHand, finishTour, quit } = useGameStore.getState()
   const { current, viewIdx, handoff, interactive } = useTurnView()
 
   const viewed = state.players[viewIdx]
   // Every other player's index, in seat order: their boards follow the viewed player's own.
   const opponents = state.players.map((_, i) => i).filter((i) => i !== viewIdx)
   const clickableBirds = interactive && (draft.kind === 'layEggs' || draft.kind === 'playBird')
-  // Tray and deck clicks start the draw action if it isn't already in progress.
-  const canPickCards = interactive && drawCount(state, current) > 0
   // Tutorial: once per human, on their first turn; finishing or skipping it marks them done.
   const showTour = tutorial && interactive && isFirstTurn(state) && !toured.includes(current)
 
@@ -114,7 +110,7 @@ export default function GameScreen() {
                       cards={viewed.hand}
                       selectedIndex={interactive ? selectedHandIndex(state, draft) : null}
                       isPlayable={(id) => !interactive || canPlayCard(state, id)}
-                      onCardClick={interactive ? clickHandCard : (i) => inspect(viewed.hand[i])}
+                      onCardClick={(i) => inspect(viewed.hand[i])}
                       showHint={interactive}
                       draggable={interactive}
                     />
@@ -127,8 +123,6 @@ export default function GameScreen() {
                     discardCount={state.discard.length}
                     pickedTray={pickedTray(draft)}
                     pickedDeck={pickedDeck(draft)}
-                    onPickTray={canPickCards ? clickTrayCard : undefined}
-                    onPickDeck={canPickCards ? clickDeck : undefined}
                     canDrag={interactive ? canDrag : undefined}
                     onInspect={inspect}
                   />

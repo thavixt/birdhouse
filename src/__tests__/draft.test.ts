@@ -5,13 +5,9 @@ import {
   canDrag,
   canDrop,
   canPlayCard,
-  chooseHabitat,
   clickBird,
-  clickDeck,
-  clickHandCard,
-  clickItem,
-  clickTrayCard,
-  isClickLike,
+  hasPaymentChoice,
+  isButtonHabitat,
   selectedHandIndex,
   describeDraft,
   drop,
@@ -53,9 +49,8 @@ const as = <K extends Draft['kind']>(d: Draft, kind: K): Of<K> => {
 }
 
 describe('toAction', () => {
-  it('is null while idle or before a habitat is chosen', () => {
+  it('is null while idle', () => {
     expect(toAction(IDLE)).toBeNull()
-    expect(toAction({ kind: 'playBird', cardId: 'blue-jay', habitat: null, anyFoods: [], eggs: [] })).toBeNull()
   })
 
   it('builds the payment from the listed foods plus the chosen "any" foods', () => {
@@ -72,26 +67,37 @@ describe('toAction', () => {
 })
 
 describe('starting a bird', () => {
-  it('picks the habitat when only one is possible', () => {
-    const s = setup({ hand: ['blue-jay'], food: food(2) })
-    expect(as(startPlayBird(s, 'blue-jay'), 'playBird').habitat).toBe('forest')
-  })
-
-  it('leaves the habitat open when there is a choice, and pre-fills "any" food', () => {
+  it('uses the dropped habitat and pre-fills "any" food', () => {
     const s = setup({ hand: ['ruby-throated-hummingbird'], food: food(0, 0, 3) })
-    const d = as(startPlayBird(s, 'ruby-throated-hummingbird'), 'playBird')
-    expect(d.habitat).toBeNull()
+    const d = as(startPlayBird(s, 'ruby-throated-hummingbird', 'grassland'), 'playBird')
+    expect(d.habitat).toBe('grassland')
     expect(d.anyFoods).toEqual(['fish'])
   })
 
-  it('choosing a habitat pre-fills the egg payment for that column', () => {
+  it('pre-fills the egg payment for the column it goes in', () => {
     const s = setup({ hand: ['black-capped-chickadee'], food: food(1), board: board({ forest: [chick(1), chick(3)] }) })
-    const d = as(startPlayBird(s, 'black-capped-chickadee'), 'playBird')
+    const d = as(startPlayBird(s, 'black-capped-chickadee', 'forest'), 'playBird')
     expect(d.eggs).toEqual([{ slot: forest(1), count: 1 }]) // column 3 costs 1 egg, from the fullest bird
     expect(validateAction(s, toAction(d)!)).toBeNull()
 
-    const free = chooseHabitat(setup({ board: board() }), d, 'forest')
+    const free = startPlayBird(setup({ hand: ['black-capped-chickadee'], food: food(1) }), 'black-capped-chickadee', 'forest')
     expect(as(free, 'playBird').eggs).toEqual([])
+  })
+})
+
+describe('hasPaymentChoice', () => {
+  it('is false when the payment is forced', () => {
+    expect(hasPaymentChoice(setup({ food: food(2) }), 'blue-jay', 'forest')).toBe(false) // fixed foods only
+    expect(hasPaymentChoice(setup({ food: food(0, 0, 3) }), 'ruby-throated-hummingbird', 'forest')).toBe(false) // only fish left
+    // Column 3 costs an egg, but only one bird has any.
+    expect(hasPaymentChoice(setup({ food: food(1), board: board({ forest: [chick(0), chick(2)] }) }), 'black-capped-chickadee', 'forest')).toBe(false)
+  })
+
+  it('is true for an "any" food with 2+ kinds left, or an egg cost with 2+ birds holding eggs', () => {
+    expect(hasPaymentChoice(setup({ food: food(1, 0, 1) }), 'ruby-throated-hummingbird', 'forest')).toBe(true)
+    expect(hasPaymentChoice(setup({ food: food(1), board: board({ forest: [chick(1), chick(2)] }) }), 'black-capped-chickadee', 'forest')).toBe(true)
+    // Same board, but the first two columns are free: no eggs to pay.
+    expect(hasPaymentChoice(setup({ food: food(1), board: board({ forest: [chick(1), chick(2)] }) }), 'black-capped-chickadee', 'grassland')).toBe(false)
   })
 })
 
@@ -102,7 +108,12 @@ describe('startHabitatAction', () => {
     expect(startHabitatAction('grassland')).toEqual({ kind: 'layEggs', placements: [] }) // nothing pre-placed
     expect(startLayEggs()).toEqual({ kind: 'layEggs', placements: [] })
     expect(autoLayEggs(s)).toEqual({ kind: 'layEggs', placements: [{ slot: forest(0), count: 2 }] }) // the "Auto" button
-    expect(startHabitatAction('wetland')).toEqual({ kind: 'drawCards', picks: [] })
+  })
+
+  it('only forest and grassland have a clickable action: drawing cards is drag only', () => {
+    expect(isButtonHabitat('forest')).toBe(true)
+    expect(isButtonHabitat('grassland')).toBe(true)
+    expect(isButtonHabitat('wetland')).toBe(false)
   })
 })
 
@@ -121,7 +132,7 @@ describe('clickBird', () => {
 
   it('pays eggs for a bird only from birds that have them, up to the cost', () => {
     const s = setup({ hand: ['black-capped-chickadee'], food: food(1), board: board({ forest: [chick(0), chick(2)] }) })
-    let d: Draft = { ...as(startPlayBird(s, 'black-capped-chickadee'), 'playBird'), eggs: [] }
+    let d: Draft = { ...as(startPlayBird(s, 'black-capped-chickadee', 'forest'), 'playBird'), eggs: [] }
     d = clickBird(s, d, forest(0)) // no eggs there
     expect(as(d, 'playBird').eggs).toEqual([])
     d = clickBird(s, d, forest(1))
@@ -147,7 +158,7 @@ describe('clickBird', () => {
 
   it('moves the egg payment to the clicked bird', () => {
     const s = setup({ hand: ['black-capped-chickadee'], food: food(1), board: board({ forest: [chick(1), chick(3)] }) })
-    const pre = as(startPlayBird(s, 'black-capped-chickadee'), 'playBird') // pays from the fullest
+    const pre = as(startPlayBird(s, 'black-capped-chickadee', 'forest'), 'playBird') // pays from the fullest
     expect(pre.eggs).toEqual([{ slot: forest(1), count: 1 }])
     const d = clickBird(s, pre, forest(0))
     expect(as(d, 'playBird').eggs).toEqual([{ slot: forest(0), count: 1 }])
@@ -277,11 +288,18 @@ describe('drag and drop', () => {
     expect(result).toEqual({ action: { type: 'playBird', cardId: 'blue-jay', habitat: 'forest', payment: ['seed', 'seed'], eggPayment: [] } })
   })
 
-  it('pays the egg cost automatically from the fullest bird', () => {
-    const s = setup({ hand: ['black-capped-chickadee'], food: food(1), board: board({ forest: [chick(1), chick(3)] }) })
+  it('pays a forced egg cost automatically', () => {
+    const s = setup({ hand: ['black-capped-chickadee'], food: food(1), board: board({ forest: [chick(0), chick(3)] }) })
     const result = drop(s, IDLE, { kind: 'hand', cardId: 'black-capped-chickadee', handIndex: 0 }, { kind: 'habitat', habitat: 'forest' })
     expect(result && 'action' in result && validateAction(s, result.action)).toBeNull()
     expect(result).toMatchObject({ action: { eggPayment: [{ slot: forest(1), count: 1 }] } })
+  })
+
+  it('opens the payment choice, pre-filled, when there is one', () => {
+    const s = setup({ hand: ['blue-jay', 'black-capped-chickadee'], food: food(1), board: board({ forest: [chick(1), chick(3)] }) })
+    const result = drop(s, IDLE, { kind: 'hand', cardId: 'black-capped-chickadee', handIndex: 1 }, { kind: 'habitat', habitat: 'forest' })
+    expect(result).toEqual({ draft: startPlayBird(s, 'black-capped-chickadee', 'forest', 1) })
+    expect(selectedHandIndex(s, (result as { draft: Draft }).draft)).toBe(1)
   })
 
   it('rejects birds that cannot go there or cannot be paid for', () => {
@@ -350,7 +368,7 @@ describe('isFirstTurn', () => {
 describe('describeDraft', () => {
   it('summarises each kind of draft for the debug log', () => {
     expect(describeDraft(IDLE)).toBe('idle')
-    expect(describeDraft({ kind: 'playBird', cardId: 'mallard', habitat: null, anyFoods: [], eggs: [] })).toBe('play mallard (no habitat yet)')
+    expect(describeDraft({ kind: 'playBird', cardId: 'mallard', habitat: 'wetland', anyFoods: [], eggs: [] })).toBe('play mallard → wetland')
     expect(
       describeDraft({ kind: 'playBird', cardId: 'mallard', habitat: 'wetland', anyFoods: ['fish'], eggs: [{ slot: forest(1), count: 1 }] }),
     ).toBe('play mallard → wetland any food: fish egg payment: forest:1×1')
@@ -360,41 +378,12 @@ describe('describeDraft', () => {
   })
 })
 
-describe('card clicks', () => {
-  it('highlights only the clicked copy when the hand holds two of the same bird', () => {
+describe('hand highlight', () => {
+  it('highlights only the dropped copy when the hand holds two of the same bird', () => {
     const s = setup({ hand: ['blue-jay', 'mallard', 'blue-jay'], food: food(2) })
-    const second = clickHandCard(s, IDLE, 2)
-    expect(as(second, 'playBird').cardId).toBe('blue-jay')
-    expect(selectedHandIndex(s, second)).toBe(2)
-    expect(selectedHandIndex(s, clickHandCard(s, second, 0))).toBe(0)
-    // Started without a position (e.g. from older code paths): the first copy.
-    expect(selectedHandIndex(s, startPlayBird(s, 'blue-jay'))).toBe(0)
+    expect(selectedHandIndex(s, startPlayBird(s, 'blue-jay', 'forest', 2))).toBe(2)
+    // Started without a position: the first copy.
+    expect(selectedHandIndex(s, startPlayBird(s, 'blue-jay', 'forest'))).toBe(0)
     expect(selectedHandIndex(s, IDLE)).toBeNull()
-  })
-
-  it('clicking an unplayable card cancels the bird being played, and keeps other actions', () => {
-    const s = setup({ hand: ['blue-jay', 'great-blue-heron'], food: food(2) }) // heron costs fish
-    expect(canPlayCard(s, 'great-blue-heron')).toBe(false)
-    const playing = clickHandCard(s, IDLE, 0)
-    expect(clickHandCard(s, playing, 1)).toBe(IDLE)
-    const gaining: Draft = { kind: 'gainFood', foods: ['seed'] }
-    expect(clickHandCard(s, gaining, 1)).toBe(gaining)
-    expect(clickHandCard(s, IDLE, 5)).toBe(IDLE) // no such card
-  })
-
-  it('tray and deck clicks start or extend the draw', () => {
-    const s = setup({})
-    expect(clickTrayCard(s, IDLE, 1)).toEqual({ kind: 'drawCards', picks: [{ from: 'tray', index: 1 }] })
-    expect(clickTrayCard(s, clickTrayCard(s, IDLE, 1), 1)).toEqual({ kind: 'drawCards', picks: [] }) // toggles off
-    expect(clickDeck(s, IDLE)).toEqual({ kind: 'drawCards', picks: [{ from: 'deck' }] })
-  })
-
-  it('a short drag that went nowhere counts as a click on the item', () => {
-    expect(isClickLike({ x: 8, y: 3 })).toBe(true)
-    expect(isClickLike({ x: 40, y: 0 })).toBe(false)
-    const s = setup({ hand: ['mallard', 'blue-jay'], food: food(2) })
-    expect(selectedHandIndex(s, clickItem(s, IDLE, { kind: 'hand', cardId: 'blue-jay', handIndex: 1 }))).toBe(1)
-    expect(clickItem(s, IDLE, { kind: 'tray', index: 0 })).toEqual(clickTrayCard(s, IDLE, 0))
-    expect(clickItem(s, IDLE, { kind: 'deck' })).toEqual(clickDeck(s, IDLE))
   })
 })

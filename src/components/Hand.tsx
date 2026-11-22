@@ -8,12 +8,12 @@ import CardSlot from './CardSlot'
 type Props = {
   cards: string[]
   /**
-   * Hand position of the card being played. A position, not a bird id: with two copies of a
-   * bird in hand, only the clicked one is highlighted.
+   * Hand position of the bird waiting for its payment to be confirmed. A position, not a bird
+   * id: with two copies of a bird in hand, only the dropped one is highlighted.
    */
   selectedIndex: number | null
   isPlayable: (cardId: string) => boolean
-  /** Click on the card at a hand position: play it, or show its info. */
+  /** Click on the card at a hand position: show its info (birds are played by dragging). */
   onCardClick: (index: number) => void
   /** Show the "drag or click" hint (the hand's owner is acting). */
   showHint?: boolean

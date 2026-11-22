@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { isButtonHabitat, type ButtonHabitat } from '../draft'
 import { actionCount } from '../game/engine'
 import { scorePlayer } from '../game/scoring'
 import { HABITATS, type Habitat, type Player, type SlotRef } from '../game/types'
@@ -10,7 +11,11 @@ type Props = {
   player: Player
   active: boolean
   turnsLeft: number
-  onAction?: (habitat: Habitat) => void
+  /**
+   * Habitat button clicks (gain food, lay eggs). The wetland's button never starts its action:
+   * cards are drawn by dragging them into the hand, so while `onAction` is set it says so.
+   */
+  onAction?: (habitat: ButtonHabitat) => void
   onBirdClick?: (slot: SlotRef) => void
   /** Click on a placed bird otherwise: show its info. */
   onInspect?: (cardId: string) => void
@@ -52,7 +57,8 @@ export default function Board({ player, active, turnsLeft, onAction, onBirdClick
             habitat={h}
             birds={player.board[h]}
             count={actionCount(player.board, h)}
-            onAction={onAction && (() => onAction(h))}
+            onAction={onAction && isButtonHabitat(h) ? () => onAction(h) : undefined}
+            dragOnly={!!onAction && !isButtonHabitat(h)}
             onBirdClick={onBirdClick && ((index) => onBirdClick({ habitat: h, index }))}
             onInspect={onInspect && ((index) => onInspect(player.board[h][index].cardId))}
             eggDelta={eggDelta && ((index) => eggDelta({ habitat: h, index }))}

@@ -4,12 +4,11 @@ import { canDrag, canDrop, type DragItem, type DropTarget } from '../draft'
 import { useGame, useGameStore } from '../store/gameStore'
 
 /**
- * Drag and drop for the game screen (table-style shortcuts; see "Drag and drop" in
- * `src/draft.ts`): the `DndContext` props, the item being dragged, and which drags and
+ * Drag and drop for the game screen (see "Drag and drop" in `src/draft.ts`): the `DndContext` props, the item being dragged, and which drags and
  * drops are allowed right now. Moves only happen while `interactive`.
  *
  * Mouse: a drag starts after 6px, so clicks still work. Touch: press and hold, so swiping
- * still scrolls the hand and tray.
+ * still scrolls the page.
  */
 export function useCardDrag(interactive: boolean) {
   const state = useGame()
@@ -37,11 +36,11 @@ export function useCardDrag(interactive: boolean) {
         setDragging(item)
         if (item && interactive) startDrag(item)
       },
-      onDragEnd: ({ active, over, delta }: DragEndEvent) => {
+      onDragEnd: ({ active, over }: DragEndEvent) => {
         setDragging(null)
         const item = active.data.current as DragItem | undefined
         if (!interactive || !item) return
-        endDrag(item, (over?.data.current as DropTarget | undefined) ?? null, delta)
+        endDrag(item, (over?.data.current as DropTarget | undefined) ?? null)
       },
       onDragCancel: () => setDragging(null),
     },

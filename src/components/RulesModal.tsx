@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { actionCount, eggCostForSlot, ROW_SIZE } from '../game/engine'
 import { GOAL_POINTS } from '../game/goals'
-import { HABITATS, type Board } from '../game/types'
+import { FOODS, HABITATS, type Board } from '../game/types'
 import { BIRD_FACTS_BY_ID, wikipediaUrl } from '../bird-facts'
 import { BIRD_IMAGES } from '../bird-images'
-import { HABITAT_ICON } from '../theme'
+import { FOOD_ICON, HABITAT_ICON } from '../theme'
+import PointsBadge from './PointsBadge'
 
 type Props = { onClose: () => void }
 
@@ -64,6 +65,57 @@ const TIPS = [
   'rules.tips.goals',
 ] as const
 
+/** Icons used on the board and cards that aren't food or habitats: icon + `rules.icons.*` key. */
+const OTHER_ICONS = [
+  { icon: '❔', key: 'anyFood' },
+  { icon: '🥚', key: 'egg' },
+  { icon: '○', key: 'eggSpace', className: 'text-stone-400' },
+  { icon: '⚡', key: 'power' },
+  { icon: '🤚', key: 'hand' },
+  { icon: '🐦', key: 'tray' },
+  { icon: '🂠', key: 'deck' },
+  { icon: '🧑', key: 'human' },
+  { icon: '🤖', key: 'bot' },
+  { icon: '🥇🥈🥉', key: 'medals' },
+] as const
+
+/** Every icon in the game and what it means. Food and habitat rows come from theme.ts. */
+function IconTable() {
+  const { t } = useTranslation()
+  const rows: { id: string; icon: ReactNode; meaning: string }[] = [
+    ...FOODS.map((f) => ({ id: f, icon: FOOD_ICON[f], meaning: t('rules.icons.food', { food: t(`foods.${f}`) }) })),
+    ...HABITATS.map((h) => ({
+      id: h,
+      icon: HABITAT_ICON[h],
+      meaning: t('rules.icons.habitat', { habitat: t(`habitats.${h}.name`), action: t(`habitats.${h}.action`) }),
+    })),
+    { id: 'points', icon: <PointsBadge points={3} />, meaning: t('rules.icons.points') },
+    ...OTHER_ICONS.map(({ icon, key, ...rest }) => ({
+      id: key,
+      icon: 'className' in rest ? <span className={rest.className}>{icon}</span> : icon,
+      meaning: t(`rules.icons.${key}`),
+    })),
+  ]
+  return (
+    <table className="w-full text-sm">
+      <thead className={headClass}>
+        <tr>
+          <th className="w-20 py-1 text-center">{t('rules.icons.icon')}</th>
+          <th className="py-1 text-left">{t('rules.icons.meaning')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.id} className="border-t border-stone-100">
+            <td className="py-1 text-center text-lg leading-none">{r.icon}</td>
+            <td className="py-1">{r.meaning}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 /** A board with `n` birds in every row, to ask the engine how strong each action is. */
 const boardWith = (n: number): Board => {
   const row = () => Array.from({ length: n }, () => ({ cardId: '', eggs: 0 }))
@@ -119,6 +171,10 @@ export default function RulesModal({ onClose }: Props) {
         </header>
 
         <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4 leading-relaxed sm:px-5">
+          <Section title={t('rules.icons.title')}>
+            <IconTable />
+          </Section>
+
           <Section title={t('rules.aim.title')}>
             <p>
               <Trans i18nKey="rules.aim.text" components={bold} />

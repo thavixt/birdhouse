@@ -78,12 +78,12 @@ Results are under the repository's **Actions** tab.
   values in the component instead, as `turnView` does.
 - Actions: `newGame` / `rematch` / `resume` / `quit` reset the turn UI; `dispatch` runs the
   engine, resets the draft, saves, and on the game-ending action clears the save and
-  records the winners (once, since later actions are rejected). Click handlers
-  (`clickHandCard`, `clickTrayCard`, `clickDeck`, `endDrag`) are thin glue over the pure,
+  records the winners (once, since later actions are rejected). Drag handlers
+  (`startDrag`, `endDrag`) are thin glue over the pure,
   tested functions in `src/draft.ts`. Store tests: `src/__tests__/gameStore.test.ts`.
-- Hand selection is by **hand position** (`handIndex` on the `playBird` draft, UI only), so
-  with two copies of a bird only the clicked one is highlighted. Clicking an unplayable card
-  shows its info and cancels a bird that was about to be played.
+- The hand highlight is by **hand position** (`handIndex` on the `playBird` draft, UI only):
+  a bird waiting in the action panel for its payment to be confirmed. With two copies of a
+  bird only the dropped one is highlighted. Clicking a hand card only shows its info.
 
 ### Responsive layout
 
@@ -112,12 +112,19 @@ Results are under the repository's **Actions** tab.
 
 ### Drag and drop
 
-- Table-style shortcuts on top of the click flow, which stays complete (and is the
-  keyboard path): drag a playable bird from the hand onto a habitat row to play it; drag a
-  tray card or the deck into the hand to draw it.
-- **Drops commit.** Playing a bird dispatches at once, paying with the same automatic
-  choices the action panel pre-fills (`autoPlayBird`). Drawing collects picks and
-  dispatches when the draw count is reached; clicked and dragged picks mix.
+- **Playing a bird is drag only:** drag a playable bird from the hand onto a habitat row.
+  Clicking a hand card only shows its info. If the payment is forced, the drop plays the
+  bird at once (`autoPlayBird`). If the player has a real choice (`hasPaymentChoice`: an
+  "any" food with 2+ kinds of food left, or an egg cost with 2+ birds holding eggs), the drop
+  opens the play-bird panel for that habitat instead, pre-filled with the same automatic
+  payment (`startPlayBird`), to change and confirm. Its habitat is fixed by the drop.
+- **Drawing cards is drag only:** drag a tray card or the deck into the hand. Clicking a
+  tray card only shows its info, the deck isn't clickable, and the wetland's "Draw cards"
+  button doesn't start anything; while it's your turn it keeps full colour, with a tooltip
+  saying to drag cards instead (`dragOnly` on `HabitatRow`; `isButtonHabitat` in `draft.ts`).
+  The draw panel shows progress, Clear and Cancel.
+- **Drops commit** once the move is complete: a bird with a forced payment at once, a draw
+  when the draw count is reached.
 - The rules live in `src/draft.ts` (`canDrag`, `canDrop`, `drop`, `addDrawPick`; pure and
   tested). Components: `DragSource` (wraps a card, attaches pointer listeners only),
   `DropZone` (habitat rows, hand; outlined while it accepts the dragged item),
@@ -126,12 +133,8 @@ Results are under the repository's **Actions** tab.
   given their drag props, so `Board` still renders outside it (score screen).
 - Sensors: mouse starts after 6px of movement (clicks still work); touch needs a 200ms
   press-and-hold, so swiping over cards still scrolls the page.
-- **Picking up a hand card selects it** (`startDrag`), exactly like a click. Once a drag starts
-  (6px), the drag preview sits under the pointer, so the browser never fires the click: a
-  quick click that moved while pressed would otherwise do nothing and leave the previous
-  card selected. Letting go anywhere but a habitat keeps it selected.
-- Tray and deck cards: a drag that drops nowhere after moving less than `CLICK_SLOP` (16px)
-  counts as a click (`isClickLike`, `clickItem`); a longer abandoned drag picks nothing.
+- **Picking up a hand or tray card shows its info** (`startDrag`), like a click: once a drag
+  starts (6px) the browser never fires the click. Dropping a card anywhere else does nothing.
 
 ### Bird photos
 
@@ -157,8 +160,8 @@ Results are under the repository's **Actions** tab.
   unusual traits taken from each species' Wikipedia article, **written in our own words**
   (don't paste article text). Language-neutral data (scientific name, article titles) is in
   `src/bird-facts.ts`; a test checks every bird has both.
-- Clicks that already do something (select to play, pick from the tray, place eggs) also
-  update the info card; otherwise a click only shows info (`onInspect` on Hand, CardTray,
+- Clicks that already do something (place or pay eggs) also update the info card; a click
+  on a hand or tray card, or picking one up, only shows info (`onInspect` on Hand, CardTray,
   Board). It is cleared when a hot-seat player reveals their hand, so it never shows a card
   from the previous player's hand.
 
@@ -259,6 +262,9 @@ Results are under the repository's **Actions** tab.
 - **Plurals:** use `_one` / `_other` key suffixes and pass `count`.
 - **Rules dialog** (`RulesModal.tsx`, `rules.*` keys): when a rule changes, update its
   text in both files. The goal points table is built from `GOAL_POINTS`, not the JSON.
+  It opens with an icon table (`IconTable`): food and habitat rows come from `theme.ts`; the
+  other icons are listed in `OTHER_ICONS`. When adding an icon to the board or cards, add it there
+  with a `rules.icons.*` text.
 - **`src/game/` never imports i18n.** The engine emits `GameMessage = { key, params }`
   for log entries and validation errors; keys are paths in the JSON (`log.*`, `error.*`).
   `formatMessage(t, msg)` in `src/i18n/message.ts` translates params by name: `card` /

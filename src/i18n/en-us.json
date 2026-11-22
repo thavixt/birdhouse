@@ -146,6 +146,7 @@
     "food": "Food",
     "actionCount": "×{{count}}",
     "toPlay": "to play",
+    "drawByDragging": "drag cards from the bird tray or the deck into your hand",
     "power": "⚡ power"
   },
   "card": {
@@ -163,7 +164,7 @@
   },
   "hand": {
     "title": "Hand ({{count}})",
-    "hint": "— drag a playable bird onto a habitat, or click it",
+    "hint": "— drag a playable bird onto a habitat to play it",
     "empty": "No cards. Draw some from the wetland."
   },
   "handoff": {
@@ -184,6 +185,7 @@
     "picked": "+{{count}} picked",
     "hint": "— drag cards into your hand to draw them",
     "deckCard": "Deck",
+    "deckHint": "Drag into your hand to draw from the deck",
     "discard_one": "+{{count}} in discard pile",
     "discard_other": "+{{count}} in discard pile"
   },
@@ -191,13 +193,13 @@
     "botThinkingTitle": "{{name}} is thinking…",
     "botThinking": "🤖 The bot will move in a moment.",
     "yourTurnTitle": "{{name}}, it's your turn",
-    "yourTurnShort": "Drag a bird onto your board, a card into your hand, or tap a habitat button.",
-    "yourTurn": "Take <b>one</b> action: drag a playable bird onto a habitat (or click it), drag tray cards or the deck into your hand to draw, or press a habitat button on your board to gain food, lay eggs or draw cards. Birds in that row then activate their powers right to left.",
+    "yourTurnShort": "Drag a bird onto your board or a card into your hand, or tap the forest or grassland button.",
+    "yourTurn": "Take <b>one</b> action: drag a playable bird onto a habitat, drag tray cards or the deck into your hand to draw cards, or press the forest or grassland button on your board to gain food or lay eggs. Birds in that row then activate their powers right to left.",
     "confirm": "Confirm",
     "cancel": "Cancel",
     "clear": "Clear",
     "auto": "Auto",
-    "chooseHabitat": "Choose a habitat, or drag the bird from your hand onto a habitat row to play it right away.",
+    "choosePayment": "You can choose how to pay: change the food or eggs below, then confirm.",
     "playBirdTitle": "Play {{card}}",
     "habitat": "Habitat",
     "food": "Food",
@@ -215,7 +217,7 @@
     "drawCardsTitle_one": "Draw {{count}} card",
     "drawCardsTitle_other": "Draw {{count}} cards",
     "pickedProgress": "Picked {{done}}/{{total}}",
-    "drawHint": "Click tray cards or the deck, or drag them into your hand."
+    "drawHint": "Drag tray cards or the deck into your hand."
   },
   "log": {
     "title": "Log",
@@ -270,6 +272,24 @@
     "button": "Rules",
     "close": "Got it",
     "closeLabel": "Close",
+    "icons": {
+      "title": "Icons",
+      "icon": "Icon",
+      "meaning": "Meaning",
+      "food": "Food: {{food}}",
+      "anyFood": "Any food of your choice (in a bird's food cost)",
+      "habitat": "{{habitat}} habitat; its action: {{action}}",
+      "points": "A bird's points, scored at the end of the game",
+      "egg": "Egg: worth 1 point on a bird. On a card, its egg limit (🥚 × N); in an empty slot, the eggs it costs to play a bird there",
+      "eggSpace": "Free space for one more egg on a placed bird",
+      "power": "The bird has a power, used with its habitat's action",
+      "hand": "Your hand",
+      "tray": "The bird tray: face-up cards you can draw",
+      "deck": "The deck: face-down cards you can draw",
+      "human": "A human player",
+      "bot": "A computer player",
+      "medals": "1st, 2nd and 3rd place in the final scores"
+    },
     "aim": {
       "title": "The aim",
       "text": "Attract birds to your <b>forest</b>, <b>grassland</b> and <b>wetland</b>. Every bird you place makes that habitat's action stronger, so your board grows into an engine. After 4 rounds, the player with the most points wins."
@@ -380,7 +400,7 @@
     },
     "hand": {
       "title": "Your hand",
-      "body": "Each card shows the bird’s points (top right), food cost, the habitats it can live in and its egg limit. Drag a playable bird onto a matching habitat row to play it, or click it to choose the details."
+      "body": "Each card shows the bird’s points (top right), food cost, the habitats it can live in and its egg limit. Drag a playable bird onto a matching habitat row to play it. If you can choose how to pay, the action panel asks you first."
     },
     "food": {
       "title": "Your food",
@@ -392,11 +412,11 @@
     },
     "actions": {
       "title": "Habitat actions",
-      "body": "Instead of playing a bird, use a habitat: 🌲 gain food, 🌼 lay eggs, 💧 draw cards. Every 2 birds in a row make its action stronger, and those birds then use their powers, right to left."
+      "body": "Instead of playing a bird, use a habitat: press 🌲 to gain food or 🌼 to lay eggs, or drag cards into your hand to 💧 draw cards. Every 2 birds in a row make its action stronger, and those birds then use their powers, right to left."
     },
     "tray": {
       "title": "The bird tray",
-      "body": "Face-up cards and the deck. Drag them into your hand (or click them) to draw: that’s the wetland action."
+      "body": "Face-up cards and the deck. Drag them into your hand to draw: that’s the wetland action."
     },
     "goals": {
       "title": "Round goals",

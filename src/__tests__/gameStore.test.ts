@@ -75,52 +75,45 @@ describe('game store: dispatch', () => {
   })
 })
 
-describe('game store: card clicks (the three selection bugs)', () => {
+describe('game store: drag and drop', () => {
   const twoJays = () => withPlayer(newGame(1, 1), 0, { hand: ['blue-jay', 'great-blue-heron', 'blue-jay'], food: food(2) })
 
-  it('1: with two copies of a bird, only the clicked one is selected', () => {
+  it('picking up a hand card shows its info and selects nothing; dropping it nowhere does nothing', () => {
     play(twoJays())
-    store().clickHandCard(2)
-    expect(selectedHandIndex(store().game!, store().draft)).toBe(2)
-    store().clickHandCard(0)
-    expect(selectedHandIndex(store().game!, store().draft)).toBe(0)
-  })
-
-  it('2: clicking an unplayable card shows its info and cancels the selected bird', () => {
-    play(twoJays())
-    store().clickHandCard(0)
-    store().clickHandCard(1) // heron: no fish
-    expect(store().inspected).toBe('great-blue-heron')
-    expect(store().draft).toBe(IDLE)
-  })
-
-  it('3: picking up a hand card selects it, however far the pointer moves before letting go', () => {
-    play(twoJays())
-    store().clickHandCard(0)
-    // A "click" that moved while pressed becomes a drag; the browser then sends no click.
     store().startDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 })
-    expect(selectedHandIndex(store().game!, store().draft)).toBe(2)
     expect(store().inspected).toBe('blue-jay')
-    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 }, null, { x: 40, y: 0 })
-    expect(selectedHandIndex(store().game!, store().draft)).toBe(2) // still selected
-    store().startDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 0 })
-    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 0 }, { kind: 'hand' }, { x: 300, y: 5 })
-    expect(selectedHandIndex(store().game!, store().draft)).toBe(0)
+    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 }, null)
+    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 }, { kind: 'hand' })
+    expect(store().draft).toBe(IDLE)
+    expect(store().game!.players[0].board.forest).toEqual([])
   })
 
-  it('tray cards count as clicked only for a short wobble, not an abandoned drag', () => {
+  it('a bird with a payment choice waits in the action panel, its hand position highlighted', () => {
+    // Hummingbird: any 1 food, and the player has seed and fish.
+    play(withPlayer(newGame(1, 1), 0, { hand: ['blue-jay', 'ruby-throated-hummingbird'], food: food(1, 0, 1) }))
+    store().endDrag({ kind: 'hand', cardId: 'ruby-throated-hummingbird', handIndex: 1 }, { kind: 'habitat', habitat: 'forest' })
+    expect(store().draft).toMatchObject({ kind: 'playBird', cardId: 'ruby-throated-hummingbird', habitat: 'forest' })
+    expect(selectedHandIndex(store().game!, store().draft)).toBe(1)
+    expect(store().game!.players[0].board.forest).toEqual([])
+  })
+
+  it('tray cards are only drawn by dropping them in the hand: picking one up just shows its info', () => {
     play(newGame(1, 1))
+    const card = store().game!.tray[1]
     store().startDrag({ kind: 'tray', index: 1 })
-    store().endDrag({ kind: 'tray', index: 1 }, null, { x: 60, y: 0 })
+    expect(store().inspected).toBe(card)
+    store().endDrag({ kind: 'tray', index: 1 }, null) // dropped nowhere, however short the drag
     expect(store().draft).toBe(IDLE)
+    const hand = store().game!.players[0].hand
     store().startDrag({ kind: 'tray', index: 1 })
-    store().endDrag({ kind: 'tray', index: 1 }, null, { x: 5, y: 3 })
-    expect(store().draft).toEqual({ kind: 'drawCards', picks: [{ from: 'tray', index: 1 }] })
+    store().endDrag({ kind: 'tray', index: 1 }, { kind: 'hand' }) // empty wetland: draw 1, done
+    expect(store().game!.players[0].hand).toEqual([...hand, card])
+    expect(store().draft).toBe(IDLE)
   })
 
   it('a real drop still plays the bird', () => {
     play(twoJays())
-    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 0 }, { kind: 'habitat', habitat: 'forest' }, { x: 200, y: 300 })
+    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 0 }, { kind: 'habitat', habitat: 'forest' })
     expect(store().game?.players[0].board.forest.map((b) => b.cardId)).toEqual(['blue-jay'])
     expect(store().draft).toBe(IDLE)
   })

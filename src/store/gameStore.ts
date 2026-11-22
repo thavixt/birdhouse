@@ -4,14 +4,9 @@
 // as props. Components read what they need with `useGameStore(selector)`.
 import { create } from 'zustand'
 import {
-  clickDeck,
-  clickHandCard,
-  clickItem,
-  clickTrayCard,
   describeDraft,
   drop,
   IDLE,
-  isClickLike,
   needsHandoff,
   viewedPlayer,
   type Draft,
@@ -56,18 +51,14 @@ export type GameStore = {
   inspect: (cardId: string | null) => void
   revealHand: () => void
   finishTour: (playerIdx: number) => void
-  /** Click on the current player's hand card at `index` (see `clickHandCard`). */
-  clickHandCard: (index: number) => void
-  clickTrayCard: (index: number) => void
-  clickDeck: () => void
   /**
-   * Start of a drag. Picking up a hand card selects it, exactly like clicking it: once a
-   * drag starts, the drag preview sits under the pointer and the browser never fires the
-   * click, so a click that moved a bit while pressed would otherwise do nothing.
+   * Start of a drag: picking up a hand or tray card shows its info, like clicking it (once a
+   * drag starts the browser never fires the click, so a click that moved a bit while pressed
+   * would otherwise do nothing).
    */
   startDrag: (item: DragItem) => void
-  /** End of a drag: drop it on `target`, or, if it moved only a little, treat it as a click. */
-  endDrag: (item: DragItem, target: DropTarget | null, delta: { x: number; y: number }) => void
+  /** End of a drag: drop it on `target` (null: dropped nowhere, nothing happens). */
+  endDrag: (item: DragItem, target: DropTarget | null) => void
 }
 
 /** Turn UI state for a fresh screen (new game, continue, quit). */
@@ -158,43 +149,20 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
     finishTour: (playerIdx) => set(({ toured }) => ({ toured: [...toured, playerIdx] })),
 
-    clickHandCard: (index) => {
-      const game = playing()
-      if (!game) return
-      const cardId = game.players[game.currentPlayer].hand[index]
-      if (cardId !== undefined) set({ inspected: cardId })
-      get().setDraft(clickHandCard(game, get().draft, index))
-    },
-
-    clickTrayCard: (index) => {
-      const game = playing()
-      if (!game) return
-      set({ inspected: game.tray[index] })
-      get().setDraft(clickTrayCard(game, get().draft, index))
-    },
-
-    clickDeck: () => {
-      const game = playing()
-      if (game) get().setDraft(clickDeck(game, get().draft))
-    },
-
     startDrag: (item) => {
       const game = playing()
       if (!game) return
-      if (item.kind === 'hand') get().clickHandCard(item.handIndex)
+      if (item.kind === 'hand') set({ inspected: item.cardId })
       else if (item.kind === 'tray') set({ inspected: game.tray[item.index] })
     },
 
-    endDrag: (item, target, delta) => {
+    endDrag: (item, target) => {
       const game = playing()
-      if (!game) return
+      if (!game || !target) return
       const { draft, dispatch, setDraft } = get()
-      const result = target ? drop(game, draft, item, target) : null
+      const result = drop(game, draft, item, target)
       if (result && 'action' in result) dispatch(result.action)
       else if (result) setDraft(result.draft)
-      // A hand card was already selected when picked up (`startDrag`). Tray and deck cards
-      // only count as clicked for a short wobble: an abandoned drag shouldn't pick them.
-      else if (item.kind !== 'hand' && isClickLike(delta)) setDraft(clickItem(game, draft, item))
     },
   }
 })

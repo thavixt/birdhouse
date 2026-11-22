@@ -146,6 +146,7 @@
     "food": "Élelem",
     "actionCount": "×{{count}}",
     "toPlay": "a lerakáshoz",
+    "drawByDragging": "húzz lapokat a felcsapott madarak közül vagy a pakliból a kezedbe",
     "power": "⚡ képesség"
   },
   "card": {
@@ -163,7 +164,7 @@
   },
   "hand": {
     "title": "Kéz ({{count}})",
-    "hint": "— húzz egy kijátszható madarat egy élőhelyre, vagy kattints rá",
+    "hint": "— húzz egy kijátszható madarat egy élőhelyre a kijátszáshoz",
     "empty": "Nincs kártyád. Húzz néhányat a vízparton."
   },
   "handoff": {
@@ -184,6 +185,7 @@
     "picked": "+{{count}} kiválasztva",
     "hint": "— húzd a lapokat a kezedbe, hogy felhúzd őket",
     "deckCard": "Pakli",
+    "deckHint": "Húzd a kezedbe, hogy a pakliból húzz",
     "discard_one": "+{{count}} a dobópakliban",
     "discard_other": "+{{count}} a dobópakliban"
   },
@@ -191,13 +193,13 @@
     "botThinkingTitle": "{{name}} gondolkodik…",
     "botThinking": "🤖 A gép mindjárt lép.",
     "yourTurnTitle": "{{name}}, te jössz!",
-    "yourTurnShort": "Húzz egy madarat a tábládra, egy lapot a kezedbe, vagy koppints egy élőhely gombjára.",
-    "yourTurn": "Válassz <b>egy</b> akciót: húzz egy kijátszható madarat egy élőhelyre (vagy kattints rá), húzz felcsapott lapokat vagy a paklit a kezedbe, vagy nyomd meg egy élőhely gombját a tábládon, hogy élelmet szerezz, tojást rakj vagy kártyát húzz. Ezután a sor madarai jobbról balra aktiválják a képességüket.",
+    "yourTurnShort": "Húzz egy madarat a tábládra vagy egy lapot a kezedbe, vagy koppints az erdő vagy a mező gombjára.",
+    "yourTurn": "Válassz <b>egy</b> akciót: húzz egy kijátszható madarat egy élőhelyre, húzz felcsapott lapokat vagy a paklit a kezedbe kártyahúzáshoz, vagy nyomd meg az erdő vagy a mező gombját a tábládon, hogy élelmet szerezz vagy tojást rakj. Ezután a sor madarai jobbról balra aktiválják a képességüket.",
     "confirm": "Megerősítés",
     "cancel": "Mégse",
     "clear": "Törlés",
     "auto": "Automatikus",
-    "chooseHabitat": "Válassz élőhelyet, vagy húzd a madarat a kezedből egy élőhely sorára, hogy azonnal kijátszd.",
+    "choosePayment": "Választhatsz, mivel fizetsz: módosítsd lent az élelmet vagy a tojásokat, majd erősítsd meg.",
     "playBirdTitle": "Kijátszás: {{card}}",
     "habitat": "Élőhely",
     "food": "Élelem",
@@ -215,7 +217,7 @@
     "drawCardsTitle_one": "Húzz {{count}} kártyát",
     "drawCardsTitle_other": "Húzz {{count}} kártyát",
     "pickedProgress": "Választva {{done}}/{{total}}",
-    "drawHint": "Kattints a felcsapott kártyákra vagy a paklira, vagy húzd őket a kezedbe."
+    "drawHint": "Húzz felcsapott lapokat vagy a paklit a kezedbe."
   },
   "log": {
     "title": "Napló",
@@ -270,6 +272,24 @@
     "button": "Szabályok",
     "close": "Értem",
     "closeLabel": "Bezárás",
+    "icons": {
+      "title": "Ikonok",
+      "icon": "Ikon",
+      "meaning": "Jelentés",
+      "food": "Élelem: {{food}}",
+      "anyFood": "Bármilyen élelem, amit választasz (a madár élelemköltségében)",
+      "habitat": "Élőhely: {{habitat}}; akciója: {{action}}",
+      "points": "A madár pontértéke, a játék végén számít",
+      "egg": "Tojás: egy madáron 1 pontot ér. Kártyán a madár tojáskorlátja (🥚 × N); üres helyen az, hogy hány tojásba kerül oda madarat tenni",
+      "eggSpace": "Szabad hely még egy tojásnak egy letett madáron",
+      "power": "A madárnak képessége van, amely az élőhelye akciójával aktiválódik",
+      "hand": "A kezed",
+      "tray": "Felcsapott madarak: képpel felfelé fekvő lapok, amelyeket felhúzhatsz",
+      "deck": "A pakli: képpel lefelé fekvő lapok, amelyeket felhúzhatsz",
+      "human": "Emberi játékos",
+      "bot": "Gépi játékos",
+      "medals": "1., 2. és 3. hely a végeredményben"
+    },
     "aim": {
       "title": "A játék célja",
       "text": "Csalogass madarakat az <b>erdődbe</b>, a <b>meződre</b> és a <b>vízpartodra</b>. Minden lerakott madár erősebbé teszi az adott élőhely akcióját, így a táblád egyre hatékonyabb „motorrá” válik. 4 kör után a legtöbb pontot szerző játékos nyer."
@@ -380,7 +400,7 @@
     },
     "hand": {
       "title": "A kezed",
-      "body": "Minden kártyán ott a madár pontértéke (jobb fent), az élelemköltsége, az élőhelyei és a tojáskorlátja. Húzz egy kijátszható madarat egy megfelelő élőhely sorába, vagy kattints rá a részletekért."
+      "body": "Minden kártyán ott a madár pontértéke (jobb fent), az élelemköltsége, az élőhelyei és a tojáskorlátja. Húzz egy kijátszható madarat egy megfelelő élőhely sorába a kijátszáshoz. Ha választhatsz, mivel fizetsz, előbb az akciópanel kérdez rá."
     },
     "food": {
       "title": "Az élelmed",
@@ -392,11 +412,11 @@
     },
     "actions": {
       "title": "Élőhely-akciók",
-      "body": "Madár kijátszása helyett használhatsz egy élőhelyet: 🌲 élelemszerzés, 🌼 tojásrakás, 💧 kártyahúzás. A sorban minden 2 madár erősíti az akciót, majd ezek a madarak jobbról balra használják a képességüket."
+      "body": "Madár kijátszása helyett használhatsz egy élőhelyet: nyomd meg a 🌲 gombot élelemszerzéshez vagy a 🌼 gombot tojásrakáshoz, vagy húzz lapokat a kezedbe 💧 kártyahúzáshoz. A sorban minden 2 madár erősíti az akciót, majd ezek a madarak jobbról balra használják a képességüket."
     },
     "tray": {
       "title": "Felcsapott madarak",
-      "body": "A felcsapott lapok és a pakli. Húzd őket a kezedbe (vagy kattints rájuk) a húzáshoz: ez a vízparti akció."
+      "body": "A felcsapott lapok és a pakli. Húzd őket a kezedbe a húzáshoz: ez a vízparti akció."
     },
     "goals": {
       "title": "Fordulócélok",

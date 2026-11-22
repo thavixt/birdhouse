@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { birdName } from '../../i18n/birdName'
-import { chooseHabitat, totalCount } from '../../draft'
+import { totalCount } from '../../draft'
 import { BIRDS_BY_ID } from '../../game/birds'
-import { eggCostForSlot, playableHabitats } from '../../game/engine'
-import { BUTTON, HABITAT_ICON, HABITAT_STYLE } from '../../theme'
+import { eggCostForSlot } from '../../game/engine'
+import { HABITAT_ICON, HABITAT_STYLE } from '../../theme'
 import FoodToken from '../FoodToken'
 import FoodPicker from './FoodPicker'
 import PanelFrame from './PanelFrame'
@@ -12,33 +12,27 @@ import SecondaryButton from './SecondaryButton'
 import { useGame, useGameStore } from '../../store/gameStore'
 import type { PanelProps } from './types'
 
-/** Playing a bird: pick the habitat, the "any" food, and which birds pay the egg cost. */
+/**
+ * A bird dropped on a habitat when its payment is a real choice: pick the "any" food and
+ * which birds pay the egg cost (pre-filled with the automatic payment), then confirm.
+ */
 export default function PlayBirdPanel({ draft, footer, docked }: PanelProps<'playBird'>) {
   const { t } = useTranslation()
   const state = useGame()
   const setDraft = useGameStore((s) => s.setDraft)
   const player = state.players[state.currentPlayer]
   const card = BIRDS_BY_ID[draft.cardId]
-  const habitats = playableHabitats(state, state.currentPlayer, draft.cardId)
-  const eggCost = draft.habitat ? eggCostForSlot(player.board[draft.habitat].length) : 0
+  const eggCost = eggCostForSlot(player.board[draft.habitat].length)
   const left = { ...player.food }
   for (const f of [...card.cost.foods, ...draft.anyFoods]) left[f]--
 
   return (
     <PanelFrame docked={docked} title={t('panel.playBirdTitle', { card: birdName(card.id) })}>
+      <p className="mb-2 text-xs text-stone-600">{t('panel.choosePayment')}</p>
       <PanelStep label={t('panel.habitat')}>
-        <div className="flex flex-col gap-2">
-          {habitats.map((h) => (
-            <button
-              key={h}
-              type="button"
-              className={`${BUTTON} ${draft.habitat === h ? HABITAT_STYLE[h].button : HABITAT_STYLE[h].chip}`}
-              onClick={() => setDraft(chooseHabitat(state, draft, h))}
-            >
-              {HABITAT_ICON[h]} {t(`habitats.${h}.name`)}
-            </button>
-          ))}
-        </div>
+        <span className={`rounded-md px-2 py-1 text-sm font-semibold ${HABITAT_STYLE[draft.habitat].button}`}>
+          {HABITAT_ICON[draft.habitat]} {t(`habitats.${draft.habitat}.name`)}
+        </span>
       </PanelStep>
       <PanelStep label={t('panel.food')}>
         {card.cost.foods.map((f, i) => (
