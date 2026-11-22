@@ -2,14 +2,24 @@ import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { actionCount, eggCostForSlot, ROW_SIZE } from '../game/engine'
-import { GOAL_IDS, GOAL_POINTS } from '../game/goals'
+import { GOAL_POINTS } from '../game/goals'
 import { HABITATS, type Board } from '../game/types'
+import { BIRD_FACTS_BY_ID, wikipediaUrl } from '../bird-facts'
 import { BIRD_IMAGES } from '../bird-images'
 import { HABITAT_ICON } from '../theme'
 
 type Props = { onClose: () => void }
 
 const bold = { b: <b /> }
+
+const GOALS = [
+  "habitat-birds",
+  "total-birds",
+  "habitat-eggs",
+  "total-eggs",
+  "birds-with-eggs",
+  "bird-points",
+]
 
 /** Bulleted list of translation keys (which may contain <b>…</b>). */
 function KeyList({ keys }: { keys: readonly string[] }) {
@@ -83,7 +93,11 @@ const headClass = 'text-xs text-stone-500 uppercase'
  * and never inherits the caller's styles (e.g. the start screen's `text-center`).
  */
 export default function RulesModal({ onClose }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  // Credits in alphabetical order of the bird names as shown (the language's own collation,
+  // so e.g. Hungarian "Ö" sorts after "O", not at the end).
+  const collator = new Intl.Collator(i18n.language)
+  const photoCredits = BIRD_IMAGES.toSorted((a, b) => collator.compare(t(`birds.${a.id}`), t(`birds.${b.id}`)))
   return createPortal(
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40 p-2 sm:p-4" onClick={onClose}>
       <div
@@ -214,11 +228,10 @@ export default function RulesModal({ onClose }: Props) {
             <p>{t('rules.rounds.tieExample', TIE_PARAMS)}</p>
             <p>{t('rules.rounds.goalList')}</p>
             <ul className="list-disc space-y-1 pl-5">
-              {GOAL_IDS.map((id) => (
+              {GOALS.map((id) => (
                 <li key={id}>{t(`goals.${id}`)}</li>
               ))}
             </ul>
-            <p>{t('rules.rounds.goalNotes')}</p>
             <p>{t('rules.rounds.solo')}</p>
           </Section>
 
@@ -236,14 +249,31 @@ export default function RulesModal({ onClose }: Props) {
           <Section title={t('rules.photos.title')}>
             <p>{t('rules.photos.text')}</p>
             <ul className="columns-1 gap-4 text-xs text-stone-600 sm:columns-2">
-              {BIRD_IMAGES.map((img) => (
-                <li key={img.id} className="break-inside-avoid">
-                  <a href={img.source} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline">
-                    {t(`birds.${img.id}`)}
-                  </a>
-                  : {img.author} ({img.license})
-                </li>
-              ))}
+              {/* Bird name → its Wikipedia article (UI language); author + licence → the photo's Commons page. */}
+              {photoCredits.map((img) => {
+                const facts = BIRD_FACTS_BY_ID[img.id]
+                const name = t(`birds.${img.id}`)
+                return (
+                  <li key={img.id} className="break-inside-avoid">
+                    {facts ? (
+                      <a
+                        href={wikipediaUrl(facts, i18n.language)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-emerald-800 underline"
+                      >
+                        {name}
+                      </a>
+                    ) : (
+                      <span className="font-semibold text-emerald-800">{name}</span>
+                    )}
+                    :{' '}
+                    <a href={img.source} target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-800">
+                      {img.author} ({img.license})
+                    </a>
+                  </li>
+                )
+              })}
             </ul>
           </Section>
         </div>

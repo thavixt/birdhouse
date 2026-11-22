@@ -52,11 +52,7 @@ export default function BirdCard({ cardId, onClick, selected = false, dimmed = f
             {card.points}
           </span>
         </div>
-        {/* The bird shows through here; hovering it shows the photo credit. */}
-        <div
-          className="min-h-14 flex-1"
-          title={photo ? t('card.photoCredit', { author: photo.author, license: photo.license }) : undefined}
-        />
+        <div className="min-h-14 flex-1" />
         <div className={`flex flex-col gap-0.5 px-1.5 py-1 ${PANEL}`}>
           <div className="flex items-center justify-between text-sm">
             <span title={card.cost.anyCount ? t('card.anyFood') : t('card.foodCost')}>{cost.join('') || '—'}</span>

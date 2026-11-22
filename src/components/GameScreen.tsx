@@ -70,7 +70,7 @@ export default function GameScreen() {
   const inspected = useGameStore((s) => s.inspected)
   const tutorial = useGameStore((s) => s.tutorial)
   const toured = useGameStore((s) => s.toured)
-  const { setDraft, inspect, revealHand, finishTour, quit, clickHandCard, clickTrayCard, clickDeck, endDrag } =
+  const { setDraft, inspect, revealHand, finishTour, quit, clickHandCard, clickTrayCard, clickDeck, startDrag, endDrag } =
     useGameStore.getState()
   const { current, viewIdx, handoff, interactive } = useTurnView()
 
@@ -108,8 +108,7 @@ export default function GameScreen() {
       onDragStart={({ active }) => {
         const item = (active.data.current as DragItem | undefined) ?? null
         setDragging(item)
-        if (item?.kind === 'hand') inspect(item.cardId)
-        else if (item?.kind === 'tray') inspect(state.tray[item.index])
+        if (item && interactive) startDrag(item)
       }}
       onDragEnd={onDragEnd}
       onDragCancel={() => setDragging(null)}
@@ -196,10 +195,10 @@ export default function GameScreen() {
             */}
             <aside className={`flex flex-col gap-3 lg:col-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-22 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}>
               <PlayerList />
-              {inspected && <BirdInfo cardId={inspected} onClose={() => inspect(null)} />}
               <div data-tour="panel" className="hidden lg:block">
                 <ActionPanel />
               </div>
+              {inspected && <BirdInfo cardId={inspected} onClose={() => inspect(null)} />}
               <GameLog log={state.log} />
             </aside>
             {opponents.map((i, k) => {

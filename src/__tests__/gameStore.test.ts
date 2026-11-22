@@ -94,15 +94,28 @@ describe('game store: card clicks (the three selection bugs)', () => {
     expect(store().draft).toBe(IDLE)
   })
 
-  it('3: a short drag that drops nowhere selects the card; a long one does nothing', () => {
+  it('3: picking up a hand card selects it, however far the pointer moves before letting go', () => {
     play(twoJays())
-    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 }, null, { x: 40, y: 0 })
-    expect(store().draft).toBe(IDLE)
-    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 }, null, { x: 7, y: 2 })
+    store().clickHandCard(0)
+    // A "click" that moved while pressed becomes a drag; the browser then sends no click.
+    store().startDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 })
     expect(selectedHandIndex(store().game!, store().draft)).toBe(2)
-    // A wobbly click on the hand's own drop zone is not a drop either.
-    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 0 }, { kind: 'hand' }, { x: 8, y: 0 })
+    expect(store().inspected).toBe('blue-jay')
+    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 2 }, null, { x: 40, y: 0 })
+    expect(selectedHandIndex(store().game!, store().draft)).toBe(2) // still selected
+    store().startDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 0 })
+    store().endDrag({ kind: 'hand', cardId: 'blue-jay', handIndex: 0 }, { kind: 'hand' }, { x: 300, y: 5 })
     expect(selectedHandIndex(store().game!, store().draft)).toBe(0)
+  })
+
+  it('tray cards count as clicked only for a short wobble, not an abandoned drag', () => {
+    play(newGame(1, 1))
+    store().startDrag({ kind: 'tray', index: 1 })
+    store().endDrag({ kind: 'tray', index: 1 }, null, { x: 60, y: 0 })
+    expect(store().draft).toBe(IDLE)
+    store().startDrag({ kind: 'tray', index: 1 })
+    store().endDrag({ kind: 'tray', index: 1 }, null, { x: 5, y: 3 })
+    expect(store().draft).toEqual({ kind: 'drawCards', picks: [{ from: 'tray', index: 1 }] })
   })
 
   it('a real drop still plays the bird', () => {

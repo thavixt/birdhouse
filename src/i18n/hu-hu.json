@@ -79,11 +79,15 @@
     "allGainFood": "Minden játékos kap 1 élelmet: {{food}}."
   },
   "goals": {
-    "forest-birds": "Legtöbb madár az erdőben",
-    "grassland-birds": "Legtöbb madár a mezőn",
-    "wetland-birds": "Legtöbb madár a vízparton",
+    "habitat-birds": "Legtöbb madár egy élőhelyen",
+    "grassland-birds": "Legtöbb madár mezőn",
+    "wetland-birds": "Legtöbb madár vízparton",
+    "forest-birds": "Legtöbb madár erdőben",
     "total-birds": "Legtöbb madár összesen",
-    "grassland-eggs": "Legtöbb tojás a mezőn",
+    "habitat-eggs": "Legtöbb tojás egy élőhelyen",
+    "grassland-eggs": "Legtöbb tojás mezőn",
+    "wetland-eggs": "Legtöbb tojás vízparton",
+    "forest-eggs": "Legtöbb tojás erdőben",
     "total-eggs": "Legtöbb tojás összesen",
     "birds-with-eggs": "Legtöbb tojásos madár",
     "bird-points": "Legtöbb madárpont a táblán"
@@ -331,7 +335,6 @@
       "ties": "A helyezéshez legalább 1 kell. Holtverseny esetén a játékosok osztoznak az általuk elfoglalt helyek pontjain, lefelé kerekítve: ha ketten holtversenyben elsők, megosztják az 1. és a 2. hely pontjait.",
       "tieExample": "Példa a {{round}}. körben ({{first}} és {{second}} pont): ha ketten holtversenyben elsők, fejenként {{split}} pontot kapnak ({{first}} + {{second}}, felezve, lefelé kerekítve), 2. hely pedig nincs. Ha egy egyértelmű első mögött ketten holtversenyben vannak, az első {{first}} pontot kap, a másik kettő fejenként {{half}} pontot.",
       "goalList": "Minden játékban e 8 cél közül 4 szerepel, így nem mind kerül elő:",
-      "goalNotes": "A „Legtöbb tojás a mezőn” célnál csak a mezei madarakon lévő tojások számítanak. A madárpont a tábládon lévő madarak kártyáira nyomtatott pontok összege, tojások nélkül.",
       "solo": "Egyedül játszva minden célban 1. helyezett vagy, ha legalább 1-ed van belőle, így a kihívás a saját legjobb eredményed megdöntése."
     },
     "end": {
@@ -354,7 +357,7 @@
     },
     "photos": {
       "title": "Fotók forrása",
-      "text": "A madárfotók a Wikimedia Commonsról származnak, Creative Commons licenc alapján. Egy névre koppintva megnyílik a fotó oldala a teljes licenccel."
+      "text": "A madárfotók a Wikimedia Commonsról származnak, Creative Commons licenc alapján. A madár neve a Wikipédia-szócikkére mutat, a szerző és a licenc pedig a fotó oldalára, a teljes licenccel."
     }
   },
   "score": {

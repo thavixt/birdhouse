@@ -125,9 +125,12 @@ Results are under the repository's **Actions** tab.
   given their drag props, so `Board` still renders outside it (score screen).
 - Sensors: mouse starts after 6px of movement (clicks still work); touch needs a 200ms
   press-and-hold, so swiping still scrolls the hand and tray.
-- A drag that drops nowhere after moving less than `CLICK_SLOP` (16px) counts as a click on
-  the card (`isClickLike`, `clickItem`): starting the drag swallows the browser's click event,
-  so a slightly shaky click would otherwise do nothing.
+- **Picking up a hand card selects it** (`startDrag`), exactly like a click. Once a drag starts
+  (6px), the drag preview sits under the pointer, so the browser never fires the click: a
+  quick click that moved while pressed would otherwise do nothing and leave the previous
+  card selected. Letting go anywhere but a habitat keeps it selected.
+- Tray and deck cards: a drag that drops nowhere after moving less than `CLICK_SLOP` (16px)
+  counts as a click (`isClickLike`, `clickItem`); a longer abandoned drag picks nothing.
 
 ### Bird photos
 
@@ -135,8 +138,8 @@ Results are under the repository's **Actions** tab.
   `source`): the species' Wikipedia lead image as a 330px Wikimedia thumbnail, hot-linked.
   A test checks every bird has one, with a credit and a free (CC BY / BY-SA / CC0) licence.
 - **Credit every photo.** CC BY / BY-SA require attribution: the card's photo area has a
-  "Photo: author (licence)" tooltip, and the Rules dialog lists all credits with links to
-  the Commons file pages. When swapping a photo, update url, author, license and source together.
+  "Photo: author (licence)" tooltip, and the Rules dialog lists all credits as "Bird name: author (licence)",
+  the name linking to its Wikipedia article and the credit to the Commons file page. When swapping a photo, update url, author, license and source together.
 - `BirdPhoto` renders one behind its parent (`absolute -z-10` in a `relative isolate`
   parent): full strength on `BirdCard` (text sits on frosted white panels), faded on placed
   birds in `HabitatRow`. Lazy-loaded, `crossOrigin="anonymous"`, cached by the service worker
@@ -401,7 +404,7 @@ Powers resolve automatically (all are beneficial, so there is no choice to make)
 ### Round goals
 
 Defined in `goals.ts`: most birds in forest / grassland / wetland, most birds total,
-most eggs in grassland, most eggs total, most birds with eggs, most bird points on board.
+most eggs in forest / grassland, most eggs total, most birds with eggs, most bird points on board.
 Scoring per round: 1st = 4/5/6/7 pts (by round), 2nd = 1/2/3/4, others 0.
 Tied players share the points of the places they span (round down). A player needs a
 value of at least 1 to place (so nobody scores an empty goal, e.g. in solo play).

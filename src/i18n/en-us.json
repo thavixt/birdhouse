@@ -79,11 +79,15 @@
     "allGainFood": "Every player gains 1 {{food}}."
   },
   "goals": {
+    "habitat-birds": "Most birds in a habitat",
     "forest-birds": "Most birds in forest",
     "grassland-birds": "Most birds in grassland",
     "wetland-birds": "Most birds in wetland",
     "total-birds": "Most birds total",
+    "forest-eggs": "Most eggs in forest",
     "grassland-eggs": "Most eggs in grassland",
+    "wetland-eggs": "Most eggs in wetland",
+    "habitat-eggs": "Most eggs in a habitat",
     "total-eggs": "Most eggs total",
     "birds-with-eggs": "Most birds with eggs",
     "bird-points": "Most bird points on board"
@@ -331,7 +335,6 @@
       "ties": "You need at least 1 to place. Tied players share the points of the places they take, rounded down: if two players tie for 1st, they split the 1st and 2nd place points.",
       "tieExample": "Example in round {{round}} ({{first}} and {{second}} points): if two players tie for the most, each gets {{split}} ({{first}} + {{second}}, halved and rounded down) and nobody comes 2nd. If two players tie behind a clear leader, the leader gets {{first}} and the other two get {{half}} each.",
       "goalList": "Each game uses 4 of these 8 goals, so not all of them come up:",
-      "goalNotes": "Only eggs on grassland birds count for “Most eggs in grassland”. Bird points are the points printed on the birds on your board, without eggs.",
       "solo": "Playing solo, you take 1st place in every goal where you have at least 1, so the challenge is to beat your own best score."
     },
     "end": {
@@ -354,7 +357,7 @@
     },
     "photos": {
       "title": "Photo credits",
-      "text": "Bird photos are from Wikimedia Commons, used under their Creative Commons licences. Tap a name for the photo’s page and full licence."
+      "text": "Bird photos are from Wikimedia Commons, used under their Creative Commons licences. Each bird’s name links to its Wikipedia article; the author and licence link to the photo’s page with the full licence."
     }
   },
   "score": {

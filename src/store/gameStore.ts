@@ -60,6 +60,12 @@ export type GameStore = {
   clickHandCard: (index: number) => void
   clickTrayCard: (index: number) => void
   clickDeck: () => void
+  /**
+   * Start of a drag. Picking up a hand card selects it, exactly like clicking it: once a
+   * drag starts, the drag preview sits under the pointer and the browser never fires the
+   * click, so a click that moved a bit while pressed would otherwise do nothing.
+   */
+  startDrag: (item: DragItem) => void
   /** End of a drag: drop it on `target`, or, if it moved only a little, treat it as a click. */
   endDrag: (item: DragItem, target: DropTarget | null, delta: { x: number; y: number }) => void
 }
@@ -172,6 +178,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
       if (game) get().setDraft(clickDeck(game, get().draft))
     },
 
+    startDrag: (item) => {
+      const game = playing()
+      if (!game) return
+      if (item.kind === 'hand') get().clickHandCard(item.handIndex)
+      else if (item.kind === 'tray') set({ inspected: game.tray[item.index] })
+    },
+
     endDrag: (item, target, delta) => {
       const game = playing()
       if (!game) return
@@ -179,7 +192,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const result = target ? drop(game, draft, item, target) : null
       if (result && 'action' in result) dispatch(result.action)
       else if (result) setDraft(result.draft)
-      else if (isClickLike(delta)) setDraft(clickItem(game, draft, item))
+      // A hand card was already selected when picked up (`startDrag`). Tray and deck cards
+      // only count as clicked for a short wobble: an abandoned drag shouldn't pick them.
+      else if (item.kind !== 'hand' && isClickLike(delta)) setDraft(clickItem(game, draft, item))
     },
   }
 })

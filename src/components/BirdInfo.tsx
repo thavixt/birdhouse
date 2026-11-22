@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { BIRD_FACTS_BY_ID, wikipediaUrl } from '../bird-facts'
 import { BIRD_IMAGE_BY_ID } from '../bird-images'
+import { BIRDS_BY_ID } from '../game/birds'
 import BirdPhoto from './BirdPhoto'
 
 type Props = {
@@ -10,8 +11,8 @@ type Props = {
 }
 
 /**
- * Field-guide style card about the last bird card clicked: photo, name, scientific name, a
- * short description (`birdFacts.<id>`) and a Wikipedia link in the UI language.
+ * Field-guide style card about the last bird card clicked: photo, name, point value (the
+ * game card's badge), a short description (`birdFacts.<id>`) and a Wikipedia link in the UI language.
  * The photo fills the whole card; the text sits on a frosted panel at the bottom, with
  * clear space above it so the bird stays visible. Shown below the game log.
  */
@@ -23,7 +24,6 @@ export default function BirdInfo({ cardId, onClose }: Props) {
     <section
       aria-label={t('birdInfo.title')}
       className="relative isolate flex h-96 shrink-0 flex-col overflow-hidden rounded-xl border border-stone-200 bg-stone-200 text-sm shadow-sm"
-      title={photo ? t('card.photoCredit', { author: photo.author, license: photo.license }) : undefined}
     >
       {photo && <BirdPhoto photo={photo} />}
       <div className="flex min-h-0 flex-1 justify-end p-1.5">
@@ -39,7 +39,7 @@ export default function BirdInfo({ cardId, onClose }: Props) {
         )}
       </div>
       <div className="m-1.5 mt-0 flex h-44 shrink-0 flex-col gap-2 overflow-y-auto rounded-lg bg-white/85 p-3 backdrop-blur-sm">
-        <div>
+        <div className="flex items-start justify-between gap-2">
           <h3 className="font-bold text-emerald-900 underline hover:no-underline cursor-pointer" onClick={() => {
             if (facts) {
               window.open(wikipediaUrl(facts, i18n.language))
@@ -47,6 +47,10 @@ export default function BirdInfo({ cardId, onClose }: Props) {
           }} title={`Wikipedia: ${t(`birds.${cardId}`)}`}>
             {t(`birds.${cardId}`)}
           </h3>
+          {/* Same badge as on the game card (BirdCard). */}
+          <span className="shrink-0 rounded bg-stone-800 px-1.5 text-sm font-bold text-white" title={t('card.points')}>
+            {BIRDS_BY_ID[cardId].points}
+          </span>
           {/* <DevBirdId id={cardId} /> */}
           {/* {facts && <p className="text-xs text-stone-500 italic">{facts.scientific}</p>} */}
         </div>
