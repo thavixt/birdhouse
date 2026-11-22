@@ -192,6 +192,11 @@ branch pushes and tags; the build job keeps `dist/` as an artifact for a week.
   the icon, replace `duck.png` (square, ≥ 512px).
 - Don't add `webmanifest` to `workbox.globPatterns`: the plugin precaches the manifest
   itself, and a duplicate entry makes the whole precache fail silently.
+- **Bundle split** (`build.rolldownOptions` in `vite.config.ts`): `assets/vendor-*.js`
+  (every library) and `assets/app-*.js` (our code), so an update usually only re-downloads
+  the app file. react-joyride and its whole dependency tree (computed from node_modules
+  when the config loads) are kept out of vendor, staying in the lazy `TutorialTour` chunk.
+  Any other library that is only lazy-loaded needs the same exclusion.
 - The service worker only runs in production builds. To test installing / offline use
   `npm run build && npm run preview` (served over HTTPS via mkcert), not `npm run dev`.
 
@@ -301,6 +306,12 @@ public/
 - **Habitats (3):** `forest`, `grassland`, `wetland`, each a row of 5 slots per player.
 - **Food supply:** unlimited shared pool (v1 has no dice feeder).
 - **Card tray:** 3 face-up cards, refilled from the deck at end of each turn.
+- **Discard pile:** at the end of each round the tray's cards go to the discard pile. When a
+  card is needed and the deck is empty, the discard pile is shuffled (seeded RNG) into a new
+  deck. All deck draws go through `takeFromDeck` in `src/game/deck.ts`; the game log says
+  when the deck was reshuffled and when deck and discard pile are both empty. Bots gain food
+  instead of drawing when nothing is left to draw. (In bot simulations the deck runs out in
+  ~1 in 4 four-player games and never with 2–3 players.)
 
 ### Setup
 
@@ -609,7 +620,8 @@ Exports `reduce`, `validateAction`, and helpers that the UI and bot will reuse:
 
 **Turn flow** (after any valid action):
 
-1. Refill empty tray slots from the deck (if the deck is empty, slots stay `null`).
+1. Refill empty tray slots from the deck (reshuffling the discard pile if the deck is empty;
+   if both are empty, slots stay `null`).
 2. Decrement `turnsLeft[currentPlayer]`; append a log line.
 3. Advance `currentPlayer` to the next player (wrapping) with `turnsLeft > 0`.
 4. If every player has 0 turns left, end the round: (M4 hook: score the round goal), then

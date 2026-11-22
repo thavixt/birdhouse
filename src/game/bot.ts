@@ -1,4 +1,5 @@
 import { BIRDS_BY_ID } from './birds'
+import { drawableCount } from './deck'
 import {
   actionCount,
   allSlots,
@@ -107,7 +108,7 @@ export function chooseAction(state: GameState, playerIdx: number): GameAction {
     .sort((a, b) => birdValue(b) - birdValue(a))[0]
 
   if (lastRound && turnsLeft <= 2 && eggsNow > 0) return layEggs(player)
-  if (!target || player.hand.length <= 1) return drawCards(state, playerIdx)
+  if (!target || player.hand.length <= 1) return drawOrGainFood(state, playerIdx)
 
   const missing = missingFoods(player, target)
   if (missing.length > 0) return gainFood(player, missing)
@@ -115,7 +116,7 @@ export function chooseAction(state: GameState, playerIdx: number): GameAction {
   const minEggCost = Math.min(...target.habitats.map((h) => eggCostForSlot(player.board[h].length)))
   if (totalEggs(player) < minEggCost && eggCapacity(player) > 0) return layEggs(player)
 
-  return drawCards(state, playerIdx)
+  return drawOrGainFood(state, playerIdx)
 }
 
 function gainFood(player: Player, wanted: Food[]): GameAction {
@@ -132,6 +133,11 @@ function layEggs(player: Player): GameAction {
   return { type: 'layEggs', placements: autoEggPlacements(player, layCount(player)) }
 }
 
+/** Draws cards, or gains food when there is nothing left to draw (no wasted turn). */
+function drawOrGainFood(state: GameState, playerIdx: number): GameAction {
+  return drawCount(state, playerIdx) > 0 ? drawCards(state, playerIdx) : gainFood(state.players[playerIdx], [])
+}
+
 function drawCards(state: GameState, playerIdx: number): GameAction {
   const n = drawCount(state, playerIdx)
   const trayByValue = state.tray
@@ -142,7 +148,7 @@ function drawCards(state: GameState, playerIdx: number): GameAction {
     if (picks.length >= n) break
     if (t.value >= 4) picks.push({ from: 'tray', index: t.index })
   }
-  let deckLeft = state.deck.length
+  let deckLeft = drawableCount(state)
   while (picks.length < n && deckLeft > 0) {
     picks.push({ from: 'deck' })
     deckLeft--

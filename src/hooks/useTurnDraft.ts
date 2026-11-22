@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { describeDraft, IDLE, type Draft } from './draft'
-import { gameLog } from './game/logger'
-import type { GameState } from './game/types'
+import { type Draft, IDLE, describeDraft } from '../draft';
+import { gameLog } from '../game/logger';
+import type { GameState } from '../game/types';
 
 /**
  * The human's in-progress turn choices. The draft is stamped with the log length, so it

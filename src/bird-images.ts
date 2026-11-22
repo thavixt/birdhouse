@@ -207,10 +207,10 @@ export const BIRD_IMAGES = [
   },
   {
     id: 'great-blue-heron',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/f/f1/GreatBlueHeronInARiver.jpg',
-    author: 'DallasPenner',
+    url: 'https://en.wikipedia.org/wiki/File:Blue_Heron,_Lake_Sammamish_State_Park.jpg',
+    author: 'Anya Adora',
     license: 'CC BY-SA 4.0',
-    source: 'https://commons.wikimedia.org/wiki/File:GreatBlueHeronInARiver.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Blue_Heron,_Lake_Sammamish_State_Park.jpg',
     className: 'object-[50%_30%]',
   },
   {

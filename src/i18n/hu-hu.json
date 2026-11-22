@@ -165,7 +165,9 @@
     "deck": "Pakli: {{count}}",
     "picked": "+{{count}} kiválasztva",
     "hint": "— húzd a lapokat a kezedbe, hogy felhúzd őket",
-    "deckCard": "Pakli"
+    "deckCard": "Pakli",
+    "discard_one": "+{{count}} a dobópakliban",
+    "discard_other": "+{{count}} a dobópakliban"
   },
   "panel": {
     "botThinkingTitle": "{{name}} gondolkodik…",
@@ -216,7 +218,10 @@
     "roundEnd": "{{round}}. kör vége. Cél: „{{goal}}”: {{awards}}.",
     "roundEndNoPoints": "{{round}}. kör vége. Cél: „{{goal}}”: senki sem kapott pontot.",
     "gameOver": "Vége a játéknak!",
-    "roundBegins": "Kezdődik a {{round}}. kör."
+    "roundBegins": "Kezdődik a {{round}}. kör.",
+    "deckReshuffled_one": "Elfogyott a pakli: a dobópakli {{count}} kártyáját megkeverve új pakli lett.",
+    "deckReshuffled_other": "Elfogyott a pakli: a dobópakli {{count}} kártyáját megkeverve új pakli lett.",
+    "deckEmpty": "Elfogyott a pakli, és a dobópakli is üres: egyelőre nincs több húzható kártya."
   },
   "error": {
     "gameOver": "A játék véget ért.",
@@ -299,8 +304,8 @@
       "title": "Felcsapott kártyák és pakli",
       "copies": "A pakliban minden madárból két példány van, a játék elején megkeverve.",
       "refill": "Minden lépés végén a felcsapott kártyák üres helyei feltöltődnek a pakli tetejéről.",
-      "newRound": "Minden új kör elején a felcsapott kártyák kikerülnek a játékból, és három új kártya kerül a helyükre.",
-      "empty": "Ha a pakli elfogy, a felcsapott kártyák már nem pótlódnak. Ha kevesebb kártya maradt, mint amennyit húznál, a maradékot kapod meg."
+      "newRound": "Minden új kör elején a felcsapott kártyák a dobópakliba kerülnek, és három új kártya kerül a helyükre.",
+      "empty": "Ha a pakli elfogy, a dobópaklit megkeverve új paklit kapsz. A felcsapott kártyák csak akkor nem pótlódnak, ha mindkettő üres; ha kevesebb kártya maradt, mint amennyit húznál, a maradékot kapod meg."
     },
     "rounds": {
       "title": "Körök és célok",

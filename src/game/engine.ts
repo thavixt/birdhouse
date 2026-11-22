@@ -1,4 +1,5 @@
 import { BIRDS_BY_ID } from './birds'
+import { discardCards, drawableCount, takeFromDeck } from './deck'
 import { roundGoalAwards } from './goals'
 import { describeMessage, gameLog, logOnce } from './logger'
 import { activateHabitat } from './powers'
@@ -115,7 +116,8 @@ export function trayCount(state: GameState): number {
 
 /** Number of cards the current player must take with the draw action. */
 export function drawCount(state: GameState, playerIdx: number): number {
-  return Math.min(actionCount(state.players[playerIdx].board, 'wetland'), trayCount(state) + state.deck.length)
+  // Deck picks can also come from the discard pile, which is reshuffled when the deck runs out.
+  return Math.min(actionCount(state.players[playerIdx].board, 'wetland'), trayCount(state) + drawableCount(state))
 }
 
 /** Number of eggs the player must lay with the lay-eggs action. */
@@ -209,7 +211,7 @@ export function validateAction(state: GameState, action: GameAction): GameMessag
       const trayIdx = action.picks.flatMap((p) => (p.from === 'tray' ? [p.index] : []))
       if (new Set(trayIdx).size !== trayIdx.length) return err('trayTwice')
       if (trayIdx.some((i) => state.tray[i] == null)) return err('trayEmpty')
-      if (action.picks.length - trayIdx.length > state.deck.length) return err('deckShort')
+      if (action.picks.length - trayIdx.length > drawableCount(state)) return err('deckShort')
       return null
     }
   }
@@ -319,14 +321,14 @@ function drawCards(draft: GameState, player: Player, picks: readonly CardPick[])
       player.hand.push(draft.tray[pick.index]!)
       draft.tray[pick.index] = null
     } else {
-      player.hand.push(draft.deck.shift()!)
+      player.hand.push(takeFromDeck(draft)!) // validated: enough cards in deck + discard
     }
   }
 }
 
 function refillTray(draft: GameState): void {
   for (let i = 0; i < TRAY_SIZE; i++) {
-    if (draft.tray[i] == null) draft.tray[i] = draft.deck.shift() ?? null
+    if (draft.tray[i] == null) draft.tray[i] = takeFromDeck(draft)
   }
 }
 
@@ -361,6 +363,7 @@ function endRound(draft: GameState): void {
     return
   }
   draft.round = (draft.round + 1) as Round
+  discardCards(draft, draft.tray) // leftover tray cards go to the discard pile
   draft.tray = draft.tray.map(() => null)
   refillTray(draft)
   draft.turnsLeft = draft.players.map(() => turnsPerRound(draft.round))

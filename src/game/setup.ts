@@ -35,6 +35,7 @@ export function createGame(seed: number, configs: PlayerConfig[]): GameState {
     round: 1,
     turnsLeft: players.map(() => 8),
     deck: deck.slice(dealt + TRAY_SIZE),
+    discard: [],
     tray: deck.slice(dealt, dealt + TRAY_SIZE),
     goals: goalOrder.slice(0, 4),
     rngState: s2,

@@ -165,7 +165,9 @@
     "deck": "Deck: {{count}}",
     "picked": "+{{count}} picked",
     "hint": "— drag cards into your hand to draw them",
-    "deckCard": "Deck"
+    "deckCard": "Deck",
+    "discard_one": "+{{count}} in discard pile",
+    "discard_other": "+{{count}} in discard pile"
   },
   "panel": {
     "botThinkingTitle": "{{name}} is thinking…",
@@ -216,7 +218,10 @@
     "roundEnd": "End of round {{round}}. Goal \"{{goal}}\": {{awards}}.",
     "roundEndNoPoints": "End of round {{round}}. Goal \"{{goal}}\": no points.",
     "gameOver": "Game over!",
-    "roundBegins": "Round {{round}} begins."
+    "roundBegins": "Round {{round}} begins.",
+    "deckReshuffled_one": "The deck ran out: {{count}} discarded card was shuffled into a new deck.",
+    "deckReshuffled_other": "The deck ran out: {{count}} discarded cards were shuffled into a new deck.",
+    "deckEmpty": "The deck ran out and the discard pile is empty: no cards left to draw for now."
   },
   "error": {
     "gameOver": "The game is over.",
@@ -299,8 +304,8 @@
       "title": "Bird tray and deck",
       "copies": "The deck has two copies of every bird, shuffled at the start of the game.",
       "refill": "At the end of every turn, empty spaces in the tray are refilled from the top of the deck.",
-      "newRound": "At the start of each new round, the cards in the tray are removed from the game and three new cards are laid out.",
-      "empty": "When the deck runs out, the tray isn't refilled any more. If fewer cards are left than you would draw, you take the rest."
+      "newRound": "At the start of each new round, the cards in the tray go to the discard pile and three new cards are laid out.",
+      "empty": "When the deck runs out, the discard pile is shuffled to form a new deck. Only when both are empty does the tray stay unfilled; if fewer cards are left than you would draw, you take the rest."
     },
     "rounds": {
       "title": "Rounds and goals",

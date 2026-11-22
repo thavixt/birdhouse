@@ -23,7 +23,7 @@ import {
 import { drawCount } from '../game/engine'
 import { gameLog } from '../game/logger'
 import type { GameAction, GameState } from '../game/types'
-import { useTurnDraft } from '../useTurnDraft'
+import { useTurnDraft } from '../hooks/useTurnDraft'
 import ActionPanel from './ActionPanel'
 import BirdInfo from './BirdInfo'
 import Board from './Board'
@@ -159,6 +159,7 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
               <CardTray
                 tray={state.tray}
                 deckCount={state.deck.length}
+                discardCount={state.discard.length}
                 pickedTray={pickedTray(draft)}
                 pickedDeck={pickedDeck(draft)}
                 onPickTray={canPickCards ? onPickTray : undefined}
@@ -197,8 +198,8 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
               <div data-tour="panel" className="hidden lg:block">
                 <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} />
               </div>
-              <GameLog log={state.log} />
               {inspected && <BirdInfo cardId={inspected} onClose={() => setInspected(null)} />}
+              <GameLog log={state.log} />
             </aside>
             {state.players.map((p, i) =>
               i === viewIdx ? null : (

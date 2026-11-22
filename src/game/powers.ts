@@ -1,4 +1,5 @@
 import { BIRDS_BY_ID } from './birds'
+import { takeFromDeck } from './deck'
 import { HABITATS, type GameState, type Habitat, type PlacedBird } from './types'
 
 /**
@@ -38,7 +39,7 @@ export function activateHabitat(draft: GameState, playerIdx: number, habitat: Ha
         break
       }
       case 'drawCard': {
-        const drawn = draft.deck.shift()
+        const drawn = takeFromDeck(draft)
         if (drawn) {
           player.hand.push(drawn)
           draft.log.push({ key: 'log.power.drawCard', params })

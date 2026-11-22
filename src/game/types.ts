@@ -60,6 +60,7 @@ export type GameState = {
   round: Round
   turnsLeft: number[] // per player, this round
   deck: string[]
+  discard: string[] // removed tray cards; shuffled into a new deck when the deck runs out
   tray: (string | null)[] // always length 3
   goals: string[] // one goal id per round
   rngState: number

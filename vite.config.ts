@@ -4,6 +4,36 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import mkcert from 'vite-plugin-mkcert'
 import { VitePWA } from 'vite-plugin-pwa'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
+const NODE_MODULES = fileURLToPath(new URL('./node_modules/', import.meta.url))
+
+/** `name` and every package it depends on (read from node_modules' package.json files). */
+function dependencyTree(name: string, found = new Set<string>()): Set<string> {
+  if (found.has(name)) return found
+  found.add(name)
+  try {
+    const pkg = JSON.parse(readFileSync(`${NODE_MODULES}${name}/package.json`, 'utf8'))
+    for (const dep of Object.keys(pkg.dependencies ?? {})) dependencyTree(dep, found)
+  } catch {
+    // not installed at the top level: nothing more to follow
+  }
+  return found
+}
+
+/** The package a module id belongs to, e.g. "react-dom" or "@floating-ui/dom". */
+function packageOf(id: string): string | null {
+  // `[\\/]`: module ids may use either path separator (Windows).
+  const parts = id.split(/[\\/]node_modules[\\/]/)
+  if (parts.length < 2) return null
+  const [first, second] = parts[parts.length - 1].split(/[\\/]/)
+  return first.startsWith('@') ? `${first}/${second}` : first
+}
+
+// The tutorial (react-joyride) is lazy-loaded; keep it and its dependencies out of the
+// vendor file so players who never turn the tutorial on don't download them.
+const LAZY_ONLY = dependencyTree('react-joyride')
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -55,6 +85,27 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        // Two files for the app itself: "vendor" (libraries: React, i18next, dnd-kit, …) and
+        // "app" (our code). Libraries change rarely, so after an update browsers and the
+        // service worker usually only fetch the smaller app file again.
+        entryFileNames: 'assets/app-[hash].js',
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor',
+              test: (id) => {
+                const pkg = packageOf(id)
+                return pkg !== null && !LAZY_ONLY.has(pkg)
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 8546,
     host: true,

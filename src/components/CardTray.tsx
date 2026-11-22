@@ -7,6 +7,8 @@ import DragSource from './DragSource'
 type Props = {
   tray: (string | null)[]
   deckCount: number
+  /** Cards waiting to be shuffled into a new deck when the deck runs out. */
+  discardCount: number
   pickedTray: number[]
   pickedDeck: number
   onPickTray?: (index: number) => void
@@ -18,7 +20,7 @@ type Props = {
 }
 
 /** The face-up cards and the deck. */
-export default function CardTray({ tray, deckCount, pickedTray, pickedDeck, onPickTray, onPickDeck, canDrag, onInspect }: Props) {
+export default function CardTray({ tray, deckCount, discardCount, pickedTray, pickedDeck, onPickTray, onPickDeck, canDrag, onInspect }: Props) {
   const { t } = useTranslation()
   // The mouse wheel scrolls through the tray sideways.
   const wheelScroll = useHorizontalWheel<HTMLDivElement>()
@@ -32,6 +34,7 @@ export default function CardTray({ tray, deckCount, pickedTray, pickedDeck, onPi
     >
       <span className="text-2xl">🂠</span>
       <span className="text-xs">{t('tray.deck', { count: deckCount })}</span>
+      {discardCount > 0 && <span className="text-[10px] text-stone-300">{t('tray.discard', { count: discardCount })}</span>}
       {pickedDeck > 0 && <span className="text-xs font-bold">{t('tray.picked', { count: pickedDeck })}</span>}
     </button>
   )

@@ -4,7 +4,7 @@ import { GOALS_BY_ID } from './goals'
 import { FOODS, HABITATS, type GameState } from './types'
 
 /** Bump when GameState's shape changes; older saves are then ignored. */
-export const SAVE_VERSION = 1
+export const SAVE_VERSION = 2 // 2: GameState.discard
 
 export function serializeGame(state: GameState): string {
   return JSON.stringify({ version: SAVE_VERSION, state })
@@ -62,6 +62,7 @@ function isGameState(s: unknown): s is GameState {
     isArrayOf(s.turnsLeft, isCount) &&
     (s.turnsLeft as unknown[]).length === n &&
     isArrayOf(s.deck, isCardId) &&
+    isArrayOf(s.discard, isCardId) &&
     isArrayOf(s.tray, (c) => c === null || isCardId(c)) &&
     (s.tray as unknown[]).length === 3 &&
     isArrayOf(s.goals, (g) => typeof g === 'string' && g in GOALS_BY_ID) &&

@@ -1,5 +1,6 @@
 // The choices a human is collecting before dispatching one complete GameAction.
 import { BIRDS_BY_ID } from './game/birds'
+import { drawableCount } from './game/deck'
 import { autoEggPayment, autoEggPlacements, autoPlayBird } from './game/bot'
 import {
   canPayCost,
@@ -172,7 +173,7 @@ export function pickTray(state: GameState, draft: Draft, index: number): Draft {
 
 /** Adds one blind draw from the deck while picks remain and the deck has cards. */
 export function pickDeck(state: GameState, draft: Draft): Draft {
-  if (draft.kind !== 'drawCards' || drawsLeft(state, draft) <= 0 || pickedDeck(draft) >= state.deck.length) return draft
+  if (draft.kind !== 'drawCards' || drawsLeft(state, draft) <= 0 || pickedDeck(draft) >= drawableCount(state)) return draft
   return { ...draft, picks: [...draft.picks, { from: 'deck' }] }
 }
 
@@ -240,7 +241,7 @@ export function canDrag(state: GameState, draft: Draft, item: DragItem): boolean
   const base: Draft = draft.kind === 'drawCards' ? draft : { kind: 'drawCards', picks: [] }
   if (drawsLeft(state, base) <= 0) return false
   if (item.kind === 'tray') return state.tray[item.index] != null && !pickedTray(base).includes(item.index)
-  return pickedDeck(base) < state.deck.length
+  return pickedDeck(base) < drawableCount(state)
 }
 
 /** True if `item` may be dropped on `target` (used to highlight valid targets). */
