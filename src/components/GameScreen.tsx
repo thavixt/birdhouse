@@ -34,6 +34,7 @@ import DropZone from './DropZone'
 import GameLog from './GameLog'
 import HandoffOverlay from './HandoffOverlay'
 import Hand from './Hand'
+import PlayerList from './PlayerList'
 import RoundTracker from './RoundTracker'
 
 // Loaded only when a tour runs (the tutorial is off by default), keeping react-joyride out of the main bundle.
@@ -132,7 +133,7 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
       {handoff && <HandoffOverlay name={viewed.name} onQuit={onQuit} onReady={revealHand} />}
       <main inert={handoff} className="min-h-screen bg-linear-to-b from-emerald-50 to-stone-100 p-2 text-stone-900 sm:p-3 md:p-4">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:gap-3 relative">
-          <RoundTracker className="lg:sticky z-100 top-0" state={state} onQuit={onQuit} />
+          <RoundTracker className="lg:sticky z-10 top-0" state={state} onQuit={onQuit} />
           {/*
             lg+: sidebar (action panel + log) on the left, boards on the right. Items are placed
             explicitly so the DOM order, and with it the phone layout, stays boards-first.
@@ -195,10 +196,11 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
               taller than the window.
             */}
             <aside className={`flex flex-col gap-3 lg:col-start-1 lg:row-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-24 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}>
+              <PlayerList state={state} />
+              {inspected && <BirdInfo cardId={inspected} onClose={() => setInspected(null)} />}
               <div data-tour="panel" className="hidden lg:block">
                 <ActionPanel state={state} draft={draft} setDraft={setDraft} onConfirm={dispatch} />
               </div>
-              {inspected && <BirdInfo cardId={inspected} onClose={() => setInspected(null)} />}
               <GameLog log={state.log} />
             </aside>
             {state.players.map((p, i) =>

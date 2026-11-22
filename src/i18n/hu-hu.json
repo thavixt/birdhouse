@@ -122,6 +122,10 @@
     "goalTitle": "1. hely: {{first}} pont, 2. hely: {{second}} pont",
     "quit": "Kilépés"
   },
+  "players": {
+    "title": "Játékosok",
+    "scoreTitle": "Madarak {{birds}} · Tojások {{eggs}} · Élelem {{food}} · Célok {{goals}}"
+  },
   "board": {
     "human": "🧑 ember",
     "bot": "🤖 gép",
@@ -158,6 +162,12 @@
     "title": "{{name}} következik",
     "body": "Add át az eszközt a következő játékosnak ({{name}}). A többiek ne lessenek a lapjaira!",
     "ready": "Én vagyok {{name}} – mutasd a lapjaimat"
+  },
+  "welcome": {
+    "title": "Üdv a Madárházban!",
+    "intro": "A Madárház egy madaras, motorépítő kártyajáték. Csalogass madarakat az erdődbe, a meződre és a vízpartodra: minden letett madár erősebbé teszi az adott élőhely akcióját, így a táblád négy forduló alatt jól működő gépezetté fejlődik.",
+    "goal": "Szerezz élelmet, rakj tojásokat és húzz kártyákat, hogy egyre értékesebb madarakat tehess le. Pontot érnek a madaraid, a tojásaik és a fordulócélok – a játék végén a legtöbb pontot gyűjtő játékos nyer.",
+    "start": "Kezdjük!"
   },
   "tray": {
     "title": "Felcsapott madarak",

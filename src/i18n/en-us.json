@@ -122,6 +122,10 @@
     "goalTitle": "1st place: {{first}} pts, 2nd place: {{second}} pts",
     "quit": "Quit"
   },
+  "players": {
+    "title": "Players",
+    "scoreTitle": "Birds {{birds}} · Eggs {{eggs}} · Food {{food}} · Goals {{goals}}"
+  },
   "board": {
     "human": "🧑 human",
     "bot": "🤖 bot",
@@ -158,6 +162,12 @@
     "title": "{{name}}'s turn",
     "body": "Pass the device to {{name}}. Everyone else: no peeking at their hand!",
     "ready": "I'm {{name}} – show my hand"
+  },
+  "welcome": {
+    "title": "Welcome to Birdhouse",
+    "intro": "Birdhouse is a bird-themed engine-building card game. Attract birds to your forest, grassland and wetland: every bird you place makes that habitat's action stronger, so your board grows into an engine over four rounds.",
+    "goal": "Gather food, lay eggs and draw cards to play ever better birds. Score points from your birds, their eggs and the round goals – the player with the most points at the end wins.",
+    "start": "Let's play"
   },
   "tray": {
     "title": "Bird tray",

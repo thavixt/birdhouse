@@ -1,13 +1,22 @@
-import { useEffect, useReducer, useRef } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import GameScreen from './components/GameScreen'
 import ScoreScreen from './components/ScoreScreen'
 import StartScreen from './components/StartScreen'
+import WelcomeOverlay from './components/WelcomeOverlay'
 import { chooseAction } from './game/bot'
 import { reduce } from './game/engine'
 import { gameLog, logOnce } from './game/logger'
 import { createGame } from './game/setup'
 import type { GameAction, GameState, PlayerConfig } from './game/types'
-import { clearSavedGame, loadSavedGame, recordWinners, saveGame, saveWhenLeaving } from './persistence'
+import {
+  clearSavedGame,
+  hasSeenWelcome,
+  loadSavedGame,
+  markWelcomeSeen,
+  recordWinners,
+  saveGame,
+  saveWhenLeaving,
+} from './persistence'
 
 /** A bot takes 1–3 s per turn (random), so its moves are easy to follow and never flash past. */
 const BOT_DELAY_MS = { min: 1000, max: 3000 }
@@ -67,6 +76,12 @@ function newSeed(): number {
 
 function App() {
   const [{ game, resumable, tutorial }, dispatch] = useReducer(appReduce, undefined, init)
+  // First visit only: a welcome overlay, remembered in localStorage once dismissed.
+  const [showWelcome, setShowWelcome] = useState(() => !hasSeenWelcome())
+  const closeWelcome = () => {
+    markWelcomeSeen()
+    setShowWelcome(false)
+  }
 
   // Keep the saved game in sync: save after every action, forget it once finished.
   // A finished game's winners go on the leaderboard, exactly once per game.
@@ -100,26 +115,33 @@ function App() {
     return () => clearTimeout(timer)
   }, [game])
 
+  let screen
   if (!game) {
-    return (
+    screen = (
       <StartScreen
         resumable={resumable}
         onResume={() => dispatch({ type: 'resume' })}
         onStart={(players, withTutorial) => dispatch({ type: 'newGame', players, seed: newSeed(), tutorial: withTutorial })}
       />
     )
-  }
-  if (game.phase === 'gameOver') {
+  } else if (game.phase === 'gameOver') {
     const configs = game.players.map(({ name, kind }) => ({ name, kind }))
-    return (
+    screen = (
       <ScoreScreen
         state={game}
         onRematch={() => dispatch({ type: 'newGame', players: configs, seed: newSeed() })}
         onMenu={() => dispatch({ type: 'quit' })}
       />
     )
+  } else {
+    screen = <GameScreen state={game} dispatch={dispatch} onQuit={() => dispatch({ type: 'quit' })} tutorial={tutorial} />
   }
-  return <GameScreen state={game} dispatch={dispatch} onQuit={() => dispatch({ type: 'quit' })} tutorial={tutorial} />
+  return (
+    <>
+      {screen}
+      {showWelcome && <WelcomeOverlay onClose={closeWelcome} />}
+    </>
+  )
 }
 
 export default App

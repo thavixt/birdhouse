@@ -1,6 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { newGame } from '../game/__tests__/helpers'
-import { clearSavedGame, loadLeaderboard, loadSavedGame, recordWinners, saveGame, saveWhenLeaving } from '../persistence'
+import {
+  clearSavedGame,
+  hasSeenWelcome,
+  loadLeaderboard,
+  loadSavedGame,
+  loadTutorialEnabled,
+  markWelcomeSeen,
+  recordWinners,
+  saveGame,
+  saveTutorialEnabled,
+  saveWhenLeaving,
+} from '../persistence'
 
 /** A minimal in-memory Storage. */
 function memoryStorage() {
@@ -85,6 +96,28 @@ describe('persistence', () => {
     expect(() => clearSavedGame()).not.toThrow()
     expect(loadLeaderboard()).toEqual([])
     expect(() => recordWinners({ ...newGame(4, 1), phase: 'gameOver' })).not.toThrow()
+    expect(hasSeenWelcome()).toBe(false)
+    expect(() => markWelcomeSeen()).not.toThrow()
+    expect(loadTutorialEnabled()).toBe(true)
+    expect(() => saveTutorialEnabled(false)).not.toThrow()
+  })
+
+  it('remembers the tutorial switch (on by default)', () => {
+    vi.stubGlobal('localStorage', memoryStorage())
+    expect(loadTutorialEnabled()).toBe(true)
+    saveTutorialEnabled(false)
+    expect(loadTutorialEnabled()).toBe(false)
+    saveTutorialEnabled(true)
+    expect(loadTutorialEnabled()).toBe(true)
+  })
+
+  it('remembers that the welcome overlay was seen', () => {
+    const storage = memoryStorage()
+    vi.stubGlobal('localStorage', storage)
+    expect(hasSeenWelcome()).toBe(false)
+    markWelcomeSeen()
+    expect(hasSeenWelcome()).toBe(true)
+    expect(storage.data.get('birdhouse.welcomeSeen')).toBe('1')
   })
 
   it('records winners of finished games on the leaderboard', () => {

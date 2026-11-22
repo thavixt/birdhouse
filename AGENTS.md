@@ -122,7 +122,8 @@ Results are under the repository's **Actions** tab.
 
 ### Tutorial
 
-- A switch on the start screen (**off** by default, not remembered) turns on a guided
+- A switch on the start screen (**on** by default; its last setting is remembered in
+  `localStorage` as `birdhouse.tutorial`, via `loadTutorialEnabled` / `saveTutorialEnabled`) turns on a guided
   tour (`TutorialTour.tsx`, react-joyride) shown on **each human's first turn** of a new
   game (`isFirstTurn` in `draft.ts`). Finishing or skipping it marks that player done;
   taking an action also ends it. Continued games and rematches start without it.
@@ -179,6 +180,9 @@ Results are under the repository's **Actions** tab.
   play mode and date. `src/game/leaderboard.ts` (pure, tested) owns the rules and the
   format, a JSON array of `{ name, score, players, bots, date }`; malformed entries are
   dropped on load.
+- **Welcome overlay** (`birdhouse.welcomeSeen`): on the very first visit App shows
+  `WelcomeOverlay` (what the game is and how to win, `welcome.*` keys) over the start screen.
+  Dismissing it stores `'1'`, so it never shows again (`hasSeenWelcome` / `markWelcomeSeen`).
 - `src/persistence.ts` is the only code touching storage; every call is wrapped in
   try/catch so the game still works when storage is unavailable.
 
@@ -261,6 +265,7 @@ src/
     action-panel/          // one panel per action (PlayBird, GainFood, LayEggs, DrawCards)
                            // + PanelFrame, PanelStep, PanelFooter, FoodPicker, SecondaryButton
     RoundTracker.tsx       // round, turns left, goals
+    PlayerList.tsx         // players + current scores below the action panel; active player highlighted
     ScoreScreen.tsx        // final scores breakdown
     StartScreen.tsx        // new game: solo / vs computer / with friends, continue saved game
     Leaderboard.tsx        // top scores on the start screen
@@ -269,6 +274,7 @@ src/
     PowerText.tsx          // translated "When activated: …" power text
     RulesButton.tsx        // self-contained "Rules" button + dialog (start screen, game header)
     HandoffOverlay.tsx     // hot-seat "pass the device" cover between different humans
+    WelcomeOverlay.tsx     // one-time welcome on the first visit (see "Persistence")
     BotTurnOverlay.tsx     // see-through "bot is thinking" cover with a spinner
     DragSource.tsx, DropZone.tsx, DragPreview.tsx  // drag and drop (see "Drag and drop")
     TutorialTour.tsx       // optional guided tour on first turns (see "Tutorial")

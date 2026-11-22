@@ -98,3 +98,45 @@ export function recordWinners(state: GameState, date = new Date().toISOString())
     gameLog('warn', 'Could not save the leaderboard (storage unavailable or full)', e)
   }
 }
+
+// ------------------------------------------------------------------ welcome
+
+const WELCOME_KEY = 'birdhouse.welcomeSeen'
+
+/** Whether the first-visit welcome overlay was already dismissed. False if storage is unavailable. */
+export function hasSeenWelcome(): boolean {
+  try {
+    return localStorage.getItem(WELCOME_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function markWelcomeSeen(): void {
+  try {
+    localStorage.setItem(WELCOME_KEY, '1')
+  } catch {
+    // shown again next time; harmless
+  }
+}
+
+// ------------------------------------------------------------------ tutorial switch
+
+const TUTORIAL_KEY = 'birdhouse.tutorial'
+
+/** The start screen's tutorial switch as last set; on when never set or storage is unavailable. */
+export function loadTutorialEnabled(): boolean {
+  try {
+    return localStorage.getItem(TUTORIAL_KEY) !== '0'
+  } catch {
+    return true
+  }
+}
+
+export function saveTutorialEnabled(on: boolean): void {
+  try {
+    localStorage.setItem(TUTORIAL_KEY, on ? '1' : '0')
+  } catch {
+    // not remembered; harmless
+  }
+}

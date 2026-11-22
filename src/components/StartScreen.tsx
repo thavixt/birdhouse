@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { GameState, PlayerConfig } from '../game/types'
-import { loadLeaderboard } from '../persistence'
+import { loadLeaderboard, loadTutorialEnabled, saveTutorialEnabled } from '../persistence'
 import LanguageSwitch from './LanguageSwitch'
 import Leaderboard from './Leaderboard'
 import RulesButton from './RulesButton'
@@ -69,7 +69,11 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
   const [players, setPlayers] = useState<PlayerConfig[]>(() => alone(t))
   // Read once per visit to the start screen (it remounts after every game).
   const [leaderboard] = useState(loadLeaderboard)
-  const [tutorial, setTutorial] = useState(true)
+  const [tutorial, setTutorialState] = useState(loadTutorialEnabled)
+  const setTutorial = (on: boolean) => {
+    setTutorialState(on)
+    saveTutorialEnabled(on)
+  }
   const update = (i: number, patch: Partial<PlayerConfig>) => setPlayers(players.map((p, j) => (j === i ? { ...p, ...patch } : p)))
   // Switching human/bot also swaps a preset name for one that fits; a typed name is kept.
   const toggleKind = (i: number) => {
