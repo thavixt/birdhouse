@@ -21,7 +21,7 @@ const enKeys = new Set(flatten(enUS))
 const hasKey = (key: string) => enKeys.has(key) || enKeys.has(`${key}_one`)
 
 const SOURCES = {
-  components: import.meta.glob<string>('../../components/*.tsx', { query: '?raw', import: 'default', eager: true }),
+  components: import.meta.glob<string>('../../components/**/*.tsx', { query: '?raw', import: 'default', eager: true }),
   game: import.meta.glob<string>('../../game/*.ts', { query: '?raw', import: 'default', eager: true }),
 }
 const sources = (dir: keyof typeof SOURCES) => Object.values(SOURCES[dir])

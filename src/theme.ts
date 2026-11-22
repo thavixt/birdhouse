@@ -37,3 +37,7 @@ export const HABITAT_STYLE: Record<Habitat, { row: string; button: string; strip
     chip: 'bg-sky-100 text-sky-900',
   },
 }
+
+/** Small action-panel buttons. */
+export const BUTTON = 'rounded-md px-3 py-1.5 text-sm font-semibold cursor-pointer disabled:cursor-not-allowed disabled:opacity-40'
+export const SECONDARY_BUTTON = `${BUTTON} bg-stone-200 hover:bg-stone-300`

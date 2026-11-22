@@ -26,15 +26,18 @@ Real bird species names are fine; their stats and powers must be our own.
 
 ### Commands
 
-| Command           | Purpose                                              |
-| ----------------- | ---------------------------------------------------- |
-| `npm run dev`     | Dev server (HTTPS, `https://localhost:8236`)         |
-| `npm run build`   | Type-check (`tsc -b`) + build                        |
-| `npm run lint`    | oxlint                                               |
-| `npm run preview` | Serve the production build (HTTPS)                   |
-| `npm run test`    | vitest: `src/game/**` and `src/i18n/**` tests        |
+| Command           | Purpose                                          |
+| ----------------- | ------------------------------------------------ |
+| `npm run dev`     | Dev server (HTTPS, `https://localhost:8546`)     |
+| `npm run build`   | Type-check (`tsc -b`) + build                    |
+| `npm run lint`    | oxlint                                           |
+| `npm run preview` | Serve the production build (HTTPS)               |
+| `npm run test`    | vitest: every `__tests__/*.test.ts` under `src/` |
 
 Requires Node.js 22.12+ (vitest's minimum).
+
+**CI:** `.gitlab-ci.yml` runs `lint` → `test` → `build` (on `node:22`) for merge requests,
+branch pushes and tags; the build job keeps `dist/` as an artifact for a week.
 
 ## Conventions
 
@@ -138,7 +141,7 @@ src/
   App.tsx                  // useReducer over the engine; screens, bot turns, saving
   game/                    // PURE LOGIC — no React
     types.ts               // Food, Habitat, BirdCard, SlotRef, Player, GameState, GameAction, GameMessage
-    birds.ts               // ~30 original bird card definitions (data only)
+    birds.ts               // 32 original bird card definitions (data only)
     goals.ts               // end-of-round goal definitions
     rng.ts                 // seeded PRNG (mulberry32) + shuffle
     setup.ts               // createGame(seed, playerConfigs) => GameState
@@ -156,19 +159,24 @@ src/
     Hand.tsx               // current player's cards
     FoodSupply.tsx         // shared food supply / player's food tokens
     CardTray.tsx           // 3 face-up cards + deck
-    ActionPanel.tsx        // contextual prompts (choose food, place eggs, pick card)
+    ActionPanel.tsx        // contextual prompts: picks the panel for the current draft
+    action-panel/          // one panel per action (PlayBird, GainFood, LayEggs, DrawCards)
+                           // + PanelFrame, PanelStep, PanelFooter, FoodPicker, SecondaryButton
     RoundTracker.tsx       // round, turns left, goals
     ScoreScreen.tsx        // final scores breakdown
     StartScreen.tsx        // new game: solo / vs computer / with friends, continue saved game
-    GameScreen.tsx         // in-game layout; owns the in-progress turn draft
+    GameScreen.tsx         // in-game layout; wires board/tray/hand clicks to `draft.ts`
     LanguageSwitch.tsx     // English | Magyar toggle
     PowerText.tsx          // translated "When activated: …" power text
     RulesButton.tsx        // self-contained "Rules" button + dialog (start screen, game header)
     FoodToken.tsx, GameLog.tsx, RulesModal.tsx
-  draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction
+  draft.ts                 // UI-side "draft" of a turn's choices -> one GameAction, and what
+                           // each click does to it (pure; tested in `src/__tests__/`)
+  useTurnDraft.ts          // the draft as React state; resets after every action
   theme.ts                 // food/habitat icons and static Tailwind class maps
   persistence.ts           // localStorage load/save/clear of the game in progress
   debug.ts                 // connects the game logger to the browser console
+  __tests__/               // draft + persistence tests
   i18n/
     index.ts               // i18next init, LANGUAGES, language persistence
     message.ts             // formatMessage(t, GameMessage) for engine log/errors
@@ -256,13 +264,14 @@ see "Persistence" under Conventions.)
 - Engine supports **N players (1–4)**, each `kind: 'human' | 'bot'`, in any mix.
 - **Start screen** (`StartScreen.tsx`) offers three modes; **Solo** (1 human) is the default:
 
-  | Mode                   | Preset line-up       | Highlighted when the line-up has… |
-  | ---------------------- | -------------------- | --------------------------------- |
-  | Solo                   | 1 human              | 1 human, no bots                  |
-  | Against the computer   | 1 human + 1 bot      | 1 human + any bots                |
-  | In person with friends | 2 humans (hot-seat)  | 2+ humans, with or without bots   |
+  | Mode                   | Preset line-up      | Highlighted when the line-up has… |
+  | ---------------------- | ------------------- | --------------------------------- |
+  | Solo                   | 1 human             | 1 human, no bots                  |
+  | Against the computer   | 1 human + 1 bot     | 1 human + any bots                |
+  | In person with friends | 2 humans (hot-seat) | 2+ humans, with or without bots   |
 
   The highlight is derived from the current line-up, so it follows manual edits too.
+
 - **The first player is always human** (the person at the device): no human/bot toggle
   and no remove button on that row. So the UI never starts an all-bot game, even though
   the engine would allow one.
@@ -309,17 +318,17 @@ are done.
 
 ### Ideas
 
-| Feature                                | Effort       | Notes                                                                                                                                                                   |
-| -------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Persistence** (resume a game) ✅     | Small        | Done — see "Persistence" under Conventions.                                                                                                                             |
-| **Animations**                         | Small–medium | Card moves, eggs appearing, round-end banner. UI-only.                                                                                                                  |
-| **"When played" powers**               | Medium       | Fire once when the bird is placed. Fits the engine's action model; needs new `Power` kinds, cards, translations and tests.                                               |
-| **Bonus cards**                        | Medium       | Secret per-player end-game scoring conditions (e.g. "birds that eat fish"). New card type, scoring and UI.                                                              |
-| **Tucking cards / caching food**       | Medium       | Score-only piles under birds, plus powers that use them.                                                                                                                |
-| **Dice feeder**                        | Medium–large | Replaces the unlimited food supply with a shared, rerollable pool. Changes `gainFood`, its validation and the bot's food choice.                                         |
-| **Nest types, bird size**              | Medium       | Card attributes; only matter once goals or bonus cards use them.                                                                                                        |
-| **"Between turns" / predator powers**  | Large        | Trigger on other players' turns, some with randomness; complicates the one-action-per-turn flow.                                                                        |
-| **Online multiplayer**                 | Large        | Server, rooms and syncing. The deterministic engine helps (sync actions, not states), but it's its own project.                                                         |
+| Feature                               | Effort       | Notes                                                                                                                            |
+| ------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Persistence** (resume a game) ✅    | Small        | Done — see "Persistence" under Conventions.                                                                                      |
+| **Animations**                        | Small–medium | Card moves, eggs appearing, round-end banner. UI-only.                                                                           |
+| **"When played" powers**              | Medium       | Fire once when the bird is placed. Fits the engine's action model; needs new `Power` kinds, cards, translations and tests.       |
+| **Bonus cards**                       | Medium       | Secret per-player end-game scoring conditions (e.g. "birds that eat fish"). New card type, scoring and UI.                       |
+| **Tucking cards / caching food**      | Medium       | Score-only piles under birds, plus powers that use them.                                                                         |
+| **Dice feeder**                       | Medium–large | Replaces the unlimited food supply with a shared, rerollable pool. Changes `gainFood`, its validation and the bot's food choice. |
+| **Nest types, bird size**             | Medium       | Card attributes; only matter once goals or bonus cards use them.                                                                 |
+| **"Between turns" / predator powers** | Large        | Trigger on other players' turns, some with randomness; complicates the one-action-per-turn flow.                                 |
+| **Online multiplayer**                | Large        | Server, rooms and syncing. The deterministic engine helps (sync actions, not states), but it's its own project.                  |
 
 ## Definition of done (every change)
 
@@ -365,73 +374,73 @@ and rejects invalid ones.
 ### `types.ts`
 
 ```ts
-export const FOODS = ['seed', 'insect', 'fish', 'fruit', 'rodent'] as const
-export type Food = (typeof FOODS)[number]
+export const FOODS = ["seed", "insect", "fish", "fruit", "rodent"] as const;
+export type Food = (typeof FOODS)[number];
 
-export const HABITATS = ['forest', 'grassland', 'wetland'] as const
-export type Habitat = (typeof HABITATS)[number]
+export const HABITATS = ["forest", "grassland", "wetland"] as const;
+export type Habitat = (typeof HABITATS)[number];
 
-export type FoodCost = { foods: Food[]; anyCount: number } // anyCount = "any N food"
+export type FoodCost = { foods: Food[]; anyCount: number }; // anyCount = "any N food"
 
 export type Power = // resolved in M4, defined now
-  | { kind: 'gainFood'; food: Food }
-  | { kind: 'layEggSelf' }
-  | { kind: 'layEggAny' }
-  | { kind: 'drawCard' }
-  | { kind: 'allGainFood'; food: Food }
+  | { kind: "gainFood"; food: Food }
+  | { kind: "layEggSelf" }
+  | { kind: "layEggAny" }
+  | { kind: "drawCard" }
+  | { kind: "allGainFood"; food: Food };
 
 export type BirdCard = {
-  id: string
-  name: string
-  habitats: Habitat[]
-  cost: FoodCost
-  points: number
-  eggLimit: number
-  power?: Power
-}
+  id: string;
+  name: string;
+  habitats: Habitat[];
+  cost: FoodCost;
+  points: number;
+  eggLimit: number;
+  power?: Power;
+};
 
-export type PlacedBird = { cardId: string; eggs: number }
-export type Board = Record<Habitat, PlacedBird[]> // 0..5 birds, left to right
-export type SlotRef = { habitat: Habitat; index: number }
-export type EggPlacement = { slot: SlotRef; count: number }
+export type PlacedBird = { cardId: string; eggs: number };
+export type Board = Record<Habitat, PlacedBird[]>; // 0..5 birds, left to right
+export type SlotRef = { habitat: Habitat; index: number };
+export type EggPlacement = { slot: SlotRef; count: number };
 
 export type Player = {
-  id: string
-  name: string
-  kind: 'human' | 'bot'
-  hand: string[] // card ids
-  food: Record<Food, number>
-  board: Board
-  goalPoints: number // filled in M4
-}
+  id: string;
+  name: string;
+  kind: "human" | "bot";
+  hand: string[]; // card ids
+  food: Record<Food, number>;
+  board: Board;
+  goalPoints: number; // filled in M4
+};
 
 export type GameState = {
-  players: Player[]
-  currentPlayer: number // index into players
-  firstPlayer: number // rotates each round
-  round: 1 | 2 | 3 | 4
-  turnsLeft: number[] // per player, this round
-  deck: string[]
-  tray: (string | null)[] // always length 3
-  goals: string[] // one goal id per round (used in M4)
-  rngState: number
-  phase: 'playing' | 'gameOver'
-  log: GameMessage[] // translatable event log ({ key, params })
-}
+  players: Player[];
+  currentPlayer: number; // index into players
+  firstPlayer: number; // rotates each round
+  round: 1 | 2 | 3 | 4;
+  turnsLeft: number[]; // per player, this round
+  deck: string[];
+  tray: (string | null)[]; // always length 3
+  goals: string[]; // one goal id per round (used in M4)
+  rngState: number;
+  phase: "playing" | "gameOver";
+  log: GameMessage[]; // translatable event log ({ key, params })
+};
 
-export type CardPick = { from: 'tray'; index: number } | { from: 'deck' }
+export type CardPick = { from: "tray"; index: number } | { from: "deck" };
 
 export type GameAction =
   | {
-      type: 'playBird'
-      cardId: string
-      habitat: Habitat
-      payment: Food[]
-      eggPayment: EggPlacement[]
+      type: "playBird";
+      cardId: string;
+      habitat: Habitat;
+      payment: Food[];
+      eggPayment: EggPlacement[];
     }
-  | { type: 'gainFood'; foods: Food[] }
-  | { type: 'layEggs'; placements: EggPlacement[] }
-  | { type: 'drawCards'; picks: CardPick[] }
+  | { type: "gainFood"; foods: Food[] }
+  | { type: "layEggs"; placements: EggPlacement[] }
+  | { type: "drawCards"; picks: CardPick[] };
 ```
 
 ### `rng.ts`
@@ -441,13 +450,13 @@ export type GameAction =
 
 ### `birds.ts`
 
-- ~30 **original** `BirdCard` definitions using real species names; stats and powers are our own.
+- 32 **original** `BirdCard` definitions using real species names; stats and powers are our own.
 - Balance guide: total cost ≈ points tier. 1 food → 1–3 pts, 2 food → 3–5 pts,
   3 food → 5–8 pts. Egg limit 1–6, roughly inverse to points.
 - Coverage: each habitat has ≥ 12 birds that can live there; each food type appears in
   ≥ 6 costs; ~5 birds use `anyCount`; about half have a power.
 - Exports: `BIRDS: BirdCard[]`, `BIRDS_BY_ID: Record<string, BirdCard>`,
-  `STARTING_DECK: string[]` (each bird twice → ~60 cards).
+  `STARTING_DECK: string[]` (each bird twice → 64 cards).
 
 ### `setup.ts`
 
@@ -464,15 +473,15 @@ export type GameAction =
 
 Exports `reduce`, `validateAction`, and helpers that the UI and bot will reuse:
 
-| Helper                                       | Returns                                                                               |
-| -------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `eggCostForSlot(index)`                      | `0, 0, 1, 1, 2` for slot indices 0–4                                                  |
+| Helper                                       | Returns                                                                                |
+| -------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `eggCostForSlot(index)`                      | `0, 0, 1, 1, 2` for slot indices 0–4                                                   |
 | `canAfford(player, cost, payment)`           | payment exactly covers cost (listed foods + `anyCount` of anything) and player owns it |
-| `playableHabitats(state, playerIdx, cardId)` | habitats where the bird is allowed, row isn't full, and the egg cost is payable       |
+| `playableHabitats(state, playerIdx, cardId)` | habitats where the bird is allowed, row isn't full, and the egg cost is payable        |
 | `actionCount(board, habitat)`                | food `1 + ⌊n/2⌋`, eggs `2 + ⌊n/2⌋`, cards `1 + ⌊n/2⌋` (n = birds in that row)          |
-| `eggCapacity(player)`                        | total free egg space across all of the player's birds                                 |
-| `totalEggs(player)`                          | eggs across all of the player's birds                                                 |
-| `turnsPerRound(round)`                       | `8, 7, 6, 5`                                                                          |
+| `eggCapacity(player)`                        | total free egg space across all of the player's birds                                  |
+| `totalEggs(player)`                          | eggs across all of the player's birds                                                  |
+| `turnsPerRound(round)`                       | `8, 7, 6, 5`                                                                           |
 
 **Action rules (validated):**
 
