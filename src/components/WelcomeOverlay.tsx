@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch'
 
 type Props = {
@@ -32,7 +33,10 @@ export default function WelcomeOverlay({ onClose }: Props) {
         >
           {t('welcome.start')}
         </button>
-        <LanguageSwitch />
+        <div className="flex items-center gap-2">
+          <LanguageSwitch />
+          <FullscreenButton />
+        </div>
       </div>
     </div>
   )

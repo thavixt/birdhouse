@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import RulesButton from './RulesButton';
+import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch';
 
 type Props = {
@@ -39,6 +40,7 @@ export default function HandoffOverlay({ name, onQuit, onReady }: Props) {
         </button>
         <div className="flex items-center gap-2">
           <LanguageSwitch />
+          <FullscreenButton />
           <RulesButton className='text-emerald-900' />
           <button type="button" onClick={onQuit} className="cursor-pointer rounded-md bg-stone-200 px-3 py-1 text-sm hover:bg-stone-300 text-emerald-900">
             {t('tracker.quit')}

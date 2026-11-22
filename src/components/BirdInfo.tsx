@@ -22,11 +22,11 @@ export default function BirdInfo({ cardId, onClose }: Props) {
   return (
     <section
       aria-label={t('birdInfo.title')}
-      className="relative isolate flex flex-col overflow-hidden rounded-xl border border-stone-200 bg-stone-200 text-sm shadow-sm"
+      className="relative isolate flex h-96 shrink-0 flex-col overflow-hidden rounded-xl border border-stone-200 bg-stone-200 text-sm shadow-sm"
       title={photo ? t('card.photoCredit', { author: photo.author, license: photo.license }) : undefined}
     >
       {photo && <BirdPhoto photo={photo} />}
-      <div className="flex min-h-52 justify-end p-1.5">
+      <div className="flex min-h-0 flex-1 justify-end p-1.5">
         {onClose && (
           <button
             type="button"
@@ -38,7 +38,7 @@ export default function BirdInfo({ cardId, onClose }: Props) {
           </button>
         )}
       </div>
-      <div className="m-1.5 mt-0 flex flex-col gap-2 rounded-lg bg-white/85 p-3 backdrop-blur-sm">
+      <div className="m-1.5 mt-0 flex h-44 shrink-0 flex-col gap-2 overflow-y-auto rounded-lg bg-white/85 p-3 backdrop-blur-sm">
         <div>
           <h3 className="font-bold text-emerald-900 underline hover:no-underline cursor-pointer" onClick={() => {
             if (facts) {

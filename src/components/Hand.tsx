@@ -19,7 +19,7 @@ export default function Hand({ cards, selected, isPlayable, onSelect, draggable 
   const { t } = useTranslation()
   const wheelScroll = useHorizontalWheel<HTMLDivElement>()
   return (
-    <section data-tour="hand" className="flex flex-col gap-2">
+    <section data-tour="hand" className="flex flex-col gap-2 max-w-[800px]">
       <h3 className="text-sm font-semibold text-stone-600">
         <span aria-hidden>🤚 </span>
         {t('hand.title', { count: cards.length })} {onSelect && <span className="font-normal">{t('hand.hint')}</span>}

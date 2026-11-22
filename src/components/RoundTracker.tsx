@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useHorizontalWheel } from '../hooks/useHorizontalWheel'
 import { GOAL_POINTS } from '../game/goals'
 import type { GameState } from '../game/types'
+import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch'
 import RulesButton from './RulesButton'
 import { cn } from 'cn'
@@ -14,7 +15,7 @@ export default function RoundTracker({ className, state, onQuit }: Props) {
   // From sm they wrap and don't overflow, so the hook leaves the wheel alone.
   const wheelScroll = useHorizontalWheel<HTMLOListElement>()
   return (
-    <header className={cn("flex flex-col gap-2 rounded-xl border border-stone-200 bg-white p-2 shadow-sm sm:p-3", className)}>
+    <header data-tour="tracker" className={cn("flex flex-col gap-2 rounded-xl border border-stone-200 bg-white p-2 shadow-sm sm:p-3", className)}>
       {/* Title and controls share a row when they fit; on phones the controls wrap below. */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-baseline gap-3">
@@ -23,6 +24,7 @@ export default function RoundTracker({ className, state, onQuit }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <LanguageSwitch />
+          <FullscreenButton />
           <RulesButton />
           <button type="button" onClick={onQuit} className="cursor-pointer rounded-md bg-stone-200 px-3 py-1 text-sm hover:bg-stone-300">
             {t('tracker.quit')}

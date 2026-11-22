@@ -24,16 +24,18 @@ export default function PlayBirdPanel({ state, draft, setDraft, footer, docked }
   return (
     <PanelFrame docked={docked} title={t('panel.playBirdTitle', { card: birdName(card.id) })}>
       <PanelStep label={t('panel.habitat')}>
-        {habitats.map((h) => (
-          <button
-            key={h}
-            type="button"
-            className={`${BUTTON} ${draft.habitat === h ? HABITAT_STYLE[h].button : HABITAT_STYLE[h].chip}`}
-            onClick={() => setDraft(chooseHabitat(state, draft, h))}
-          >
-            {HABITAT_ICON[h]} {t(`habitats.${h}.name`)}
-          </button>
-        ))}
+        <div className="flex flex-col gap-2">
+          {habitats.map((h) => (
+            <button
+              key={h}
+              type="button"
+              className={`${BUTTON} ${draft.habitat === h ? HABITAT_STYLE[h].button : HABITAT_STYLE[h].chip}`}
+              onClick={() => setDraft(chooseHabitat(state, draft, h))}
+            >
+              {HABITAT_ICON[h]} {t(`habitats.${h}.name`)}
+            </button>
+          ))}
+        </div>
       </PanelStep>
       <PanelStep label={t('panel.food')}>
         {card.cost.foods.map((f, i) => (

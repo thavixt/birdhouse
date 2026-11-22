@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { GameState, PlayerConfig } from '../game/types'
 import { loadLeaderboard, loadTutorialEnabled, saveTutorialEnabled } from '../persistence'
+import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch'
 import Leaderboard from './Leaderboard'
 import RulesButton from './RulesButton'
@@ -95,6 +96,7 @@ export default function StartScreen({ onStart, resumable, onResume }: Props) {
             <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
               <RulesButton />
               <LanguageSwitch />
+              <FullscreenButton />
             </div>
           </div>
           <p className="text-sm text-stone-600">{t('app.tagline')}</p>

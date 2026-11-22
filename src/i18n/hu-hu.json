@@ -8,6 +8,10 @@
     "en-us": "English",
     "hu-hu": "Magyar"
   },
+  "fullscreen": {
+    "enter": "Teljes képernyő",
+    "exit": "Kilépés a teljes képernyőből"
+  },
   "foods": {
     "seed": "mag",
     "insect": "rovar",
@@ -189,7 +193,7 @@
     "cancel": "Mégse",
     "clear": "Törlés",
     "auto": "Automatikus",
-    "chooseHabitat": "Válassz élőhelyet.",
+    "chooseHabitat": "Válassz élőhelyet, vagy húzd a madarat a kezedből egy élőhely sorára, hogy azonnal kijátszd.",
     "playBirdTitle": "Kijátszás: {{card}}",
     "habitat": "Élőhely",
     "food": "Élelem",
@@ -207,7 +211,7 @@
     "drawCardsTitle_one": "Húzz {{count}} kártyát",
     "drawCardsTitle_other": "Húzz {{count}} kártyát",
     "pickedProgress": "Választva {{done}}/{{total}}",
-    "drawHint": "Kattints a felcsapott kártyákra vagy a paklira."
+    "drawHint": "Kattints a felcsapott kártyákra vagy a paklira, vagy húzd őket a kezedbe."
   },
   "log": {
     "title": "Napló",

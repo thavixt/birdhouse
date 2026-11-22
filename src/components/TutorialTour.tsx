@@ -1,5 +1,37 @@
+import { useEffect, useState } from 'react'
 import { Joyride, STATUS, type EventData, type Step } from 'react-joyride'
 import { useTranslation } from 'react-i18next'
+
+/** Joyride's default gap between the window top and a target it scrolls to. */
+const SCROLL_GAP = 20
+
+/**
+ * How far below the window top a scrolled-to target should land: under the RoundTracker
+ * while it is sticky (lg+), otherwise just the default gap. Without this, the sticky
+ * tracker covers targets near the top of the page (the hand).
+ */
+function measureScrollOffset(): number {
+  const tracker = document.querySelector<HTMLElement>('[data-tour="tracker"]')
+  if (!tracker) return SCROLL_GAP
+  const style = getComputedStyle(tracker)
+  if (style.position !== 'sticky') return SCROLL_GAP
+  return Math.ceil((parseFloat(style.top) || 0) + tracker.getBoundingClientRect().height + SCROLL_GAP)
+}
+
+/** `measureScrollOffset`, kept up to date when the tracker resizes (goal chips wrap). */
+function useScrollOffset(): number {
+  const [offset, setOffset] = useState(SCROLL_GAP)
+  useEffect(() => {
+    const tracker = document.querySelector('[data-tour="tracker"]')
+    const update = () => setOffset(measureScrollOffset())
+    update()
+    if (!tracker) return
+    const observer = new ResizeObserver(update)
+    observer.observe(tracker)
+    return () => observer.disconnect()
+  }, [])
+  return offset
+}
 
 type Props = {
   /** Whose first turn it is (shown in the welcome step). */
@@ -18,7 +50,8 @@ const visible = (selector: string) => () =>
  */
 export default function TutorialTour({ name, onDone }: Props) {
   const { t } = useTranslation()
-  const step = (target: Step['target'], key: string, extra: Partial<Step> = {}): Step => ({
+  const scrollOffset = useScrollOffset()
+  const step =(target: Step['target'], key: string, extra: Partial<Step> = {}): Step => ({
     target,
     title: t(`tutorial.${key}.title`, { name }),
     content: t(`tutorial.${key}.body`),
@@ -26,7 +59,7 @@ export default function TutorialTour({ name, onDone }: Props) {
   })
   const steps: Step[] = [
     step('body', 'welcome', { placement: 'center' }),
-    step('[data-tour="hand"]', 'hand'),
+    step('[data-tour="hand"]', 'hand', { placement: 'bottom' }),
     step('[data-tour="board"] [data-tour="food"]', 'food'),
     step('[data-tour="board"]', 'board', { placement: 'top' }),
     step('[data-tour="board"] [data-habitat="forest"]', 'actions', { placement: 'right' }),
@@ -53,6 +86,7 @@ export default function TutorialTour({ name, onDone }: Props) {
         textColor: '#1c1917', // stone-900
         zIndex: 50, // above the docked action panel (z-20)
         overlayClickAction: false,
+        scrollOffset, // land targets below the sticky RoundTracker
       }}
       locale={{
         back: t('tutorial.back'),

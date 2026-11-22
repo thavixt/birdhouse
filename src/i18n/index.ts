@@ -3,7 +3,9 @@ import { initReactI18next } from 'react-i18next'
 import enUS from './en-us.json'
 import huHU from './hu-hu.json'
 
-export const LANGUAGES = ['en-us', 'hu-hu'] as const
+export const LANGUAGE_HU = "hu-hu";
+export const LANGUAGE_EN = "en-us";
+export const LANGUAGES = [LANGUAGE_EN, LANGUAGE_HU] as const
 export type Language = (typeof LANGUAGES)[number]
 
 const STORAGE_KEY = 'birdhouse.language'

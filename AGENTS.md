@@ -68,6 +68,16 @@ Results are under the repository's **Actions** tab.
   `lg:` (≥ 1024px) restore the wider layouts. Desktop is the original design.
 - **No horizontal page scrolling** at 320px and up. Wide content scrolls inside its own
   container instead (hand, bird tray, goal chips on phones, the score table).
+- **Boards grid:** from `lg` the sidebar sits left of one column (hand + tray, then one board
+  per row). From `2xl` (≥ 1536px; the page widens to `120rem`) hand + tray span two columns
+  and the boards fill a 2×2 grid, own board top left (a solo board spans both). Cells come
+  from `BOARD_CELLS` / `SIDEBAR_ROWS` in `GameScreen.tsx`; the DOM order (and the phone
+  layout) stays hand, tray, own board, sidebar, opponents.
+- **Hand + tray:** stacked, or side by side once their area is ≥ 64rem wide (a Tailwind
+  container query, `@container` / `@5xl:`): the tray keeps its natural width, the hand
+  scrolls in the rest. The `min-w-0` wrappers around both are required, or the hand's card
+  row widens the page. Grid cells use explicit ranges (`col-[2/4]`), not `col-span-*`, which
+  resets `col-start-*` in Tailwind v4.
 - **Habitat rows:** on phones the action button is a bar above the 5 slots; from `sm` it's
   a column on the left. Placed birds show a compact egg count (🥚 2/5) on phones.
 - **Action panel:** from `lg` it sits in the left sidebar (with the log; it spans every board row, so it stays sticky). Below `lg` a second instance
@@ -110,7 +120,9 @@ Results are under the repository's **Actions** tab.
 
 - Clicking (or dragging) any bird card — hand, tray, or a placed bird on any board — shows
   `BirdInfo` below the game log: photo, name, scientific name, a 2–3 sentence description
-  and a Wikipedia link in the UI language (Hungarian article when one exists).
+  and a Wikipedia link in the UI language (Hungarian article when one exists). The card has a
+  fixed height (`h-96`, text panel `h-44`, scrolls if needed) so it never jumps between birds;
+  descriptions should stay under ~200 characters to fit without scrolling.
 - Descriptions are translated text in `birdFacts.<id>` (both dictionaries): basic or
   unusual traits taken from each species' Wikipedia article, **written in our own words**
   (don't paste article text). Language-neutral data (scientific name, article titles) is in
@@ -130,7 +142,8 @@ Results are under the repository's **Actions** tab.
 - Steps point at `data-tour` attributes: `hand`, `tray`, `goals`, `food`, `panel` and
   `board` (only the player's own board is wrapped in `[data-tour="board"]`, so opponents'
   boards never match). The action panel exists twice, so its step targets the visible one.
-  Keep these attributes when restructuring components.
+  Keep these attributes when restructuring components. `tracker` (the RoundTracker) isn't a
+  step: the tour measures it so targets scroll to just below it while it is sticky (`scrollOffset`).
 - Text lives under `tutorial.*` in the dictionaries. The component is lazy-loaded, so
   react-joyride stays out of the main bundle.
 
@@ -271,6 +284,7 @@ src/
     Leaderboard.tsx        // top scores on the start screen
     GameScreen.tsx         // in-game layout; wires board/tray/hand clicks to `draft.ts`
     LanguageSwitch.tsx     // English | Magyar toggle
+    FullscreenButton.tsx   // fullscreen toggle icon, next to every LanguageSwitch (hidden if unsupported)
     PowerText.tsx          // translated "When activated: …" power text
     RulesButton.tsx        // self-contained "Rules" button + dialog (start screen, game header)
     HandoffOverlay.tsx     // hot-seat "pass the device" cover between different humans

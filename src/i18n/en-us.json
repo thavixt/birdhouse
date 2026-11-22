@@ -8,6 +8,10 @@
     "en-us": "English",
     "hu-hu": "Magyar"
   },
+  "fullscreen": {
+    "enter": "Full screen",
+    "exit": "Exit full screen"
+  },
   "foods": {
     "seed": "seed",
     "insect": "insect",
@@ -189,7 +193,7 @@
     "cancel": "Cancel",
     "clear": "Clear",
     "auto": "Auto",
-    "chooseHabitat": "Choose a habitat.",
+    "chooseHabitat": "Choose a habitat, or drag the bird from your hand onto a habitat row to play it right away.",
     "playBirdTitle": "Play {{card}}",
     "habitat": "Habitat",
     "food": "Food",
@@ -207,7 +211,7 @@
     "drawCardsTitle_one": "Draw {{count}} card",
     "drawCardsTitle_other": "Draw {{count}} cards",
     "pickedProgress": "Picked {{done}}/{{total}}",
-    "drawHint": "Click tray cards or the deck."
+    "drawHint": "Click tray cards or the deck, or drag them into your hand."
   },
   "log": {
     "title": "Log",

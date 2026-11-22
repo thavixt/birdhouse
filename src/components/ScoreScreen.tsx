@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { finalStandings } from '../game/scoring'
 import type { GameState } from '../game/types'
 import Board from './Board'
+import FullscreenButton from './FullscreenButton'
 import LanguageSwitch from './LanguageSwitch'
 
 type Props = { state: GameState; onRematch: () => void; onMenu: () => void }
@@ -17,8 +18,9 @@ export default function ScoreScreen({ state, onRematch, onMenu }: Props) {
     <main className="min-h-screen bg-linear-to-b from-emerald-50 to-stone-100 p-2 text-stone-900 sm:p-4">
       <div className="mx-auto flex max-w-4xl flex-col gap-2 sm:gap-4">
         <section className="rounded-2xl border border-stone-200 bg-white p-4 shadow-lg sm:p-6">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <LanguageSwitch />
+            <FullscreenButton />
           </div>
           <h1 className="mt-2 text-center text-2xl font-bold text-emerald-900 sm:text-3xl">
             {shared ? t('score.tie') : t('score.winner', { name: winner.name })}

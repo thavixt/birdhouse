@@ -1,4 +1,5 @@
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { cn } from 'cn'
 import { lazy, Suspense, useState } from 'react'
 import {
   addDrawPick,
@@ -40,8 +41,32 @@ import RoundTracker from './RoundTracker'
 // Loaded only when a tour runs (the tutorial is off by default), keeping react-joyride out of the main bundle.
 const TutorialTour = lazy(() => import('./TutorialTour'))
 
-/** lg+: the sidebar spans one grid row per board (own + opponents), so it stays sticky down the page. */
-const SIDEBAR_ROWS = ['', 'lg:row-span-1', 'lg:row-span-2', 'lg:row-span-3', 'lg:row-span-4']
+/*
+  Desktop grid (static class lists so Tailwind sees every class):
+  - lg: sidebar | one column. Row 1 is hand + tray, then one row per board.
+  - 2xl: sidebar | two columns. Hand + tray span both; the boards fill a 2×2 grid
+    (own board first, top left). A solo board spans both columns.
+  The sidebar spans every row, so it stays sticky down the whole page.
+  Use explicit ranges (`col-[2/4]`, `row-[1/3]`), never `col-span-*` / `row-span-*` next to a
+  `*-start-*`: in Tailwind v4 the span utilities set the `grid-column` / `grid-row` shorthand,
+  which resets the start line.
+*/
+const SIDEBAR_ROWS = [
+  '',
+  'lg:row-[1/3] 2xl:row-[1/3]',
+  'lg:row-[1/4] 2xl:row-[1/3]',
+  'lg:row-[1/5] 2xl:row-[1/4]',
+  'lg:row-[1/6] 2xl:row-[1/4]',
+]
+/** Grid cell of the k-th board (0 = the viewed player's own board). */
+const BOARD_CELLS = [
+  'lg:col-start-2 lg:row-start-2 2xl:col-start-2 2xl:row-start-2',
+  'lg:col-start-2 lg:row-start-3 2xl:col-start-3 2xl:row-start-2',
+  'lg:col-start-2 lg:row-start-4 2xl:col-start-2 2xl:row-start-3',
+  'lg:col-start-2 lg:row-start-5 2xl:col-start-3 2xl:row-start-3',
+]
+/** A solo game's only board spans both board columns from 2xl. */
+const SOLO_BOARD_CELL = 'lg:col-start-2 lg:row-start-2 2xl:col-[2/4] 2xl:row-start-2'
 
 type Props = {
   state: GameState
@@ -60,6 +85,8 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
   const current = state.currentPlayer
   const viewIdx = viewedPlayer(state, revealedTo)
   const viewed = state.players[viewIdx]
+  // Every other player's index, in seat order: their boards follow the viewed player's own.
+  const opponents = state.players.map((_, i) => i).filter((i) => i !== viewIdx)
   const handoff = needsHandoff(state, revealedTo)
   const interactive =
     !handoff && state.players[current].kind === 'human' && state.phase === 'playing' && viewIdx === current
@@ -131,63 +158,75 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
         <BotTurnOverlay name={state.players[current].name} />
       )}
       {handoff && <HandoffOverlay name={viewed.name} onQuit={onQuit} onReady={revealHand} />}
-      <main inert={handoff} className="min-h-screen bg-linear-to-b from-emerald-50 to-stone-100 p-2 text-stone-900 sm:p-3 md:p-4">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:gap-3 relative">
+      <main inert={handoff} className="min-h-screen bg-linear-to-b from-stone-100 to-emerald-200 p-2 text-stone-900 sm:p-3 md:p-4">
+        <div className="relative mx-auto flex max-w-7xl flex-col gap-2 sm:gap-3 2xl:max-w-363">
           <RoundTracker className="lg:sticky z-10 top-0" state={state} onQuit={onQuit} />
           {/*
             lg+: sidebar (action panel + log) on the left, boards on the right. Items are placed
             explicitly so the DOM order, and with it the phone layout, stays boards-first.
           */}
-          <div className="grid gap-3 lg:grid-cols-[20rem_minmax(0,1fr)]">
-            <div className="flex min-w-0 flex-col gap-3 lg:col-start-2 lg:row-start-1">
-              <DropZone target={{ kind: 'hand' }} enabled={accepts({ kind: 'hand' })}>
-                <Hand
-                  cards={viewed.hand}
-                  selected={draft.kind === 'playBird' ? draft.cardId : null}
-                  isPlayable={(id) => !interactive || canPlayCard(state, id)}
-                  onSelect={
-                    interactive
-                      ? (id) => {
-                        setInspected(id)
-                        setDraft(startPlayBird(state, id))
+          <div className="grid gap-3 lg:grid-cols-[20rem_minmax(0,1fr)] 2xl:grid-cols-[20rem_minmax(0,1fr)_minmax(0,1fr)]">
+            {/*
+              Hand and tray: stacked, or side by side once this area is ≥ 64rem wide (container
+              query; the tray alone is ~600px), with the tray at its natural width and the hand
+              scrolling in the rest. The `min-w-0` wrappers are required: without them a flex
+              item can't shrink below its content, so the hand's full card row widens the page.
+            */}
+            <div className="@container min-w-0 lg:col-start-2 lg:row-start-1 2xl:col-[2/4]">
+              <div className="flex flex-col gap-3 @5xl:flex-row @5xl:items-start @5xl:gap-12">
+                <div className="min-w-0 @5xl:flex-1">
+                  <DropZone target={{ kind: 'hand' }} enabled={accepts({ kind: 'hand' })}>
+                    <Hand
+                      cards={viewed.hand}
+                      selected={draft.kind === 'playBird' ? draft.cardId : null}
+                      isPlayable={(id) => !interactive || canPlayCard(state, id)}
+                      onSelect={
+                        interactive
+                          ? (id) => {
+                            setInspected(id)
+                            setDraft(startPlayBird(state, id))
+                          }
+                          : undefined
                       }
-                      : undefined
-                  }
-                  onInspect={setInspected}
-                  draggable={interactive}
-                />
-              </DropZone>
-              <CardTray
-                tray={state.tray}
-                deckCount={state.deck.length}
-                discardCount={state.discard.length}
-                pickedTray={pickedTray(draft)}
-                pickedDeck={pickedDeck(draft)}
-                onPickTray={canPickCards ? onPickTray : undefined}
-                onPickDeck={canPickCards ? onPickDeck : undefined}
-                canDrag={interactive ? dragEnabled : undefined}
-                onInspect={setInspected}
-              />
-              <div data-tour="board">
-                <Board
-                  player={viewed}
-                  active={viewIdx === current}
-                  turnsLeft={state.turnsLeft[viewIdx]}
-                  onAction={interactive ? (h) => setDraft(startHabitatAction(h)) : undefined}
-                  onBirdClick={
-                    clickableBirds
-                      ? (slot) => {
-                        setInspected(viewed.board[slot.habitat][slot.index].cardId)
-                        setDraft(clickBird(state, draft, slot))
-                      }
-                      : undefined
-                  }
-                  onInspect={setInspected}
-                  eggDelta={interactive ? (slot) => boardEggDelta(draft, slot) : undefined}
-                  nextSlot={interactive && draft.kind === 'playBird' ? draft.habitat : null}
-                  canDropOn={interactive ? (habitat) => accepts({ kind: 'habitat', habitat }) : undefined}
-                />
+                      onInspect={setInspected}
+                      draggable={interactive}
+                    />
+                  </DropZone>
+                </div>
+                <div className="min-w-0 @5xl:shrink-0">
+                  <CardTray
+                    tray={state.tray}
+                    deckCount={state.deck.length}
+                    discardCount={state.discard.length}
+                    pickedTray={pickedTray(draft)}
+                    pickedDeck={pickedDeck(draft)}
+                    onPickTray={canPickCards ? onPickTray : undefined}
+                    onPickDeck={canPickCards ? onPickDeck : undefined}
+                    canDrag={interactive ? dragEnabled : undefined}
+                    onInspect={setInspected}
+                  />
+                </div>
               </div>
+            </div>
+            <div data-tour="board" className={cn('min-w-0', state.players.length === 1 ? SOLO_BOARD_CELL : BOARD_CELLS[0])}>
+              <Board
+                player={viewed}
+                active={viewIdx === current}
+                turnsLeft={state.turnsLeft[viewIdx]}
+                onAction={interactive ? (h) => setDraft(startHabitatAction(h)) : undefined}
+                onBirdClick={
+                  clickableBirds
+                    ? (slot) => {
+                      setInspected(viewed.board[slot.habitat][slot.index].cardId)
+                      setDraft(clickBird(state, draft, slot))
+                    }
+                    : undefined
+                }
+                onInspect={setInspected}
+                eggDelta={interactive ? (slot) => boardEggDelta(draft, slot) : undefined}
+                nextSlot={interactive && draft.kind === 'playBird' ? draft.habitat : null}
+                canDropOn={interactive ? (habitat) => accepts({ kind: 'habitat', habitat }) : undefined}
+              />
             </div>
             {/*
               lg+: sticky within its grid column so the action panel and log stay in view while
@@ -195,7 +234,7 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
               full height (which would leave sticky nothing to do); it scrolls internally if
               taller than the window.
             */}
-            <aside className={`flex flex-col gap-3 lg:col-start-1 lg:row-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-24 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}>
+            <aside className={`flex flex-col gap-3 lg:col-start-1 ${SIDEBAR_ROWS[state.players.length]} lg:sticky lg:top-24 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto`}>
               <PlayerList state={state} />
               {inspected && <BirdInfo cardId={inspected} onClose={() => setInspected(null)} />}
               <div data-tour="panel" className="hidden lg:block">
@@ -203,13 +242,14 @@ export default function GameScreen({ state, dispatch, onQuit, tutorial = false }
               </div>
               <GameLog log={state.log} />
             </aside>
-            {state.players.map((p, i) =>
-              i === viewIdx ? null : (
-                <div key={p.id} className="lg:col-start-2">
+            {opponents.map((i, k) => {
+              const p = state.players[i]
+              return (
+                <div key={p.id} className={cn('min-w-0', BOARD_CELLS[k + 1])}>
                   <Board player={p} active={i === current} turnsLeft={state.turnsLeft[i]} onInspect={setInspected} />
                 </div>
-              ),
-            )}
+              )
+            })}
             {/*
             Below lg the action panel is docked to the bottom of the screen. It is `sticky`
             as the last child of the page column, so it stays in view while scrolling but
